@@ -1,0 +1,83 @@
+{
+  "name": "gwent-classic",
+  "version": "3.1.0",
+  "description": "Gwent Classic - The original Gwent minigame from The Witcher 3 as a desktop application",
+  "main": "main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "dist": "npm run build",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "gwent",
+    "witcher",
+    "card-game",
+    "electron",
+    "desktop-app"
+  ],
+  "author": "Sundaram, Costa & Sylver",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.gwent.classic",
+    "productName": "Gwent Classic",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/**/*",
+      "!dist/**/*",
+      "!.git/**/*",
+      "!*.md",
+      "!package-lock.json"
+    ],
+    "extraResources": [
+      {
+        "from": "images",
+        "to": "images"
+      },
+      {
+        "from": "sfx",
+        "to": "sfx"
+      },
+      {
+        "from": "decks",
+        "to": "decks"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "images/favicon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "images/favicon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "images/favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
