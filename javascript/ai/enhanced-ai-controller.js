@@ -20,40 +20,263 @@ class EnhancedAIController {
     }
 
     /**
-     * Main turn execution method
+     * Main AI turn logic - enhanced with complex ability handling
      */
-    async startTurn() {
-        try {
-            // Step 1: Analyze current game state
-            const gameState = this.gameState.analyze();
-            
-            // Step 2: Determine overall strategy
-            this.currentStrategy = this.strategicManager.getGameStrategy();
-            
-            // Step 3: Predict opponent moves
-            this.predictionData = this.predictiveAI.predictAndPlan();
-            
-            // Step 4: Check if we should pass
-            if (this.shouldPass(gameState)) {
-                await this.player.passRound();
+    async takeTurn() {
+        const gameState = this.analyzer.analyzeGameState();
+        const strategy = this.strategyManager.getRoundStrategy(gameState.roundNumber);
+        
+        // Check for faction abilities first
+        if (await this.handleFactionAbilities(gameState)) {
+            return;
+        }
+
+        // Check for complex abilities that require special handling
+        const complexAbilityCard = this.findComplexAbilityCard();
+        if (complexAbilityCard) {
+            const abilityName = this.getComplexAbilityName(complexAbilityCard);
+            if (await this.handleComplexAbility(complexAbilityCard, abilityName)) {
                 return;
             }
-            
-            // Step 5: Evaluate all possible actions
-            const actionEvaluations = this.evaluateAllActions(gameState);
-            
-            // Step 6: Select and execute best action
-            const bestAction = this.selectBestAction(actionEvaluations);
-            await this.executeAction(bestAction);
-            
-            // Step 7: Update AI learning data
-            this.updateLearningData(bestAction);
-            
-        } catch (error) {
-            console.error('AI Error:', error);
-            // Fallback to basic action
-            await this.fallbackAction();
         }
+
+        // Check if we should pass
+        if (this.shouldPass(gameState, strategy)) {
+            await this.pass();
+            return;
+        }
+
+        // Find the best card to play
+        const bestCard = this.findBestCardToPlay(gameState, strategy);
+        if (bestCard) {
+            await this.playCard(bestCard, gameState);
+        } else {
+            // If no good card, pass
+            await this.pass();
+        }
+    }
+
+    /**
+     * Find cards with complex abilities that require special handling
+     */
+    findComplexAbilityCard() {
+        const complexAbilities = [
+            'alzur_maker', 'anna_henrietta_duchess', 'meve_princess', 
+            'carlo_varese', 'cyrus_hemmelfart', 'anna_henrietta_ladyship',
+            'baal_zebuth', 'lyria_rivia_morale'
+        ];
+        
+        return this.player.hand.cards.find(card => 
+            complexAbilities.some(ability => 
+                card.abilities.includes(ability) || 
+                (card.card && card.card.ability && complexAbilities.includes(card.card.ability))
+            )
+        );
+    }
+
+    /**
+     * Get the complex ability name from a card
+     */
+    getComplexAbilityName(card) {
+        const complexAbilities = [
+            'alzur_maker', 'anna_henrietta_duchess', 'meve_princess', 
+            'carlo_varese', 'cyrus_hemmelfart', 'anna_henrietta_ladyship',
+            'baal_zebuth', 'lyria_rivia_morale'
+        ];
+        
+        // Check card abilities first
+        for (const ability of complexAbilities) {
+            if (card.abilities.includes(ability)) {
+                return ability;
+            }
+        }
+        
+        // Check card's main ability
+        if (card.card && card.card.ability && complexAbilities.includes(card.card.ability)) {
+            return card.card.ability;
+        }
+        
+        return null;
+    }
+
+    /**
+     * Enhanced card evaluation that considers complex abilities
+     */
+    evaluateCard(card, gameState, strategy) {
+        let score = this.cardEvaluator.evaluateCard(card, gameState);
+        
+        // Bonus for complex abilities that can be handled
+        if (this.canHandleComplexAbility(card)) {
+            score += 25; // Significant bonus for strategic abilities
+        }
+        
+        // Bonus for weather cards (now with strategic placement)
+        if (this.isWeatherCard(card)) {
+            score += this.evaluateWeatherPlacement(card, gameState);
+        }
+        
+        // Bonus for medic cards (now with strategic targeting)
+        if (card.abilities.includes("medic")) {
+            score += this.evaluateMedicTargeting(card, gameState);
+        }
+        
+        return score;
+    }
+
+    /**
+     * Check if AI can handle a complex ability
+     */
+    canHandleComplexAbility(card) {
+        const complexAbilities = [
+            'alzur_maker', 'anna_henrietta_duchess', 'meve_princess', 
+            'carlo_varese', 'cyrus_hemmelfart', 'anna_henrietta_ladyship',
+            'baal_zebuth', 'lyria_rivia_morale'
+        ];
+        
+        return complexAbilities.some(ability => 
+            card.abilities.includes(ability) || 
+            (card.card && card.card.ability && complexAbilities.includes(card.card.ability))
+        );
+    }
+
+    /**
+     * Check if card is a weather card
+     */
+    isWeatherCard(card) {
+        return card.abilities.includes("frost") || 
+               card.abilities.includes("fog") || 
+               card.abilities.includes("rain") ||
+               card.abilities.includes("clear");
+    }
+
+    /**
+     * Evaluate weather placement strategy
+     */
+    evaluateWeatherPlacement(card, gameState) {
+        const weatherType = this.getWeatherType(card);
+        const opponentRows = this.player.opponent().getAllRows();
+        
+        if (opponentRows.length === 0) return 0;
+        
+        // Find the most impactful row
+        const maxImpact = Math.max(...opponentRows.map(row => 
+            this.calculateWeatherImpact(row, weatherType)
+        ));
+        
+        return Math.min(maxImpact * 2, 50); // Cap at 50 bonus points
+    }
+
+    /**
+     * Evaluate medic targeting strategy
+     */
+    evaluateMedicTargeting(card, gameState) {
+        const grave = this.player.grave;
+        const units = grave.findCards(c => c.isUnit());
+        
+        if (units.length === 0) return 0;
+        
+        // Find the best target
+        const bestTarget = units.sort((a, b) => {
+            const aValue = this.calculateMedicTargetValue(a, gameState);
+            const bValue = this.calculateMedicTargetValue(b, gameState);
+            return bValue - aValue;
+        })[0];
+        
+        return bestTarget ? this.calculateMedicTargetValue(bestTarget, gameState) : 0;
+    }
+
+    /**
+     * Enhanced card playing with complex ability handling
+     */
+    async playCard(card, gameState) {
+        // Handle complex abilities first
+        if (this.canHandleComplexAbility(card)) {
+            const abilityName = this.getComplexAbilityName(card);
+            if (await this.handleComplexAbility(card, abilityName)) {
+                // Remove card from hand after successful ability use
+                await board.toGrave(card, this.player.hand);
+                return;
+            }
+        }
+        
+        // Handle weather cards strategically
+        if (this.isWeatherCard(card)) {
+            if (await this.handleWeatherPlacement(card, gameState)) {
+                return;
+            }
+        }
+        
+        // Handle medic cards strategically
+        if (card.abilities.includes("medic")) {
+            if (await this.handleMedicAbility(card, gameState)) {
+                // Remove card from hand after successful medic use
+                await board.toGrave(card, this.player.hand);
+                return;
+            }
+        }
+        
+        // Default card playing logic
+        await this.playCardNormally(card, gameState);
+    }
+
+    /**
+     * Default card playing logic for non-complex cards
+     */
+    async playCardNormally(card, gameState) {
+        // Determine best row placement
+        const targetRow = this.findBestRowForCard(card, gameState);
+        
+        if (targetRow) {
+            await board.addCardToRow(card, targetRow, this.player);
+        } else {
+            // Fallback: play in default row
+            await board.addCardToRow(card, board.getRow(card, card.row, this.player), this.player);
+        }
+    }
+
+    /**
+     * Find the best row for a card
+     */
+    findBestRowForCard(card, gameState) {
+        if (!card.isUnit()) return null;
+        
+        const rows = this.player.getAllRows();
+        const targetRow = rows.find(row => row.type === card.row);
+        
+        if (targetRow) {
+            // Check if this row has synergy with the card
+            const synergy = this.calculateRowSynergy(card, targetRow);
+            if (synergy > 0) {
+                return targetRow;
+            }
+        }
+        
+        return targetRow;
+    }
+
+    /**
+     * Calculate synergy between a card and a row
+     */
+    calculateRowSynergy(card, row) {
+        let synergy = 0;
+        
+        // Bonus for tight bond
+        if (card.abilities.includes("tight_bond")) {
+            const bondCards = row.cards.filter(c => c.abilities.includes("tight_bond"));
+            synergy += bondCards.length * 10;
+        }
+        
+        // Bonus for muster
+        if (card.abilities.includes("muster")) {
+            const musterCards = row.cards.filter(c => c.abilities.includes("muster"));
+            synergy += musterCards.length * 8;
+        }
+        
+        // Bonus for same faction
+        const factionCards = row.cards.filter(c => c.faction === card.faction);
+        synergy += factionCards.length * 3;
+        
+        return synergy;
     }
 
     /**

@@ -27,7 +27,7 @@
 			</div>
 		</div>
 		<div id = "dimensions"></div>
-		<div id = "youtube"></div>
+		<!-- YouTube div removed - using local audio instead -->
 		<main style = "display:none">
 			<section id = "click-background" class = "noclick"></section>
 			<section id = "panel-left" class = "panel">
@@ -218,7 +218,8 @@
 				<h1></h1>
 			</div>
 			<div class = "links" id = "stats">
-				<a href = "javascript:showStats(false);">Statistics</a>
+				<a href = "javascript:showStats(false);">Game Statistics</a>
+				<a href = "javascript:window.statsTracker.showStatisticsModal();">📊 Detailed Stats</a>
 			</div>
 			<div class = "links" id = "site-links">
 				<a href = "rules.html" target = "_blank">Rules of Gwent</a>
@@ -258,11 +259,20 @@
 			<button id = "start-ai-game" class = "start-game_class">Start AI game</button>
 		</section>
 		<div id = "toggle-music" class = "center music-customization" style = "display:none">♫</div>
-		<script type = "text/javascript" language = "JavaScript" src = "https://www.youtube.com/iframe_api"></script>
+		<script type = "text/javascript" language = "JavaScript">
+			// Initialize local music system when page loads
+			window.addEventListener('load', function() {
+				setTimeout(function() {
+					initLocalMusicSystem();
+				}, 1000);
+			});
+		</script>
 		<script type = "text/javascript" language = "JavaScript" src = "javascript/cards.js"></script>
 		<script type = "text/javascript" language = "JavaScript" src = "javascript/decks.js"></script>
 		<script type = "text/javascript" language = "JavaScript" src = "javascript/abilities.js"></script>
 		<script type = "text/javascript" language = "JavaScript" src = "javascript/factions.js"></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/deck-loader.js"></script>
 		<script type = "text/javascript" language = "JavaScript" src = "javascript/gwent.js"></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/statistics-tracker.js"></script>
 	</body>
 </html>

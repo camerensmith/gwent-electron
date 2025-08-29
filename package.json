@@ -54,6 +54,10 @@
       {
         "from": "decks",
         "to": "decks"
+      },
+      {
+        "from": "gwent.mp3",
+        "to": "gwent.mp3"
       }
     ],
     "win": {

@@ -5,9 +5,42 @@ class Controller {}
 class ControllerAI {
 	constructor(player) {
 		this.player = player;
+		this.enhancedAI = null;
+		this.initializeEnhancedAI();
+	}
+
+	/**
+	 * Initialize enhanced AI system if available
+	 */
+	initializeEnhancedAI() {
+		try {
+			if (window.AIFactory && window.AIFactory.createEnhancedController) {
+				this.enhancedAI = window.AIFactory.createEnhancedController(this.player);
+				console.log('Enhanced AI system initialized for', this.player.tag);
+			}
+		} catch (error) {
+			console.log('Enhanced AI system not available, using basic AI');
+		}
 	}
 
 	async startTurn(player) {
+		// Use enhanced AI if available
+		if (this.enhancedAI && this.enhancedAI.takeTurn) {
+			try {
+				return await this.enhancedAI.takeTurn();
+			} catch (error) {
+				console.error('Enhanced AI error, falling back to basic AI:', error);
+			}
+		}
+		
+		// Fallback to original AI logic
+		return await this.startTurnOriginal(player);
+	}
+
+	/**
+	 * Original AI turn logic (kept for compatibility)
+	 */
+	async startTurnOriginal(player) {
 		if (player.opponent().passed && (player.winning || player.deck.faction === "nilfgaard" && player.total === player.opponent().total)) {
 			nilfgaard_wins_draws = player.deck.faction === "nilfgaard" && player.total === player.opponent().total;
 			await player.passRound();
@@ -2344,50 +2377,127 @@ class UI {
 		else main.add("noclick");
 	}
 
-	initYouTube() {
-		this.youtube = new YT.Player('youtube', {
-			videoId: "UE9fPWy1_o4",
-			playerVars: {
-				"autoplay": 1,
-				"controls": 0,
-				"loop": 1,
-				"playlist": "UE9fPWy1_o4",
-				"rel": 0,
-				"version": 3,
-				"modestbranding": 1
-			},
-			events: {
-				'onStateChange': initButton
+	initLocalMusic() {
+		// Try multiple paths for audio loading to handle both dev and production
+		let audioPaths = [
+			"gwent.mp3",
+			"./gwent.mp3",
+			"../gwent.mp3",
+			"resources/gwent.mp3"
+		];
+		
+		// Check if we're in Electron and try to use the proper path
+		if (window.electronAPI && window.electronAPI.getResourcePath) {
+			try {
+				const electronPath = window.electronAPI.getResourcePath("gwent.mp3");
+				audioPaths.unshift(electronPath); // Add to beginning of array
+				console.log("Electron resource path:", electronPath);
+			} catch (e) {
+				console.log("Could not get electron resource path:", e);
 			}
+		}
+		
+		console.log("Trying audio paths:", audioPaths);
+		
+		// Try to load audio with fallback paths
+		this.tryLoadAudio(audioPaths, 0);
+	}
+	
+	tryLoadAudio(audioPaths, index) {
+		if (index >= audioPaths.length) {
+			console.error("Failed to load audio from all paths:", audioPaths);
+			return;
+		}
+		
+		const audioPath = audioPaths[index];
+		console.log(`Attempting to load audio from path ${index + 1}/${audioPaths.length}:`, audioPath);
+		
+		this.backgroundMusic = new Audio(audioPath);
+		this.backgroundMusic.loop = true;
+		this.backgroundMusic.volume = 0.6;
+		this.soundEffectsVolume = 0.3;
+		
+		// Add error handling for audio loading
+		this.backgroundMusic.addEventListener('error', (e) => {
+			console.error(`Error loading audio from ${audioPath}:`, e);
+			console.error('Audio error details:', this.backgroundMusic.error);
+			// Try next path
+			this.tryLoadAudio(audioPaths, index + 1);
 		});
-
-		function initButton() {
-			if (ui.ytActive !== undefined) return;
-			ui.ytActive = true;
-			ui.youtube.playVideo();
-			let timer = setInterval(() => {
-				if (ui.youtube.getPlayerState() !== YT.PlayerState.PLAYING) ui.youtube.playVideo();
-				else {
-					clearInterval(timer);
-					ui.toggleMusic_elem.classList.remove("fade");
-				}
-			}, 500);
+		
+		// Add success handling
+		this.backgroundMusic.addEventListener('canplaythrough', () => {
+			console.log(`Successfully loaded audio from: ${audioPath}`);
+			this.playBackgroundMusic();
+		});
+		
+		// Initialize music state
+		if (this.ytActive !== undefined) return;
+		this.ytActive = true;
+		
+		// Try to play with error handling
+		this.backgroundMusic.play().catch(e => {
+			console.error('Could not play background music:', e);
+			// Try next path on play error
+			this.tryLoadAudio(audioPaths, index + 1);
+		});
+		
+		this.toggleMusic_elem.classList.remove("fade");
+		
+		// Log current volume levels for debugging
+		console.log("Audio levels set:");
+		console.log("- Background music: " + Math.round(this.backgroundMusic.volume * 100) + "%");
+		console.log("- Sound effects: " + Math.round(this.soundEffectsVolume * 100) + "%");
+		console.log("You can adjust these with: ui.setBackgroundMusicVolume(0.5) or ui.setSoundEffectsVolume(0.4)");
+	}
+	
+	playBackgroundMusic() {
+		if (this.backgroundMusic && !this.backgroundMusic.paused) {
+			return; // Already playing
+		}
+		
+		if (this.backgroundMusic) {
+			this.backgroundMusic.play().catch(e => {
+				console.error('Could not play background music:', e);
+			});
 		}
 	}
 
 	toggleMusic() {
-		if (this.youtube.getPlayerState() !== YT.PlayerState.PLAYING) iniciarMusica();
+		if (this.backgroundMusic.paused) iniciarMusica();
 		else {
-			this.youtube.pauseVideo();
+			this.backgroundMusic.pause();
 			this.toggleMusic_elem.classList.add("fade");
 		}
 	}
 
-	setYouTubeEnabled(enable) {
+	setLocalMusicEnabled(enable) {
 		if (this.ytActive === enable) return;
-		if (enable && !this.mute) ui.youtube.playVideo();
-		else ui.youtube.pauseVideo();
+		if (enable && !this.mute) ui.backgroundMusic.play();
+		else ui.backgroundMusic.pause();
 		this.ytActive = enable;
+	}
+
+	// Volume control methods
+	setBackgroundMusicVolume(volume) {
+		// volume should be between 0.0 and 1.0
+		if (volume >= 0 && volume <= 1) {
+			this.backgroundMusic.volume = volume;
+		}
+	}
+
+	setSoundEffectsVolume(volume) {
+		// volume should be between 0.0 and 1.0
+		// This will be used by the tocar function
+		this.soundEffectsVolume = volume;
+	}
+
+	getBackgroundMusicVolume() {
+		return this.backgroundMusic.volume;
+	}
+
+	getSoundEffectsVolume() {
+		return this.soundEffectsVolume || 0.3; // Default to 0.3 if not set
 	}
 
 	async selectCard(card) {
@@ -3079,8 +3189,8 @@ class DeckMaker {
 		document.getElementById("select-op-deck").addEventListener("click", () => this.selectOPDeck(), false);
 		document.getElementById("download-deck").addEventListener("click", () => this.downloadDeck(), false);
 		document.getElementById("add-file").addEventListener("change", () => this.uploadDeck(), false);
-		document.getElementById("start-game").addEventListener("click", () => this.startNewGame(false), false);
-		document.getElementById("start-ai-game").addEventListener("click", () => this.startNewGame(true), false);
+		document.getElementById("start-game").addEventListener("click", async () => await this.startNewGame(false), false);
+		document.getElementById("start-ai-game").addEventListener("click", async () => await this.startNewGame(true), false);
 		window.addEventListener("keydown", function (e) {
 			if (document.getElementById("deck-customization").className.indexOf("hide") == -1) {
 				switch(e.keyCode) {
@@ -3326,7 +3436,7 @@ class DeckMaker {
 		this.stats = {};
 	}
 
-	startNewGame(fullAI = false) {
+	async startNewGame(fullAI = false) {
 		if (fullAI) document.getElementsByTagName("main")[0].classList.add("noclick");
 		game.fullAI = fullAI;
 		openFullscreen();
@@ -3334,6 +3444,12 @@ class DeckMaker {
 		if (this.stats.units < 22) warning += "Your deck must have at least 22 unit cards. \n";
 		if (this.stats.special > 10) warning += "Your deck must have no more than 10 special cards. \n";
 		if (warning != "") return aviso("Warning", warning);
+		
+		// Wait for deck loader to be ready
+		if (window.deckLoader && !window.deckLoader.isReady()) {
+			await window.deckLoader.initialize();
+		}
+		
 		let me_deck = {
 			faction: this.faction,
 			leader: this.leader,
@@ -3341,7 +3457,12 @@ class DeckMaker {
 			title: this.me_deck_title
 		};
 		if (game.randomOPDeck || !this.start_op_deck) {
-			this.start_op_deck = JSON.parse(JSON.stringify(premade_deck[randomInt(Object.keys(premade_deck).length)]));
+			// Use deck loader if available, otherwise fall back to original logic
+			if (window.deckLoader && window.deckLoader.isReady()) {
+				this.start_op_deck = JSON.parse(JSON.stringify(window.deckLoader.getRandomDeck()));
+			} else {
+				this.start_op_deck = JSON.parse(JSON.stringify(premade_deck[randomInt(Object.keys(premade_deck).length)]));
+			}
 			this.start_op_deck.cards = this.start_op_deck.cards.map(c => ({
 				index: c[0],
 				count: c[1]
@@ -3420,7 +3541,16 @@ class DeckMaker {
 			desc: "A random deck from the pool that will change every game.",
 			faction: "faction"
 		}];
-		container.cards = container.cards.concat(Object.values(premade_deck).map(d => {
+		
+		// Use deck loader if available, otherwise fall back to original logic
+		let availableDecks = [];
+		if (window.deckLoader && window.deckLoader.isReady()) {
+			availableDecks = window.deckLoader.getAllDecks();
+		} else {
+			availableDecks = Object.values(premade_deck);
+		}
+		
+		container.cards = container.cards.concat(availableDecks.map(d => {
 			let deck = d;
 			return {
 				abilities: [deck["faction"]],
@@ -3448,7 +3578,7 @@ class DeckMaker {
 				game.randomOPDeck = true;
 				document.getElementById("op-deck-name").innerHTML = "Random deck";
 			} else {
-				this.start_op_deck = JSON.parse(JSON.stringify(premade_deck[i - 1]));
+				this.start_op_deck = JSON.parse(JSON.stringify(availableDecks[i - 1]));
 				this.start_op_deck.cards = this.start_op_deck.cards.map(c => ({
 					index: c[0],
 					count: c[1]
@@ -3457,7 +3587,7 @@ class DeckMaker {
 					index: this.start_op_deck.leader,
 					card: card_dict[this.start_op_deck.leader]
 				};
-				document.getElementById("op-deck-name").innerHTML = premade_deck[i - 1]["title"];
+				document.getElementById("op-deck-name").innerHTML = availableDecks[i - 1]["title"];
 				game.randomOPDeck = false;
 			}
 		}, () => true, false, true);
@@ -3790,8 +3920,8 @@ function sleepUntil(predicate, ms) {
 	});
 }
 
-function onYouTubeIframeAPIReady() {
-	ui.initYouTube();
+function initLocalMusicSystem() {
+	ui.initLocalMusic();
 }
 
 var ui = new UI();
@@ -3963,8 +4093,11 @@ function cartaNaLinha(id, carta) {
 function tocar(arquivo, pararMusica) {
 	if (arquivo != lastSound && arquivo != "") {
 		var s = new Audio("sfx/" + arquivo + ".mp3");
-		if (pararMusica && ui.youtube && ui.youtube.getPlayerState() === YT.PlayerState.PLAYING) {
-			ui.youtube.pauseVideo();
+		// Use UI's sound effects volume setting for consistent balance
+		s.volume = ui.getSoundEffectsVolume();
+		
+		if (pararMusica && ui.backgroundMusic && !ui.backgroundMusic.paused) {
+			ui.backgroundMusic.pause();
 			ui.toggleMusic_elem.classList.add("fade");
 		}
 		lastSound = arquivo;
@@ -3977,8 +4110,8 @@ function tocar(arquivo, pararMusica) {
 
 function iniciarMusica() {
 	try {
-		if (ui.youtube.getPlayerState() !== YT.PlayerState.PLAYING) {
-			ui.youtube.playVideo();
+		if (ui.backgroundMusic.paused) {
+			ui.backgroundMusic.play();
 			ui.toggleMusic_elem.classList.remove("fade");
 		}
 	} catch(err) {}
