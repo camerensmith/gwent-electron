@@ -815,4 +815,233 @@ class EnhancedAIController {
             predictionConfidence: this.predictionData ? this.predictionData.confidence : 0
         };
     }
+
+    /**
+     * Update adaptation data for future decisions
+     */
+    updateAdaptationData(gameState, strategy, playedCard) {
+        const adaptation = {
+            timestamp: Date.now(),
+            strategy: strategy,
+            gameState: gameState,
+            playedCard: playedCard,
+            outcome: 'pending'
+        };
+        
+        this.adaptationData[Date.now()] = adaptation;
+        
+        // Keep only recent adaptation data (last 10 turns)
+        const keys = Object.keys(this.adaptationData).sort((a, b) => b - a);
+        if (keys.length > 10) {
+            keys.slice(10).forEach(key => delete this.adaptationData[key]);
+        }
+    }
+
+    /**
+     * Calculate weather impact on the board
+     */
+    calculateWeatherImpact(weatherEffects, boardState) {
+        let impact = 0;
+        
+        weatherEffects.forEach(weather => {
+            const row = weather.row;
+            const rowData = boardState.myRows[row] || boardState.theirRows[row];
+            
+            if (rowData && rowData.units) {
+                const affectedUnits = rowData.units.filter(unit => 
+                    !unit.abilities.includes('hero') && !unit.abilities.includes('gold')
+                );
+                
+                // Calculate power reduction from weather
+                const powerReduction = affectedUnits.reduce((total, unit) => {
+                    if (weather.type === 'frost' && row === 'melee') {
+                        return total + Math.min(unit.power, 1);
+                    } else if (weather.type === 'fog' && row === 'ranged') {
+                        return total + Math.min(unit.power, 1);
+                    } else if (weather.type === 'rain' && row === 'siege') {
+                        return total + Math.min(unit.power, 1);
+                    }
+                    return total;
+                }, 0);
+                
+                impact -= powerReduction;
+            }
+        });
+        
+        return impact;
+    }
+
+    /**
+     * Calculate special card value on the board
+     */
+    calculateSpecialCardValue(specialCards, boardState) {
+        let value = 0;
+        
+        // Count special cards by type
+        const specialCounts = {
+            weather: 0,
+            clear: 0,
+            horn: 0,
+            scorch: 0,
+            decoy: 0,
+            medic: 0
+        };
+        
+        specialCards.forEach(card => {
+            if (card.abilities.includes('fog') || card.abilities.includes('rain') || card.abilities.includes('frost')) {
+                specialCounts.weather++;
+            } else if (card.abilities.includes('clear_weather')) {
+                specialCounts.clear++;
+            } else if (card.abilities.includes('horn')) {
+                specialCounts.horn++;
+            } else if (card.abilities.includes('scorch')) {
+                specialCounts.scorch++;
+            } else if (card.abilities.includes('decoy')) {
+                specialCounts.decoy++;
+            } else if (card.abilities.includes('medic')) {
+                specialCounts.medic++;
+            }
+        });
+        
+        // Calculate strategic value
+        value += specialCounts.weather * 0.3; // Weather control
+        value += specialCounts.clear * 0.4;   // Weather removal
+        value += specialCounts.horn * 0.6;    // Power boost
+        value += specialCounts.scorch * 0.5;  // Removal
+        value += specialCounts.decoy * 0.3;   // Utility
+        value += specialCounts.medic * 0.4;   // Revival
+        
+        return value;
+    }
+
+    /**
+     * Enhanced complex ability handling with game state and strategy
+     */
+    async handleComplexAbility(card, abilityName, gameState, strategy) {
+        // Enhanced ability handling with context awareness
+        switch (abilityName) {
+            case 'alzur_maker':
+                return await this.handleAlzurMakerEnhanced(card, gameState, strategy);
+            case 'anna_henrietta_duchess':
+                return await this.handleAnnaHenriettaDuchessEnhanced(card, gameState, strategy);
+            case 'meve_princess':
+                return await this.handleMevePrincessEnhanced(card, gameState, strategy);
+            case 'carlo_varese':
+                return await this.handleCarloVareseEnhanced(card, gameState, strategy);
+            case 'cyrus_hemmelfart':
+                return await this.handleCyrusHemmelfartEnhanced(card, gameState, strategy);
+            case 'anna_henrietta_ladyship':
+                return await this.handleAnnaHenriettaLadyshipEnhanced(card, gameState, strategy);
+            case 'baal_zebuth':
+                return await this.handleBaalZebuthEnhanced(card, gameState, strategy);
+            case 'lyria_rivia_morale':
+                return await this.handleLyriaRiviaMoraleEnhanced(card, gameState, strategy);
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Enhanced Alzur's Maker with strategic targeting
+     */
+    async handleAlzurMakerEnhanced(card, gameState, strategy) {
+        // Find the best target for destruction based on strategy
+        let targetRow = 'melee';
+        let targetCard = null;
+        
+        if (strategy.focus === 'control') {
+            // Control strategy: target opponent's strongest row
+            const rowStrengths = Object.entries(gameState.boardState.theirRows).map(([row, data]) => ({
+                row,
+                strength: data.totalPower || 0
+            }));
+            rowStrengths.sort((a, b) => b.strength - a.strength);
+            targetRow = rowStrengths[0].row;
+        } else if (strategy.focus === 'tempo') {
+            // Tempo strategy: target row with most units for maximum impact
+            const rowUnitCounts = Object.entries(gameState.boardState.theirRows).map(([row, data]) => ({
+                row,
+                unitCount: data.units?.length || 0
+            }));
+            rowUnitCounts.sort((a, b) => b.unitCount - a.unitCount);
+            targetRow = rowUnitCounts[0].row;
+        }
+        
+        // Find lowest power unit in target row
+        const targetRowData = gameState.boardState.theirRows[targetRow];
+        if (targetRowData && targetRowData.units) {
+            targetCard = targetRowData.units.reduce((lowest, unit) => 
+                unit.power < lowest.power ? unit : lowest
+            );
+        }
+        
+        if (targetCard) {
+            // Execute the ability with strategic targeting
+            await this.executeStrategicAbility(card, 'alzur_maker', {
+                targetRow: targetRow,
+                targetCard: targetCard,
+                strategy: strategy.focus
+            });
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Execute strategic ability with enhanced targeting
+     */
+    async executeStrategicAbility(card, abilityName, context) {
+        try {
+            // Log strategic decision
+            console.log(`🎯 Enhanced AI executing ${abilityName} with strategy: ${context.strategy}`);
+            
+            // Execute the ability
+            if (card.autoplay) {
+                await card.autoplay();
+            } else if (card.play) {
+                await card.play();
+            }
+            
+            // Update learning data
+            this.recordAbilityExecution(abilityName, context, true);
+            
+        } catch (error) {
+            console.error(`❌ Error executing ${abilityName}:`, error);
+            this.recordAbilityExecution(abilityName, context, false);
+        }
+    }
+
+    /**
+     * Record ability execution for learning
+     */
+    recordAbilityExecution(abilityName, context, success) {
+        if (!this.learningData.abilities) {
+            this.learningData.abilities = {};
+        }
+        
+        if (!this.learningData.abilities[abilityName]) {
+            this.learningData.abilities[abilityName] = {
+                executions: 0,
+                successes: 0,
+                contexts: [],
+                successRate: 0
+            };
+        }
+        
+        const abilityData = this.learningData.abilities[abilityName];
+        abilityData.executions++;
+        if (success) abilityData.successes++;
+        abilityData.successRate = abilityData.successes / abilityData.executions;
+        abilityData.contexts.push({
+            ...context,
+            timestamp: Date.now(),
+            success: success
+        });
+        
+        // Keep only recent context data
+        if (abilityData.contexts.length > 20) {
+            abilityData.contexts = abilityData.contexts.slice(-20);
+        }
+    }
 }
