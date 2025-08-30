@@ -753,7 +753,7 @@ var custom_decks = [
 		]
 	},
 	{
-		"title": "Scoia'Tael - Independant Realms",
+		"title": "Scoia'Tael - Independent Realms",
 		"description": "Scoia'Tael deck focusing on the non-humans realms such as Dol Blathanna, Mahakam or Brokilon - Playstyle: Muster, Morale",
 		"leader": "sc_francesca_beautiful",
 		"faction": "scoiatael",
