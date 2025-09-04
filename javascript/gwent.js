@@ -2343,6 +2343,11 @@ class UI {
 			});
 		}
 		document.getElementById("click-background").addEventListener("click", () => ui.cancel(), false);
+		// Add right-click listener to the playing field for card deselection
+		document.getElementById("panel-mid").addEventListener("contextmenu", (e) => {
+			e.preventDefault();
+			ui.cancel();
+		}, false);
 		this.youtube;
 		this.ytActive;
 		this.toggleMusic_elem = document.getElementById("toggle-music");
