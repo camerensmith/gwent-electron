@@ -4152,7 +4152,7 @@ var nilfgaard_wins_draws = false;
 var nova = "";
 var lastSound = "";
 var original = "Pass";
-var original2 = "Give up";
+var original2 = "Surr.";
 var cache_notif = ["op-leader"];
 
 setTimeout(dimensionar(), 300);
