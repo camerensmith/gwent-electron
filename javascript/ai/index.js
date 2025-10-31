@@ -75,6 +75,24 @@ class AIFactory {
     }
 
     /**
+     * Create an enhanced controller (alias used by legacy code)
+     * Prefer V2 when available, otherwise fallback to v1, then basic.
+     */
+    static createEnhancedController(player) {
+        try {
+            if (typeof EnhancedAIControllerV2 !== 'undefined') {
+                return new EnhancedAIControllerV2(player);
+            }
+            if (typeof EnhancedAIController !== 'undefined') {
+                return new EnhancedAIController(player);
+            }
+        } catch (error) {
+            console.warn('Enhanced controller creation failed, using basic:', error);
+        }
+        return new ControllerAI(player);
+    }
+
+    /**
      * Create a basic AI controller (fallback)
      */
     static createBasicAI(player) {
@@ -85,7 +103,7 @@ class AIFactory {
      * Check if enhanced AI is available
      */
     static isEnhancedAIAvailable() {
-        return typeof EnhancedAIController !== 'undefined';
+        return typeof EnhancedAIControllerV2 !== 'undefined' || typeof EnhancedAIController !== 'undefined';
     }
 
     /**
@@ -100,11 +118,26 @@ class AIFactory {
                 enhancedCardEvaluator: typeof EnhancedCardEvaluator !== 'undefined',
                 roundStrategy: typeof RoundStrategy !== 'undefined',
                 predictiveAI: typeof PredictiveAI !== 'undefined',
-                enhancedAIController: typeof EnhancedAIController !== 'undefined'
+                enhancedAIController: (typeof EnhancedAIControllerV2 !== 'undefined') || (typeof EnhancedAIController !== 'undefined')
             },
             version: '3.1.0',
             description: 'Enhanced AI system with modular architecture'
         };
+    }
+
+    /**
+     * Unified factory: create controller based on configuration
+     * config.ai.type can be 'ENHANCED' | 'BASIC' | 'AUTO'
+     */
+    static createController(player, overrideType) {
+        const cfg = (window.AIConfigurationManager && window.AIConfigurationManager.getConfig) ? window.AIConfigurationManager.getConfig('ai') : null;
+        const desired = (overrideType || (cfg && (cfg.type || cfg.mode))) || 'AUTO';
+
+        if (desired === 'BASIC') return new ControllerAI(player);
+        if (desired === 'ENHANCED') return this.createEnhancedController(player);
+
+        // AUTO: prefer enhanced if available
+        return this.isEnhancedAIAvailable() ? this.createEnhancedController(player) : new ControllerAI(player);
     }
 }
 

@@ -22,7 +22,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Platform info
   platform: process.platform,
-  isDev: process.env.NODE_ENV === 'development'
+  isDev: process.env.NODE_ENV === 'development',
+  
+  // Get the correct path for resources in both dev and production
+  getResourcePath: (resourceName) => {
+    const path = require('path');
+    const isDev = process.env.NODE_ENV === 'development';
+    
+    if (isDev) {
+      return resourceName;
+    } else {
+      try {
+        const resourcePath = path.join(process.resourcesPath, resourceName);
+        return resourcePath;
+      } catch (e) {
+        return resourceName;
+      }
+    }
+  }
 });
 
 // Expose some Node.js APIs that might be useful
@@ -49,50 +66,6 @@ contextBridge.exposeInMainWorld('nodeAPI', {
 });
 
 // Add resource path resolution for audio files
-contextBridge.exposeInMainWorld('electronAPI', {
-  // Game control
-  newGame: () => ipcRenderer.send('new-game'),
-  loadDeck: (filePath) => ipcRenderer.send('load-deck', filePath),
-  showRules: () => ipcRenderer.send('show-rules'),
-  showDeckBuilder: () => ipcRenderer.send('show-deck-builder'),
-  setAIDifficulty: (difficulty) => ipcRenderer.send('set-ai-difficulty', difficulty),
-  
-  // Listen for messages from main process
-  onNewGame: (callback) => ipcRenderer.on('new-game', callback),
-  onLoadDeck: (callback) => ipcRenderer.on('load-deck', callback),
-  onShowRules: (callback) => ipcRenderer.on('show-rules', callback),
-  onShowDeckBuilder: (callback) => ipcRenderer.on('show-deck-builder', callback),
-  onSetAIDifficulty: (callback) => ipcRenderer.on('set-ai-difficulty', callback),
-  
-  // Remove listeners
-  removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
-  
-  // Platform info
-  platform: process.platform,
-  isDev: process.env.NODE_ENV === 'development',
-  
-  // Get the correct path for resources in both dev and production
-  getResourcePath: (resourceName) => {
-    const path = require('path');
-    const isDev = process.env.NODE_ENV === 'development';
-    
-    if (isDev) {
-      // In development, use relative path
-      return resourceName;
-    } else {
-      // In production, try to use the app path
-      try {
-        // For packaged apps, resources are in the resources folder
-        const resourcePath = path.join(process.resourcesPath, resourceName);
-        console.log('Resource path resolved to:', resourcePath);
-        return resourcePath;
-      } catch (e) {
-        console.log('Could not resolve resource path, using default:', e);
-        return resourceName;
-      }
-    }
-  }
-});
 
 // Expose a safe console API
 contextBridge.exposeInMainWorld('safeConsole', {

@@ -14,17 +14,9 @@
 	<body>
 		<div class = "abs" id = "very_start_bg1"></div>
 		<div class = "abs" id = "very_start_gradient"></div>
-		<div class = "abs" id = "very_start_bg2">
-			<div id = "very_start" class = "abs" style = "padding-top:95%">
-				UP FOR
-				<br />
-				A FEW ROUNDS
-				<br />
-				OF GWENT?
-				<br /><br />
-				<font id = "load_text">Loading...</font>
-				<button class = "start-game_class" id = "button_start" style = "display:none">Click here to begin</button>
-			</div>
+		<div class = "abs" id = "very_start_bg2"></div>
+		<div id = "very_start" class = "abs">
+			<button class = "start-game_class" id = "button_start" style = "display:none">Play</button>
 		</div>
 		<div id = "dimensions"></div>
 
@@ -206,7 +198,7 @@
 				</table>
 				<p class = "hide">The battle cannot end in a draw. You can play a rematch using the same decks or surrender.</p>
 				<div class = "end-screen-buttons">
-					<button>Customize</button>
+					<button onclick = "goToMainMenu()">Main Menu</button>
 					<button>Replay</button>
 					<button onclick = "showStats(true)">Statistics</button>
 				</div>
@@ -225,13 +217,9 @@
 				<a href = "rules.html" target = "_blank">Rules of Gwent</a>
 			</div>
 			<p id = "faction-description"></p>
-			<a id = "select-deck" class = "deck-options">Select Own Deck</a>
-			<label id = "upload-deck" class = "deck-options">
-				<input type = "file" id = "add-file" value = "Import" style = "display:none;" />
-				Upload Deck
-			</label>
-			<a id = "change-faction" class = "deck-options">Change Faction</a>
-			<a id = "download-deck" class = "deck-options">Download Deck</a>
+			<a id = "change-faction" class = "deck-options">Select Faction</a>
+			<a id = "save-deck" class = "deck-options">Save Deck</a>
+			<a id = "load-deck" class = "deck-options">Load Deck</a>
 			<a id = "download-json" style = "display:none;"></a>
 			<a id = "select-op-deck" class = "deck-options">Select Opponent Deck ></a>
 			<span id = "op-deck-name" class = "deck-options">Random deck</span>
@@ -264,15 +252,88 @@
 			window.addEventListener('load', function() {
 				setTimeout(function() {
 					initLocalMusicSystem();
+					try { playIntroOnce(); } catch (e) {}
 				}, 1000);
 			});
 		</script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/cards.js"></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/decks.js"></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/abilities.js"></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/factions.js"></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/deck-loader.js"></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/gwent.js"></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/statistics-tracker.js"></script>
+		<script type = "text/javascript" language = "JavaScript">
+			// Play intro SFX once on load (tries intro.mp3, falls back to menu_opening.mp3)
+			(function(){
+				var introPlayed = false;
+				window.playIntroOnce = function() {
+					if (introPlayed) return;
+					introPlayed = true;
+					var srcIntro = 'sfx/intro.mp3';
+					var srcFallback = 'sfx/menu_opening.mp3';
+					try {
+						if (window.electronAPI && window.electronAPI.getResourcePath) {
+							srcIntro = window.electronAPI.getResourcePath(srcIntro);
+							srcFallback = window.electronAPI.getResourcePath(srcFallback);
+						}
+					} catch (e) {}
+					var audio = new Audio();
+					audio.volume = 0.5;
+					audio.src = srcIntro;
+					audio.onerror = function(){
+						this.onerror = null;
+						this.src = srcFallback;
+						this.play().catch(function(){});
+					};
+					audio.play().catch(function(){});
+				}
+			})();
+		</script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/cards.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/decks.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/abilities.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/factions.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/deck-loader.js" defer></script>
+
+		<!-- AI modules (load before gwent.js so factory is available) -->
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/game-state-analyzer.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/strategic-manager.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/round-strategy.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/enhanced-card-evaluator.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/predictive-ai.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/enhanced-ai-controller-v2.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/enhanced-ai-controller.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/index.js" defer></script>
+
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/gwent.js" defer></script>
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/statistics-tracker.js" defer></script>
+
+		<script type = "text/javascript" language = "JavaScript">
+			function goToMainMenu() {
+				try {
+					var es = document.getElementById("end-screen");
+					es.style.opacity = 0;
+					es.style.zIndex = 0;
+					es.classList.add("hide");
+				} catch (e) {}
+				var mainEl = document.getElementsByTagName("main")[0];
+				if (mainEl) mainEl.style.display = "none";
+				var deckEl = document.getElementById("deck-customization");
+				if (deckEl) deckEl.style.display = "block";
+				var clickBg = document.getElementById("click-background");
+				if (clickBg) clickBg.classList.remove("noclick");
+			}
+		</script>
+
+		<!-- Bridge AI difficulty from Electron menu into AI config -->
+		<script type = "text/javascript" language = "JavaScript">
+			(function(){
+				if (window.electronAPI && window.electronAPI.onSetAIDifficulty) {
+					window.electronAPI.onSetAIDifficulty((_, difficulty) => {
+						try {
+							if (window.AIConfigurationManager && window.AIConfigurationManager.updateConfig) {
+								const type = (difficulty === 'hard') ? 'ENHANCED' : (difficulty === 'easy' ? 'BASIC' : 'AUTO');
+								window.AIConfigurationManager.updateConfig('ai.type', type);
+							}
+							console.log('AI difficulty set to', difficulty);
+						} catch (e) { /* no-op */ }
+					});
+				}
+			})();
+		</script>
 	</body>
 </html>

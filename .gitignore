@@ -66,3 +66,7 @@ jspm_packages/
 
 # dotenv environment variables file
 .env
+
+# Shortcuts and local app folders
+*.lnk
+gwent-classic-app/

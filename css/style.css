@@ -205,10 +205,7 @@ div.abs {
 }
 
 #very_start_bg2 {
-	top:3%;
-	width:32%;
-	height:94%;
-	border:solid 4px #fff
+    display:none;
 }
 
 #very_start_gradient {
@@ -653,6 +650,42 @@ div.abs {
 	background-image:url("../images/icons/icon_leader_active.png")
 }
 
+/* Leader ability available: slow pulsing outline */
+@keyframes leaderPulse {
+	0% { box-shadow: 0 0 .6vw rgba(255, 210, 77, .55); }
+	50% { box-shadow: 0 0 1.4vw rgba(255, 210, 77, .95); }
+	100% { box-shadow: 0 0 .6vw rgba(255, 210, 77, .55); }
+}
+
+/* Opponent (enemy) leader pulse - reddish */
+@keyframes leaderPulseOpp {
+	0% { box-shadow: 0 0 .6vw rgba(255, 70, 70, .55); }
+	50% { box-shadow: 0 0 1.4vw rgba(255, 70, 70, .95); }
+	100% { box-shadow: 0 0 .6vw rgba(255, 70, 70, .55); }
+}
+
+.leader-box > .leader-container { position: relative; }
+
+.leader-box.leader-ready > .leader-container::after {
+    content: "";
+    position: absolute;
+    top: -0.35vw;
+    left: -0.35vw;
+    right: -0.35vw;
+    bottom: -0.35vw;
+    border-radius: .6vw;
+    pointer-events: none;
+    box-shadow: 0 0 .8vw rgba(255, 210, 77, .45);
+    z-index: 1;
+    animation: leaderPulse 1.8s ease-in-out infinite;
+}
+
+/* Enemy (opponent) leader available: red-tinted subtle pulse */
+#leader-op.leader-ready > .leader-container::after {
+	box-shadow: 0 0 .8vw rgba(255, 70, 70, .45);
+	animation: leaderPulseOpp 1.8s ease-in-out infinite;
+}
+
 #leader-op {
 	top:7.55%
 }
@@ -1046,7 +1079,15 @@ div.abs {
 }
 
 #change-faction {
-	left:46%
+    left:30%
+}
+
+#save-deck {
+    left:39%
+}
+
+#load-deck {
+    left:46%
 }
 
 #download-deck {
@@ -1592,6 +1633,39 @@ div.abs {
 
 .start-game_class {
 	border:.1vw ridge rgb(30, 30, 30)
+}
+#very_start {
+    position:fixed;
+    top:75%;
+    left:51.5%;
+    transform:translate(-50%, -50%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:auto;
+    height:auto;
+    z-index:4000;
+}
+
+@keyframes startPulse {
+    0% { box-shadow: 0 0 .6vw rgba(255, 210, 77, .45); }
+    50% { box-shadow: 0 0 1.4vw rgba(255, 210, 77, .9); }
+    100% { box-shadow: 0 0 .6vw rgba(255, 210, 77, .45); }
+}
+
+#button_start {
+    padding:.8vw 2.2vw;
+    background:rgba(0,0,0,.78);
+    color:#ffd24d;
+    border:.18vw solid #ffd24d;
+    border-radius:.6vw;
+    font-size:1.3vw;
+    letter-spacing:.06vw;
+    animation:startPulse 1.8s ease-in-out infinite;
+}
+
+#button_start:hover {
+    background:rgba(0,0,0,.88);
 }
 
 .start-game_class:hover {

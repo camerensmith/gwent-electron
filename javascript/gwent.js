@@ -98,7 +98,11 @@ class ControllerAI {
 		if (weightTotal === 0) {
 			for (let i = 0; i < player.hand.cards.length; ++i) {
 				let card = player.hand.cards[i];
-				if (card.row === "weather" && this.weightWeather(card) > -1 || card.abilities.includes("avenger")) {
+				if (
+					(card.row === "weather" && this.weightWeather(card) > -1) ||
+					card.abilities.includes("avenger") ||
+					card.key === "spe_horn"
+				) {
 					await weights[i].action();
 					return;
 				}
@@ -520,7 +524,18 @@ class ControllerAI {
 	}
 
 	weightHornRow(card, row) {
-		return row.effects.horn ? 0 : this.weightRowChange(card, row);
+		if (row.effects.horn) return 0;
+		let base = this.weightRowChange(card, row);
+		// Slightly favor placing horn on rows that already have units
+		const unitCount = row.cards.filter(c => c.isUnit()).length;
+		if (unitCount === 0) {
+			// Keep minimal positive weight so horn remains a valid last-resort play
+			base = Math.max(1, Math.floor(base * 0.2));
+		} else {
+			// Small bonus scaled by unit presence, capped to avoid overcommitment
+			base += Math.min(5, unitCount * 2);
+		}
+		return base;
 	}
 
 	weightRowChange(card, row) {
@@ -985,6 +1000,7 @@ class Player {
 		this.elem_leader = elem;
 		this.elem_leader.children[0].classList.add("fade");
 		this.elem_leader.children[1].classList.add("hide");
+		this.elem_leader.classList.remove("leader-ready");
 		this.elem_leader.addEventListener("click", async () => await ui.viewCard(this.leader), false);
 	}
 
@@ -995,6 +1011,7 @@ class Player {
 		this.elem_leader = elem;
 		this.elem_leader.children[0].classList.remove("fade");
 		this.elem_leader.children[1].classList.remove("hide");
+		if (this.leaderAvailable) this.elem_leader.classList.add("leader-ready");
 		if (this.id === 0 && this.leader.activated.length > 0) {
 			this.elem_leader.children[0].addEventListener("click",
 				async () => await ui.viewCard(this.leader, async () => await this.activateLeader()), false
@@ -2999,6 +3016,18 @@ class Carousel {
 		this.elem.classList.remove("hide");
 		ui.enablePlayer(true);
 		tocar("explaining", false);
+		// Enable mouse wheel navigation
+		try {
+			const wheelHandler = (e) => {
+				e.preventDefault();
+				const delta = e.deltaY || e.wheelDelta || 0;
+				if (delta > 0) this.shift(e, 1);
+				else if (delta < 0) this.shift(e, -1);
+			};
+			// Attach to the visible carousel content area
+			this._wheelHandler = wheelHandler;
+			this.elem.addEventListener('wheel', wheelHandler, { passive: false });
+		} catch(_) {}
 		fimC = false;
 		setTimeout(function() {
 			var label = document.getElementById("carousel_label");
@@ -3094,6 +3123,7 @@ class Carousel {
 			x.style.backgroundImage = "";
 			x.classList.remove("selection");
 		}
+		try { if (this._wheelHandler) this.elem.removeEventListener('wheel', this._wheelHandler); } catch(_) {}
 		this.elem.classList.add("hide");
 		Carousel.clearCurrent();
 		ui.quitCarousel();
@@ -3189,11 +3219,14 @@ class DeckMaker {
 		this.me_deck_index = 0;
 		this.op_deck_index = 0;
 		this.change_elem = document.getElementById("change-faction");
-		this.change_elem.addEventListener("click", () => this.selectFaction(), false);
-		document.getElementById("select-deck").addEventListener("click", () => this.selectDeck(), false);
-		document.getElementById("select-op-deck").addEventListener("click", () => this.selectOPDeck(), false);
-		document.getElementById("download-deck").addEventListener("click", () => this.downloadDeck(), false);
-		document.getElementById("add-file").addEventListener("change", () => this.uploadDeck(), false);
+		if (this.change_elem) this.change_elem.addEventListener("click", () => this.selectFaction(), false);
+		var el;
+		el = document.getElementById("select-deck"); if (el) el.addEventListener("click", () => this.selectDeck(), false);
+		el = document.getElementById("select-op-deck"); if (el) el.addEventListener("click", () => this.selectOPDeck(), false);
+		el = document.getElementById("download-deck"); if (el) el.addEventListener("click", () => this.downloadDeck(), false);
+		el = document.getElementById("add-file"); if (el) el.addEventListener("change", () => this.uploadDeck(), false);
+		el = document.getElementById("save-deck"); if (el) el.addEventListener("click", () => this.saveDeck(), false);
+		el = document.getElementById("load-deck"); if (el) el.addEventListener("click", () => this.loadSavedDeck(), false);
 		document.getElementById("start-game").addEventListener("click", async () => await this.startNewGame(false), false);
 		document.getElementById("start-ai-game").addEventListener("click", async () => await this.startNewGame(true), false);
 		window.addEventListener("keydown", function (e) {
@@ -3625,6 +3658,144 @@ class DeckMaker {
 		openFullscreen();
 	}
 
+	// Save current deck to localStorage under "playerdecks"
+	saveDeck() {
+        // Show name input using in-game Popup, support Enter to confirm
+        let def = this.me_deck_title || ((factions[this.faction] ? factions[this.faction].name : "Deck") + " Deck");
+        let html = "<label for='deck-name-input'>Enter deck name:</label><br>" +
+            "<input id='deck-name-input' type='text' value='" + def.replace(/\"/g, '&quot;') + "' style='width:90%; margin-top:.5vw'>";
+        const self = this;
+        function doSave() {
+            try {
+                const input = document.getElementById('deck-name-input');
+                const name = (input ? input.value.trim() : def) || def;
+                let saved = [];
+                try { saved = JSON.parse(localStorage.getItem('playerdecks') || '[]'); } catch(e) { saved = []; }
+                // Replace if same title exists
+                const filtered = saved.filter(d => d.title !== name);
+                const json = JSON.parse(self.deckToJSON());
+                json.title = name;
+                filtered.push(json);
+                localStorage.setItem('playerdecks', JSON.stringify(filtered));
+                self.me_deck_title = name;
+                aviso("Saved", "Deck saved as '" + name + "'.");
+            } catch (e) {
+                console.error(e);
+                aviso("Error", "Could not save deck.");
+            }
+        }
+        new Popup(
+            "Save",
+            doSave,
+            "Cancel",
+            function() {},
+            "Save Deck",
+            html,
+            false,
+            false
+        );
+        setTimeout(function(){
+            try {
+                const input = document.getElementById('deck-name-input');
+                if (input) {
+                    input.focus();
+                    input.select();
+                    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); Popup.curr && Popup.curr.clear(); doSave(); } });
+                }
+            } catch(e) {}
+        }, 0);
+	}
+
+	// Load a deck from localStorage "playerdecks"
+	loadSavedDeck() {
+		let saved = [];
+		try { saved = JSON.parse(localStorage.getItem('playerdecks') || '[]'); } catch(e) { saved = []; }
+		if (!saved.length) return aviso("No Saved Decks", "You don't have any saved decks yet.");
+		// Build simple modal list (yellow items + delete X per row)
+		function buildListHTML(items) {
+			return "<div id='saved-decks-list' style='max-height:52vh; overflow:auto; text-align:left; min-width:54vw;'>" +
+				items.map((d, i) => {
+					let fac = factions[d.faction]?.name || d.faction;
+					let leader = card_dict[d.leader] || {};
+					let leaderName = leader.name || 'Leader';
+					let faction = leader.deck ? leader.deck.split(' ')[0] : d.faction;
+					let leaderImg = smallURL(faction + "_" + (leader.filename || ''));
+					return "<div class=\"deck-load-row\" style=\"display:grid; grid-template-columns: 3.2vw 1fr auto; align-items:center; gap:.6vw; margin:.35vw 0;\">" +
+						"<div class=\"deck-leader-thumb\" style=\"width:3.2vw; height:3.2vw; border-radius:.3vw; background-size:cover; background-position:center; border:.12vw solid rgba(255,210,77,.35);\"></div>" +
+						"<button class=\"deck-load-item\" data-idx=\"" + i + "\" style=\"display:block; padding:.45vw .7vw; background:transparent; border:.15vw solid rgba(255,210,77,.35); color:#ffd24d; text-align:left;\">" +
+							"<div style=\"font-weight:bold;\">" + (d.title || 'Saved Deck') + "</div>" +
+							"<div style=\"font-size:.9em; color:#ffd24d99;\">(" + fac + ") — Leader: " + leaderName + "</div>" +
+						"</button>" +
+						"<button class=\"deck-del-item\" data-idx=\"" + i + "\" title=\"Delete\" style=\"width:2.2vw; min-width:2.2vw; height:2.2vw; background:transparent; color:#ff6b6b; border:.15vw solid rgba(255,107,107,.4); font-weight:bold;\">✕</button>" +
+					"</div>" +
+					"<script>document.currentScript.previousElementSibling.querySelector('.deck-leader-thumb').style.backgroundImage=\"" + leaderImg + "\";<\/script>";
+				}).join("") +
+			"</div>";
+		}
+		let html = buildListHTML(saved);
+		let self = this;
+		new Popup(
+			"",
+			null,
+			"Close",
+			function() {},
+			"Load Deck",
+			html,
+			true,
+			false
+		);
+		setTimeout(function(){
+			// Enlarge popup container to encompass the list
+			try {
+				var pop = document.getElementById('popup').children[0];
+				pop.style.width = '62vw';
+				pop.style.maxWidth = 'none';
+			} catch(e) {}
+			function bindHandlers() {
+				let loadBtns = document.querySelectorAll('.deck-load-item');
+				loadBtns.forEach(btn => {
+					btn.addEventListener('click', function(){
+						let idx = Number(this.getAttribute('data-idx'));
+						let deck = saved[idx];
+						if (!deck) return;
+						self.deckFromJSON(JSON.stringify(deck), true);
+						self.me_deck_title = deck.title;
+						try { Popup.curr && Popup.curr.clear(); } catch(e) {}
+					});
+				});
+				let delBtns = document.querySelectorAll('.deck-del-item');
+				delBtns.forEach(btn => {
+					btn.addEventListener('click', function(e){
+						e.stopPropagation();
+						let idx = Number(this.getAttribute('data-idx'));
+						let deck = saved[idx];
+						if (!deck) return;
+						new Popup(
+							"Yes",
+							function(){
+								saved.splice(idx,1);
+								localStorage.setItem('playerdecks', JSON.stringify(saved));
+								// re-render list in-place
+								let container = document.getElementById('saved-decks-list');
+								if (container) {
+									container.outerHTML = buildListHTML(saved);
+									setTimeout(bindHandlers, 0);
+								}
+							},
+							"No",
+							function(){},
+							"Delete Deck",
+							"Are you sure you want to delete '<b>" + (deck.title || 'Saved Deck') + "</b>'?",
+							false,
+							false
+						);
+					});
+				});
+			}
+			bindHandlers();
+		}, 0);
+	}
+
 	deckFromJSON(json,parse) {
 		let deck;
 		if (parse) {
@@ -4016,11 +4187,12 @@ document.onkeydown = function (e) {
 window.onload = function() {
 	dimensionar();
 	playingOnline = window.location.href == "https://randompianist.github.io/gwent-classic-v3.1/";
-	document.getElementById("load_text").style.display = "none";
+    try { document.getElementById("load_text").style.display = "none"; } catch(e) {}
 	document.getElementById("button_start").style.display = "inline-block";
-	document.getElementById("deck-customization").style.display = "";
-	document.getElementById("toggle-music").style.display = "";
-	document.getElementsByTagName("main")[0].style.display = "";
+    // Keep other UI hidden until start if desired
+    try { document.getElementById("deck-customization").style.display = "none"; } catch(e) {}
+    try { document.getElementById("toggle-music").style.display = "none"; } catch(e) {}
+    try { document.getElementsByTagName("main")[0].style.display = "none"; } catch(e) {}
 	document.getElementById("button_start").addEventListener("click", function() {
 		inicio();
 	});
@@ -4048,6 +4220,9 @@ function inicio() {
 	tocar("menu_opening", false);
 	openFullscreen();
 	iniciarMusica();
+    try { document.getElementById("deck-customization").style.display = ""; } catch(e) {}
+    try { document.getElementById("toggle-music").style.display = ""; } catch(e) {}
+    try { document.getElementsByTagName("main")[0].style.display = ""; } catch(e) {}
 }
 
 function aviso(titulo, texto, apagarFim) {
