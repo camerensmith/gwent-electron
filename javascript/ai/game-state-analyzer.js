@@ -21,6 +21,57 @@ class GameStateAnalyzer {
     }
 
     /**
+     * Analyze game state (alias for Enhanced AI compatibility)
+     * Returns a flattened structure expected by EnhancedAIControllerV2
+     */
+    analyzeGameState() {
+        const analysis = this.analyze();
+        const boardState = analysis.boardState;
+        const cardAdv = analysis.cardAdvantage;
+        const powerAdv = analysis.powerAdvantage;
+        const weatherEffects = boardState.weatherEffects;
+        
+        // Get round number from game object
+        const roundNumber = (typeof game !== 'undefined' && game.roundCount) ? game.roundCount : 1;
+        
+        // Flatten the structure for Enhanced AI
+        return {
+            roundNumber: roundNumber,
+            cardAdvantage: cardAdv.handAdvantage || 0,
+            powerAdvantage: powerAdv.difference || 0,
+            weatherEffects: weatherEffects.active || [],
+            specialCards: (boardState.specialEffects?.horns || 0) + (boardState.specialEffects?.shields || 0),
+            boardState: {
+                myRows: this.convertRowsToMap(boardState.ourRows || []),
+                theirRows: this.convertRowsToMap(boardState.opponentRows || [])
+            },
+            // Include full analysis for compatibility
+            fullAnalysis: analysis
+        };
+    }
+
+    /**
+     * Convert row array to map format expected by Enhanced AI
+     */
+    convertRowsToMap(rows) {
+        const map = {};
+        const rowNames = ['close', 'ranged', 'siege'];
+        rows.forEach((row, index) => {
+            if (index < rowNames.length) {
+                map[rowNames[index]] = {
+                    totalPower: row.totalPower || 0,
+                    unitCount: row.unitCount || 0,
+                    specialCount: row.specialCount || 0,
+                    hasWeather: row.hasWeather || false,
+                    hasHorn: row.hasHorn || false,
+                    isShielded: row.isShielded || false
+                };
+            }
+        });
+        return map;
+    }
+
+    /**
      * Analyze the current board state
      */
     analyzeBoardState() {

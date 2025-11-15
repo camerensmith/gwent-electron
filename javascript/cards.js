@@ -1,14 +1,4 @@
 var default_cards = {
-    "ntr_mysterious_elf": {
-        "name": "Avallach'h",
-        "deck": "neutral",
-        "row": "close",
-        "strength": "0",
-        "ability": "hero spy",
-        "filename": "mysterious_elf",
-        "count": "1",
-        "quote": "You humans have... unusual tastes."
-    },
     "spe_decoy": {
         "name": "Decoy",
         "deck": "special",
@@ -33,11 +23,32 @@ var default_cards = {
         "name": "Cirilla Fiona Elen Riannon",
         "deck": "neutral",
         "row": "close",
-        "strength": "15",
+        "strength": "10",
         "ability": "hero",
         "filename": "ciri",
         "count": "1",
         "quote": "Know when fairy tales cease to be tales? When people start believing in them."
+    },
+    "ntr_sunsetwanderers": {
+        "name": "Sunset Wanderers",
+        "deck": "neutral",
+        "row": "ranged",
+        "strength": "7",
+        "ability": "",
+        "filename": "sunsetwanderers",
+        "count": "1",
+        "quote": "You hear that? That's the sound of crowns over yon."
+    },
+    "ntr_highwaymen": {
+        "name": "Highwaymen",
+        "deck": "neutral",
+        "row": "siege",
+        "strength": "1",
+        "ability": "muster",
+        "filename": "highwaymen",
+        "target": "ntr_highwaymen",
+        "count": "4",
+        "quote": "Pray tell you never encounter this lot."
     },
     "spe_clear": {
         "name": "Clear Weather",
@@ -79,16 +90,6 @@ var default_cards = {
         "count": "1",
         "quote": "Men, the polites ones at least, would call me a monster. A blood-drinking freak."
     },
-    "ntr_geralt": {
-        "name": "Geralt of Rivia",
-        "deck": "neutral",
-        "row": "close",
-        "strength": "15",
-        "ability": "hero",
-        "filename": "geralt",
-        "count": "1",
-        "quote": "If that's what it takes to save the world, it's better to let that world die."
-    },
     "spe_fog": {
         "name": "Impenetrable Fog",
         "deck": "weather",
@@ -123,7 +124,7 @@ var default_cards = {
         "name": "Triss Merigold",
         "deck": "neutral",
         "row": "close",
-        "strength": "7",
+        "strength": "5",
         "ability": "hero",
         "filename": "triss",
         "count": "1",
@@ -143,7 +144,7 @@ var default_cards = {
         "name": "Villentretenmerth",
         "deck": "neutral",
         "row": "close",
-        "strength": "7",
+        "strength": "8",
         "ability": "scorch_c",
         "filename": "villen",
         "count": "1",
@@ -153,7 +154,7 @@ var default_cards = {
         "name": "Yennefer of Vengerberg",
         "deck": "neutral",
         "row": "ranged",
-        "strength": "7",
+        "strength": "6",
         "ability": "hero medic",
         "filename": "yennefer",
         "count": "1",
@@ -168,40 +169,6 @@ var default_cards = {
         "filename": "zoltan",
         "count": "1",
         "quote": "Life without old mates and booze is like a woman without a rump."
-    },
-    "ntr_olgierd": {
-        "name": "Olgierd von Everec",
-        "deck": "neutral",
-        "row": "agile",
-        "strength": "6",
-        "ability": "morale",
-        "filename": "olgierd",
-        "count": "1",
-        "quote": "At least you now know I don't easily lose my head."
-    },
-    "ntr_gaunter_odimm": {
-        "name": "Gaunter O'Dimm",
-        "id": 1,
-        "deck": "neutral",
-        "row": "siege",
-        "strength": "2",
-        "ability": "muster",
-        "filename": "gaunter_odimm",
-        "count": "1",
-        "target": "ntr_gaunter_odimm",
-        "quote": "He always grants exactly what you wish for. That's the problem."
-    },
-    "ntr_gaunter_odimm_darkness": {
-        "name": "Gaunter O'Dimm - Darkness",
-        "id": 2,
-        "deck": "neutral",
-        "row": "ranged",
-        "strength": "4",
-        "ability": "muster",
-        "filename": "gaunter_odimm_darkness",
-        "count": "3",
-        "target": "ntr_gaunter_odimm",
-        "quote": "Fear not the shadows, but the light."
     },
     "ntr_cow": {
         "name": "Cow",
@@ -243,6 +210,16 @@ var default_cards = {
         "filename": "foltest_lord",
         "count": "1",
         "quote": "Sod advisors and their schemes. I place my trust in my soldiers' blades."
+    },
+    "nr_squire": {
+        "name": "Squire",
+        "deck": "realms",
+        "row": "ranged",
+        "strength": "3",
+        "ability": "morale",
+        "filename": "squire",
+        "count": "2",
+        "quote": "For the king!"
     },
     "nr_foltest_siegemaster": {
         "name": "Foltest - The Siegemaster",
@@ -414,7 +391,7 @@ var default_cards = {
         "name": "John Natalis",
         "deck": "realms",
         "row": "close",
-        "strength": "10",
+        "strength": "8",
         "ability": "hero",
         "filename": "natalis",
         "count": "1",
@@ -516,26 +493,6 @@ var default_cards = {
         "count": "1",
         "quote": "He ploughin' wears the golden armor. Golden. 'Course he's an arsehole."
     },
-    "nr_redania": {
-        "name": "Redanian Foot Soldier",
-        "deck": "realms",
-        "row": "close",
-        "strength": "1",
-        "ability": "",
-        "filename": "redania",
-        "count": "1",
-        "quote": "I've bled for Redania! I've killed for Redania... Dammit, I've even raped for Redania!"
-    },
-    "nr_redania_1": {
-        "name": "Redanian Foot Soldier",
-        "deck": "realms",
-        "row": "close",
-        "strength": "1",
-        "ability": "",
-        "filename": "redania_1",
-        "count": "1",
-        "quote": "I've bled for Redania! I've killed for Redania... Dammit, I've even raped for Redania!"
-    },
     "nr_sheldon": {
         "name": "Sheldon Skaggs",
         "deck": "realms",
@@ -551,7 +508,7 @@ var default_cards = {
         "deck": "realms",
         "row": "siege",
         "strength": "6",
-        "ability": "",
+        "ability": "fortify",
         "filename": "siege_tower",
         "count": "1",
         "quote": "I love the clamor of siege towers in the morning. Sounds like victory."
@@ -610,7 +567,7 @@ var default_cards = {
         "name": "Vernon Roche",
         "deck": "realms",
         "row": "close",
-        "strength": "10",
+        "strength": "12",
         "ability": "hero",
         "filename": "vernon",
         "count": "1",
@@ -619,12 +576,22 @@ var default_cards = {
     "nr_ves": {
         "name": "Ves",
         "deck": "realms",
-        "row": "close",
-        "strength": "5",
-        "ability": "",
+        "row": "siege",
+        "strength": "7",
+        "ability": "martyr",
         "filename": "ves",
         "count": "1",
         "quote": "Better to live one day as a king than a whole life as a beggar."
+    },
+    "nr_aryan": {
+        "name": "Aryan",
+        "deck": "realms",
+        "row": "close",
+        "strength": "8",
+        "ability": "martyr",
+        "filename": "aryan",
+        "count": "1",
+        "quote": "A La Valette does not beg. Strike if you must."
     },
     "nr_yarpen": {
         "name": "Yarpen Zigrin",
@@ -858,7 +825,7 @@ var default_cards = {
         "name": "Letho of Gulet",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "10",
+        "strength": "9",
         "ability": "hero",
         "filename": "letho",
         "count": "1",
@@ -1143,6 +1110,26 @@ var default_cards = {
         "filename": "eredin_the_treacherous",
         "count": "1",
         "quote": "I'm enjoying this. You are my toy."
+    },
+    "mo_contaminator": {
+        "name": "Contaminator",
+        "deck": "monsters",
+        "row": "ranged",
+        "strength": "4",
+        "ability": "scorch_r",
+        "filename": "contaminator",
+        "count": "1",
+        "quote": "The contamination is inevitable."
+    },
+    "mo_uma": {
+        "name": "Uma",
+        "deck": "monsters",
+        "row": "siege",
+        "strength": "8",
+        "ability": "curse",
+        "filename": "uma",
+        "count": "1",
+        "quote": "The ugliest man alive."
     },
     "mo_arachas": {
         "name": "Arachas ",
@@ -1496,9 +1483,9 @@ var default_cards = {
         "deck": "monsters",
         "row": "close",
         "strength": "5",
-        "ability": "",
+        "ability": "immortal",
         "filename": "mighty_maiden",
-        "count": "1",
+        "count": "2",
         "quote": "The sick rave about a boil-pocked woman surrounded by herds of rabid rats..."
     },
     "mo_bruxa": {
@@ -1664,7 +1651,7 @@ var default_cards = {
     "sc_dennis": {
         "name": "Dennis Cranmer",
         "deck": "scoiatael",
-        "row": "close",
+        "row": "agile",
         "strength": "6",
         "ability": "",
         "filename": "dennis",
@@ -1674,7 +1661,7 @@ var default_cards = {
     "sc_dol_archer": {
         "name": "Dol Blathanna Archer",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "4",
         "ability": "",
         "filename": "dol_archer",
@@ -1710,6 +1697,27 @@ var default_cards = {
         "filename": "dol_infantry_2",
         "count": "1",
         "quote": "They track like hounds, run like deer and kill like cold-hearted bastards."
+    },
+    "sc_forest_protector": {
+        "name": "Forest Protector",
+        "deck": "scoiatael",
+        "row": "siege",
+        "strength": "4",
+        "ability": "guard",
+        "filename": "forest_protector",
+        "count": "1",
+        "quote": "The forest is my home. I will protect it at all costs."
+    },
+    "sc_figgis": {
+        "name": "Figgis Merluzzo",
+        "id": 1,
+        "deck": "scoiatael",
+        "row": "agile",
+        "strength": "3",
+        "ability": "hero",
+        "filename": "figgis",
+        "count": "1",
+        "quote": "I'm not a hero. I'm a mercenary. I'm here to make money."
     },
     "sc_dwarf": {
         "name": "Dwarven Skirmisher",
@@ -1750,7 +1758,7 @@ var default_cards = {
     "sc_eithne": {
         "name": "Eithné",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "10",
         "ability": "hero",
         "filename": "eithne",
@@ -1761,7 +1769,7 @@ var default_cards = {
         "name": "Elven Skirmisher",
         "id": 1,
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "2",
         "ability": "muster",
         "filename": "elf_skirmisher",
@@ -1773,7 +1781,7 @@ var default_cards = {
         "name": "Elven Skirmisher",
         "id": 2,
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "2",
         "ability": "muster",
         "filename": "elf_skirmisher_1",
@@ -1785,7 +1793,7 @@ var default_cards = {
         "name": "Elven Skirmisher",
         "id": 3,
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "2",
         "ability": "muster",
         "filename": "elf_skirmisher_2",
@@ -1806,7 +1814,7 @@ var default_cards = {
     "sc_havekar_nurse": {
         "name": "Havekar Healer",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "0",
         "ability": "medic",
         "filename": "havekar_nurse",
@@ -1816,7 +1824,7 @@ var default_cards = {
     "sc_havekar_nurse_1": {
         "name": "Havekar Healer",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "0",
         "ability": "medic",
         "filename": "havekar_nurse_1",
@@ -1826,7 +1834,7 @@ var default_cards = {
     "sc_havekar_nurse_2": {
         "name": "Havekar Healer",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "0",
         "ability": "medic",
         "filename": "havekar_nurse_2",
@@ -1837,7 +1845,7 @@ var default_cards = {
         "name": "Havekar Smuggler",
         "id": 1,
         "deck": "scoiatael",
-        "row": "close",
+        "row": "agile",
         "strength": "5",
         "ability": "muster",
         "filename": "havekar_support",
@@ -1849,7 +1857,7 @@ var default_cards = {
         "name": "Havekar Smuggler",
         "id": 2,
         "deck": "scoiatael",
-        "row": "close",
+        "row": "agile",
         "strength": "5",
         "ability": "muster",
         "filename": "havekar_support_1",
@@ -1861,7 +1869,7 @@ var default_cards = {
         "name": "Havekar Smuggler",
         "id": 3,
         "deck": "scoiatael",
-        "row": "close",
+        "row": "agile",
         "strength": "5",
         "ability": "muster",
         "filename": "havekar_support_2",
@@ -1872,7 +1880,7 @@ var default_cards = {
     "sc_ida": {
         "name": "Ida Emean aep Sivney",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "6",
         "ability": "",
         "filename": "ida",
@@ -1882,7 +1890,7 @@ var default_cards = {
     "sc_iorveth": {
         "name": "Iorveth",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "10",
         "ability": "hero",
         "filename": "iorveth",
@@ -1892,7 +1900,7 @@ var default_cards = {
     "sc_isengrim": {
         "name": "Isengrim Faoiltiarna",
         "deck": "scoiatael",
-        "row": "close",
+        "row": "agile",
         "strength": "10",
         "ability": "hero morale",
         "filename": "isengrim",
@@ -1903,8 +1911,9 @@ var default_cards = {
         "name": "Mahakaman Defender",
         "deck": "scoiatael",
         "row": "close",
-        "strength": "5",
-        "ability": "",
+        "strength": "3",
+        "ability": "muster",
+        "target": "sc_mahakam_defender",
         "filename": "mahakam",
         "count": "1",
         "quote": "I'm telling ye, we're born for battle - we slash straight at their kneed!"
@@ -1913,8 +1922,9 @@ var default_cards = {
         "name": "Mahakaman Defender",
         "deck": "scoiatael",
         "row": "close",
-        "strength": "5",
-        "ability": "",
+        "strength": "3",
+        "ability": "muster",
+        "target": "sc_mahakam_defender",
         "filename": "mahakam_1",
         "count": "1",
         "quote": "I'm telling ye, we're born for battle - we slash straight at their kneed!"
@@ -1923,8 +1933,9 @@ var default_cards = {
         "name": "Mahakaman Defender",
         "deck": "scoiatael",
         "row": "close",
-        "strength": "5",
-        "ability": "",
+        "strength": "3",
+        "ability": "muster",
+        "target": "sc_mahakam_defender",
         "filename": "mahakam_2",
         "count": "1",
         "quote": "I'm telling ye, we're born for battle - we slash straight at their kneed!"
@@ -1933,26 +1944,28 @@ var default_cards = {
         "name": "Mahakaman Defender",
         "deck": "scoiatael",
         "row": "close",
-        "strength": "5",
-        "ability": "",
+        "strength": "3",
+        "ability": "muster",
+        "target": "sc_mahakam_defender",
         "filename": "mahakam_3",
         "count": "1",
         "quote": "I'm telling ye, we're born for battle - we slash straight at their kneed!"
     },
-    "sc_mahakam_4": {
-        "name": "Mahakaman Defender",
+    "sc_mahakam_guard_3": {
+        "name": "Mahakam Guard",
+        "id": 3,
         "deck": "scoiatael",
         "row": "close",
-        "strength": "5",
-        "ability": "",
-        "filename": "mahakam_4",
+        "strength": "3",
+        "ability": "guard",
+        "filename": "mahakam_guard_3",
         "count": "1",
         "quote": "I'm telling ye, we're born for battle - we slash straight at their kneed!"
     },
     "sc_milva": {
         "name": "Milva",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "10",
         "ability": "morale",
         "filename": "milva",
@@ -1962,7 +1975,7 @@ var default_cards = {
     "sc_riordain": {
         "name": "Riordain",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "1",
         "ability": "",
         "filename": "riordain",
@@ -1972,7 +1985,7 @@ var default_cards = {
     "sc_saskia": {
         "name": "Saesenthessis",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "10",
         "ability": "hero",
         "filename": "saskia",
@@ -1982,7 +1995,7 @@ var default_cards = {
     "sc_toruviel": {
         "name": "Toruviel",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "2",
         "ability": "",
         "filename": "toruviel",
@@ -1992,7 +2005,7 @@ var default_cards = {
     "sc_vrihedd_cadet": {
         "name": "Vrihedd Brigade Recruit",
         "deck": "scoiatael",
-        "row": "ranged",
+        "row": "agile",
         "strength": "4",
         "ability": "",
         "filename": "vrihedd_cadet",
@@ -2082,14 +2095,34 @@ var default_cards = {
         "count": "2",
         "quote": "So ye can hit a movin' target at two hundred paces. Me, too. In a storm."
     },
+    "sk_cog": {
+        "name": "Cog",
+        "deck": "skellige",
+        "row": "close",
+        "strength": "4",
+        "ability": "",
+        "filename": "cog",
+        "count": "2",
+        "quote": "The mere sight signals impending doom. Gird yer loins and brace yerself."
+    },
+    "sk_dimun_warship": {
+        "name": "Dimun Warship",
+        "deck": "skellige",
+        "row": "ranged",
+        "strength": "3",
+        "ability": "",
+        "filename": "dimun_warship",
+        "count": "2",
+        "quote": "Leave not the faintest whisper in our wake."
+    },
     "sk_dimun_pirate": {
         "name": "Clan Dimun Pirate",
         "deck": "skellige",
-        "row": "ranged",
+        "row": "close",
         "strength": "6",
-        "ability": "scorch",
+        "ability": "scorch_c",
         "filename": "dimun_pirate",
-        "count": "1",
+        "count": "2",
         "quote": "Can see the fear in their eyes. Fear o' me... fer o' Clan Dimun!"
     },
     "sk_shield_maiden_1": {
@@ -2218,7 +2251,7 @@ var default_cards = {
         "name": "Hemdall",
         "deck": "skellige",
         "row": "close",
-        "strength": "11",
+        "strength": "13",
         "ability": "hero",
         "filename": "hemdall",
         "count": "1",
@@ -2298,11 +2331,11 @@ var default_cards = {
         "quote": "Many've tried to defeat Olaf. But wont' hear about it from them - they're dead."
     },
     "spe_storm": {
-        "name": "Skellige Storm",
-        "deck": "weather realms skellige",
+        "name": "Tempest",
+        "deck": "weather skellige",
         "row": "",
         "strength": "",
-        "ability": "rain fog",
+        "ability": "storm",
         "filename": "storm",
         "count": "3",
         "quote": "This ain't no normal storm. This here's the wrath of the gods."
@@ -2348,6 +2381,38 @@ var default_cards = {
         "filename": "udalryk",
         "count": "1",
         "quote": "Haaaargh! After me, if ye've the bollocks!"
+    },
+    "sk_crow_clan_druid": {
+        "name": "Crow Clan Druid",
+        "deck": "skellige",
+        "row": "any",
+        "strength": "4",
+        "ability": "medic",
+        "filename": "crow_clan_druid",
+        "count": "1",
+        "quote": "One does not simply walk into a forest."
+    },
+    "sk_crow_messenger": {
+        "name": "Crow Messenger",
+        "deck": "skellige",
+        "row": "any",
+        "strength": "1",
+        "ability": "avenger muster",
+        "filename": "crow_messenger",
+        "count": "3",
+        "target": "crow_messenger",
+        "quote": "They call 'em a murder when they're in packs... shoot one down and you might be next."
+    },
+    "sk_crowmother": {
+        "name": "Crowmother",
+        "deck": "skellige",
+        "row": "ranged",
+        "strength": "6",
+        "ability": "",
+        "filename": "crowmother",
+        "count": "1",
+        "target": "crowmother",
+        "quote": "A thousand beaks are like poisoned arrowheads!"
     },
     "sk_war_longship_1": {
         "name": "War Longship",
@@ -2497,10 +2562,10 @@ var ext_nr_cards = {
         "name": "Tridam Infantry",
         "deck": "realms",
         "row": "close",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "2",
+        "ability": "guard",
         "filename": "tridam_infantry",
-        "count": "1",
+        "count": "2",
         "quote": "Soldiers loyal to the old baron of Tridam left the city with Falibor..."
     },
     "nr_vandergrift": {
@@ -2512,6 +2577,26 @@ var ext_nr_cards = {
         "filename": "vandergrift",
         "count": "1",
         "quote": "What has that witch done?!"
+    },
+    "nr_siege_ladder": {
+        "name": "Siege Ladder",
+        "deck": "realms",
+        "row": "siege",
+        "strength": "2",
+        "ability": "morale",
+        "filename": "siege_ladder",
+        "count": "3",
+        "quote": "Forward, you sorry sods! Or you'll see the Nilfgaardians are the least of your worries!"
+    },
+    "nr_reinforcements": {
+        "name": "Reinforcements",
+        "deck": "realms",
+        "row": "ranged",
+        "strength": "7",
+        "ability": "fortify",
+        "filename": "reinforcements",
+        "count": "2",
+        "quote": "Keep 'em comin' boys, steel don't swing itself!"
     },
     "nr_kaedweni_siege_support_1": {
         "name": "Kaedweni Siege Support",
@@ -2624,9 +2709,9 @@ var ext_nr_cards = {
     "nr_kaedweni_knight": {
         "name": "Kaedweni Knight",
         "deck": "realms",
-        "row": "close",
+        "row": "siege",
         "strength": "7",
-        "ability": "",
+        "ability": "guard",
         "filename": "kaedweni_knight",
         "count": "1",
         "quote": "Not every man in the Kaedweni army supports his king's politics..."
@@ -2635,7 +2720,7 @@ var ext_nr_cards = {
         "name": "Dun Banner Heavy Cavalry",
         "deck": "realms",
         "row": "ranged",
-        "strength": "7",
+        "strength": "6",
         "ability": "",
         "filename": "dun_banner_heavy_cavalry_1",
         "count": "1",
@@ -2645,7 +2730,7 @@ var ext_nr_cards = {
         "name": "Dun Banner Heavy Cavalry",
         "deck": "realms",
         "row": "ranged",
-        "strength": "7",
+        "strength": "6",
         "ability": "",
         "filename": "dun_banner_heavy_cavalry_2",
         "count": "1",
@@ -2655,7 +2740,7 @@ var ext_nr_cards = {
         "name": "Odrin",
         "deck": "realms",
         "row": "agile",
-        "strength": "3",
+        "strength": "2",
         "ability": "morale",
         "filename": "odrin",
         "count": "1",
@@ -2787,10 +2872,10 @@ var ext_nr_cards = {
         "count": "1",
         "quote": "The battle of Cintra, which Nordlings call the Slaughter of Cintra because of the very cruel actions of the Nilfgaardian army."
     },
-    "nr_eist_tuirseach": {
+    "sk_eist_tuirseach": {
         "name": "Eist Tuirseach",
         "id": 4,
-        "deck": "realms",
+        "deck": "skellige",
         "row": "close",
         "strength": "10",
         "ability": "hero muster",
@@ -2799,10 +2884,10 @@ var ext_nr_cards = {
         "target": "skellige_fleet",
         "quote": "Skellige and Cintra shall stand ever together."
     },
-    "nr_skellige_fleet_1": {
+    "sk_skellige_fleet_1": {
         "name": "Skellige Raiders Fleet",
         "id": 1,
-        "deck": "realms",
+        "deck": "skellige",
         "row": "ranged",
         "strength": "3",
         "ability": "morale",
@@ -2811,10 +2896,10 @@ var ext_nr_cards = {
         "target": "skellige_fleet",
         "quote": "The islanders know that there is fertile soil on the other side of the sea..."
     },
-    "nr_skellige_fleet_2": {
+    "sk_skellige_fleet_2": {
         "name": "Skellige Raiders Fleet",
         "id": 2,
-        "deck": "realms",
+        "deck": "skellige",
         "row": "ranged",
         "strength": "3",
         "ability": "morale",
@@ -2823,10 +2908,10 @@ var ext_nr_cards = {
         "target": "skellige_fleet",
         "quote": "The islanders know that there is fertile soil on the other side of the sea..."
     },
-    "nr_skellige_fleet_3": {
+    "sk_skellige_fleet_3": {
         "name": "Skellige Raiders Fleet",
         "id": 3,
-        "deck": "realms",
+        "deck": "skellige",
         "row": "ranged",
         "strength": "3",
         "ability": "morale",
@@ -2870,7 +2955,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "ranged",
         "strength": "6",
-        "ability": "",
+        "ability": "guard",
         "filename": "kistrin_verden",
         "count": "1",
         "quote": "Oh dammit. Kistrin? Prince Kistrin? The son of King Ervyll of Verden?"
@@ -2946,16 +3031,6 @@ var ext_nr_cards = {
         "filename": "windhalm",
         "count": "1",
         "quote": "Off with his head! But slowly, drag it out, put on a show for all to see."
-    },
-    "nr_queen_meve": {
-        "name": "Queen Meve",
-        "deck": "realms",
-        "row": "close",
-        "strength": "10",
-        "ability": "hero morale",
-        "filename": "queen_meve",
-        "count": "1",
-        "quote": "It's war you want? Then war you shall have! For Lyria and Rivia! For the North!"
     },
     "nr_prince_anseis": {
         "name": "Prince Anseis",
@@ -3066,26 +3141,6 @@ var ext_nr_cards = {
         "filename": "black_rayla",
         "count": "1",
         "quote": "Enough chit-chat, draw your weapon. You'll never take me alive."
-    },
-    "nr_lyrian_landsknecht": {
-        "name": "Lyrian Landsknecht",
-        "deck": "realms",
-        "row": "close",
-        "strength": "4",
-        "ability": "",
-        "filename": "lyrian_landsknecht",
-        "count": "1",
-        "quote": "Back to the dust whence you came!"
-    },
-    "nr_lyrian_heavy_cavalry": {
-        "name": "Lyrian Heavy Cavalry",
-        "deck": "realms",
-        "row": "close",
-        "strength": "6",
-        "ability": "",
-        "filename": "lyrian_heavy_cavalry",
-        "count": "1",
-        "quote": "Gods save the queen!"
     },
     "nr_poor_infantry_4": {
         "name": "Poor Fucking Infantry",
@@ -3204,10 +3259,10 @@ var ext_nr_cards = {
         "quote": "Arbalist at your command. Armour won't save them! One bolt's all I need..."
     },
     "nr_northern_wind": {
-        "name": "Northern Wind",
+        "name": "Bomb",
         "deck": "realms",
         "row": "ranged",
-        "strength": "3",
+        "strength": "1",
         "ability": "scorch",
         "filename": "northern_wind",
         "count": "1",
@@ -3309,16 +3364,6 @@ var ext_nr_cards = {
         "count": "1",
         "quote": "This is how I look, which you well knew, Calanthe."
     },
-    "nr_rivian_onager": {
-        "name": "Rivian Onager",
-        "deck": "realms",
-        "row": "siege",
-        "strength": "6",
-        "ability": "",
-        "filename": "rivian_onager",
-        "count": "1",
-        "quote": "For Riviaaa!"
-    },
     "nr_reinforced_tower": {
         "name": "Reinforced Tower",
         "deck": "realms",
@@ -3369,16 +3414,6 @@ var ext_nr_cards = {
         "count": "1",
         "quote": "A king should be merciless towards his enemies and generous to his friends."
     },
-    "nr_redanian_elite": {
-        "name": "Redanian Elite",
-        "deck": "realms",
-        "row": "close",
-        "strength": "6",
-        "ability": "",
-        "filename": "redanian_elite",
-        "count": "1",
-        "quote": "I'll die for Redania, I'll kill for Redania… I'll even eat worms for Redania!"
-    },
     "nr_donimir_troy": {
         "name": "Donimir of Troy",
         "deck": "realms",
@@ -3408,56 +3443,6 @@ var ext_nr_cards = {
         "filename": "hedwig_malleore",
         "count": "1",
         "quote": "Queen of Redania, mother of Radovid, figure-head to the Regency Council."
-    },
-    "nr_ewald_borsodi": {
-        "name": "Ewald Borsodi",
-        "deck": "realms",
-        "row": "ranged",
-        "strength": "7",
-        "ability": "",
-        "filename": "ewald_borsodi",
-        "count": "1",
-        "quote": "I've crafted this plan for over a year, but now the time's come for action. Can I count on your help?"
-    },
-    "nr_horst_borsodi": {
-        "name": "Horst Borsodi",
-        "deck": "realms",
-        "row": "close",
-        "strength": "4",
-        "ability": "",
-        "filename": "horst_borsodi",
-        "count": "1",
-        "quote": "My auction house is, above all, a gathering place for the elite of the elite."
-    },
-    "nr_flying_redanian": {
-        "name": "Flying Redanian",
-        "deck": "realms",
-        "row": "siege",
-        "strength": "10",
-        "ability": "",
-        "filename": "flying_redanian",
-        "count": "1",
-        "quote": "Legend tells of a Redanian crew from generations past..."
-    },
-    "nr_redanian_knight": {
-        "name": "Redanian Knight",
-        "deck": "realms",
-        "row": "close",
-        "strength": "9",
-        "ability": "",
-        "filename": "redanian_knight",
-        "count": "1",
-        "quote": "For glory! For Radovid!"
-    },
-    "nr_shani": {
-        "name": "Shani",
-        "deck": "realms",
-        "row": "agile",
-        "strength": "2",
-        "ability": "medic",
-        "filename": "shani",
-        "count": "1",
-        "quote": "I'm a medic. I tend to know what I'm doing when I prescribe something."
     },
     "nr_milo_vanderbeck": {
         "name": "Milo Vanderbeck",
@@ -3499,26 +3484,6 @@ var ext_nr_cards = {
         "count": "1",
         "quote": "The Good Book says the world is a garden which the gods once conferred upon man."
     },
-    "nr_radovid_royal_guards": {
-        "name": "Radovid Royal Guards",
-        "deck": "realms",
-        "row": "close",
-        "strength": "8",
-        "ability": "",
-        "filename": "radovid_royal_guards",
-        "count": "1",
-        "quote": "They'll do anything for their king. They know what he'll do to them if they refuse."
-    },
-    "nr_redanian_archer": {
-        "name": "Redanian Archer",
-        "deck": "realms",
-        "row": "ranged",
-        "strength": "5",
-        "ability": "",
-        "filename": "redanian_archer",
-        "count": "1",
-        "quote": "The last thing you'll hear is the twang of the bowstring being let go."
-    },
     "nr_trollololo": {
         "name": "Trollololo",
         "deck": "realms",
@@ -3528,16 +3493,6 @@ var ext_nr_cards = {
         "filename": "trollololo",
         "count": "1",
         "quote": "Join me King Ravodid army. Order got – guard boatses."
-    },
-    "nr_royal_decree": {
-        "name": "Royal Decree",
-        "deck": "realms",
-        "row": "siege",
-        "strength": "1",
-        "ability": "horn",
-        "filename": "royal_decree",
-        "count": "1",
-        "quote": "...do hereby decree the following..."
     },
     "nr_voymir": {
         "name": "Voymir",
@@ -3568,6 +3523,266 @@ var ext_nr_cards = {
         "filename": "queen_adalia",
         "count": "1",
         "quote": "Queen Adalia of Cintra possessed the power to raise a drawbridge with a twitch of her brow."
+    },
+    // Redania cards merged into Northern Realms
+    // Special Cards
+    "spe_redania_horn": {
+        "name": "Redanian Horn",
+        "deck": "special realms",
+        "row": "",
+        "strength": "",
+        "ability": "redania_horn",
+        "filename": "realms_horn",
+        "count": "2",
+        "quote": "When the horn sounds, mercy ends and duty begins."
+    },
+    "spe_redania_purge": {
+        "name": "Murder",
+        "deck": "special syndicate",
+        "row": "",
+        "strength": "",
+        "ability": "redania_purge",
+        "filename": "realms_purge",
+        "count": "3",
+        "quote": "I can't bloody breathe! Won't they burn the wretches someplace else?"
+    },
+    "spe_redania_decree": {
+        "name": "Royal Decree",
+        "deck": "special realms",
+        "row": "",
+        "strength": "",
+        "ability": "decree",
+        "filename": "realms_decree",
+        "count": "3",
+        "quote": "We, Radovid, by divine right - 'King of Redania', 'Prince of Sodden', 'Senior Protector of Brugge', et cetera, et cetera — do hereby decree the following…"
+    },
+    "nr_peace_treaty": {
+        "name": "Peace Treaty",
+        "deck": "special realms",
+        "row": "",
+        "strength": "",
+        "ability": "peace_treaty",
+        "filename": "realms_peace_treaty",
+        "count": "1",
+        "quote": "In times of war, a moment of peace can be the greatest weapon."
+    },
+    // Leader Cards
+    "nr_radovid_kingofredania": {
+        "name": "Radovid, the King of Redania",
+        "deck": "realms",
+        "row": "leader",
+        "strength": "",
+        "ability": "redania_radovid_kingofredania",
+        "filename": "radovidkingofredania",
+        "count": "1",
+        "quote": ""
+    },
+    "nr_radovid_thestrategist": {
+        "name": "Radovid, the Strategist",
+        "deck": "realms",
+        "row": "leader",
+        "strength": "",
+        "ability": "redania_radovid_thestrategist",
+        "filename": "radovidthestrategist",
+        "count": "1",
+        "quote": ""
+    },
+    "nr_radovid_themystic": {
+        "name": "Radovid, the Mystic",
+        "deck": "realms",
+        "row": "leader",
+        "strength": "",
+        "ability": "redania_radovid_themystic",
+        "filename": "radovidthemystic",
+        "count": "1",
+        "quote": ""
+    },
+    "nr_radovid_themadking": {
+        "name": "Radovid, the Mad King",
+        "deck": "realms",
+        "row": "leader",
+        "strength": "",
+        "ability": "redania_radovid_themadking",
+        "filename": "radovidthemadking",
+        "count": "1",
+        "quote": ""
+    },
+    "nr_ewald": {
+        "name": "Ewald Borsodi",
+        "deck": "realms",
+        "row": "any",
+        "strength": "7",
+        "ability": "hero",
+        "filename": "ewald",
+        "count": "1",
+        "quote": "Family, fortune, and fire — not necessarily in that order."
+    },
+    "nr_shani": {
+        "name": "Shani",
+        "deck": "realms",
+        "row": "ranged",
+        "strength": "5",
+        "ability": "hero medic",
+        "filename": "shani",
+        "count": "1",
+        "quote": "Not all battles are fought with swords. Some are won with compassion."
+    },
+    "nr_gaunter": {
+        "name": "Gaunter O'Dimm",
+        "deck": "realms",
+        "row": "any",
+        "strength": "5",
+        "ability": "hero",
+        "filename": "gaunter",
+        "count": "1",
+        "quote": "Careful what you bargain for."
+    },
+    "nr_olgierd": {
+        "name": "Olgierd von Everec",
+        "deck": "realms",
+        "row": "close",
+        "strength": "4",
+        "ability": "hero immortal",
+        "filename": "olgierd",
+        "count": "1",
+        "quote": "At least you now know how I don't easily lose my head."
+    },
+    "nr_gaunter_odimm_darkness": {
+        "name": "Gaunter O'Dimm - Darkness",
+        "id": 2,
+        "deck": "realms",
+        "row": "ranged",
+        "strength": "4",
+        "ability": "muster",
+        "filename": "gaunter_odimm_darkness",
+        "count": "3",
+        "target": "nr_gaunter",
+        "quote": "Fear not the shadows, but the light."
+    },
+
+    // Redanian Military
+    "nr_redanian_knight": {
+        "name": "Redanian Knight",
+        "deck": "realms",
+        "row": "close",
+        "strength": "6",
+        "ability": "bond",
+        "filename": "knight",
+        "count": "2",
+        "target": "nr_redanian_knight",
+        "quote": "Steel and faith... that's all Redania needs."
+    },
+    "nr_redanian_elite": {
+        "name": "Redanian Elite",
+        "deck": "realms",
+        "row": "close",
+        "strength": "8",
+        "ability": "",
+        "filename": "elite",
+        "count": "1",
+        "quote": "They stand unflinching before fire or foe."
+    },
+    "nr_redanian_archer": {
+        "name": "Redanian Archer",
+        "deck": "realms",
+        "row": "ranged",
+        "strength": "3",
+        "ability": "muster",
+        "filename": "archer",
+        "count": "3",
+        "target": "nr_redanian_archer",
+        "quote": "The king's arrows strike swift and true."
+    },
+    "nr_radovidsroyalguards": {
+        "name": "Radovid's Royal Guards",
+        "deck": "realms",
+        "row": "siege",
+        "strength": "9",
+        "ability": "",
+        "filename": "radovidsroyalguards",
+        "count": "2",
+        "quote": "The king's will is our command, his enemies our prey."
+    },
+    "nr_flying_redanian": {
+        "name": "Flying Redanian",
+        "deck": "realms",
+        "row": "siege",
+        "strength": "5",
+        "ability": "",
+        "filename": "flying_redanian",
+        "count": "1",
+        "quote": "Legend tells of a Redanian crew from generations past..."
+    },
+    // Other Units
+    "nr_horst": {
+        "name": "Horst Borsodi",
+        "deck": "realms",
+        "row": "any",
+        "strength": "5",
+        "ability": "",
+        "filename": "horst",
+        "count": "1",
+        "quote": "Every vault hides a secret, and a knife behind it."
+    },
+    "nr_temerian_knight": {
+        "name": "Temerian Knight",
+        "deck": "realms",
+        "row": "agile",
+        "strength": "7",
+        "ability": "fortify",
+        "filename": "temerian_knight",
+        "count": "1",
+        "quote": "No matter the odds, we fight."
+    },
+    "nr_priscilla": {
+        "name": "Priscilla",
+        "deck": "realms",
+        "row": "ranged",
+        "strength": "2",
+        "ability": "morale",
+        "filename": "priscilla",
+        "count": "1",
+        "quote": "Picture Dandelion in a dress, and you have the general idea."
+    },
+    "nr_iris": {
+        "name": "Iris von Everec",
+        "deck": "realms",
+        "row": "any",
+        "strength": "0",
+        "ability": "omen",
+        "filename": "iris",
+        "count": "1",
+        "quote": "Love endures beyond the veil."
+    },
+    "ne_catanddog": {
+        "name": "Cat and Dog",
+        "deck": "neutral",
+        "row": "any",
+        "strength": "0",
+        "ability": "",
+        "filename": "catanddog",
+        "count": "1",
+        "quote": "..."
+    },
+    "nr_redanian_foot_soldier": {
+        "name": "Redanian Foot Soldier",
+        "deck": "realms",
+        "row": "close",
+        "strength": "1",
+        "ability": "",
+        "filename": "soldier1",
+        "count": "1",
+        "quote": "I've bled for Redania! I've killed for Redania... Dammit, I've even raped for Redania!"
+    },
+    "nr_redanian_foot_soldier_1": {
+        "name": "Redanian Foot Soldier",
+        "deck": "realms",
+        "row": "close",
+        "strength": "1",
+        "ability": "",
+        "filename": "soldier2",
+        "count": "1",
+        "quote": "I've bled for Redania! I've killed for Redania... Dammit, I've even raped for Redania!"
     }
 };
 
@@ -4103,10 +4318,50 @@ var ext_ne_cards = {
         "filename": "imperial_practitioner",
         "count": "1",
         "quote": "The body is a slab of wet clay. One need only use the correct tools to shape it into something... more."
+    },
+    "ne_slave_driver": {
+        "name": "Slave Driver",
+        "deck": "nilfgaard",
+        "row": "close",
+        "strength": "4",
+        "ability": "",
+        "filename": "slave_driver",
+        "count": "1",
+        "quote": ""
+    },
+    "ne_vicovaro_novice": {
+        "name": "Vicovaro Novice",
+        "deck": "nilfgaard",
+        "row": "ranged",
+        "strength": "2",
+        "ability": "",
+        "filename": "vicovaro_novice",
+        "count": "1",
+        "quote": ""
+    },
+    "ne_vicovaro_bounty_hunter": {
+        "name": "Vicovaro Bounty Hunter",
+        "deck": "nilfgaard",
+        "row": "ranged",
+        "strength": "6",
+        "ability": "",
+        "filename": "vicovaro_bounty_hunter",
+        "count": "1",
+        "quote": ""
     }
 };
 
 var ext_mo_cards = {
+    "mo_bloody_baron": {
+        "name": "Phillip Strenger, the Bloody Baron",
+        "deck": "monsters",
+        "row": "leader",
+        "strength": "",
+        "ability": "mo_bloody_baron",
+        "filename": "bloody_baron",
+        "count": "1",
+        "quote": "Time eats away memories, distorts them. Sometimes we only remember the good... sometimes only the bad."
+    },
     "mo_golem": {
         "name": "Golem",
         "deck": "monsters",
@@ -4345,6 +4600,46 @@ var ext_mo_cards = {
         "target": "mo_ghoul",
         "quote": "A particularly large ghoul that is fattened and craves warm meat is called an alghoul."
     },
+    "mo_death_rider": {
+        "name": "Death Rider",
+        "deck": "monsters",
+        "row": "close",
+        "strength": "9",
+        "ability": "curse",
+        "filename": "death_rider",
+        "count": "1",
+        "quote": "They say death rides a horse, but anyone who has seen death has died."
+    },
+    "mo_johnny": {
+        "name": "Johnny",
+        "deck": "monsters",
+        "row": "siege",
+        "strength": "8",
+        "ability": "curse",
+        "filename": "johnny",
+        "count": "1",
+        "quote": ""
+    },
+    "mo_allgood": {
+        "name": "Allgood",
+        "deck": "monsters",
+        "row": "agile",
+        "strength": "4",
+        "ability": "medic",
+        "filename": "allgood",
+        "count": "1",
+        "quote": "Your faith fattens me better than any feast."
+    },
+    "mo_ethereal": {
+        "name": "Ethereal",
+        "deck": "monsters",
+        "row": "ranged",
+        "strength": "3",
+        "ability": "immortal",
+        "filename": "ethereal",
+        "count": "1",
+        "quote": ""
+    },
     "mo_archgriffin": {
         "name": "Archgriffin",
         "deck": "monsters",
@@ -4374,6 +4669,16 @@ var ext_mo_cards = {
         "filename": "armoured_arachas",
         "count": "1",
         "quote": "Like a cross between a crab, a spider... and a ploughin' mountain."
+    },
+    "mo_unholy": {
+        "name": "Unholy",
+        "deck": "monsters",
+        "row": "ranged",
+        "strength": "10",
+        "ability": "curse",
+        "filename": "unholy",
+        "count": "1",
+        "quote": "The end is nigh."
     },
     "mo_arachas_queen": {
         "name": "Arachas Queen",
@@ -4473,7 +4778,7 @@ var ext_mo_cards = {
         "deck": "monsters",
         "row": "close",
         "strength": "5",
-        "ability": "scorch",
+        "ability": "scorch omen",
         "filename": "caretaker",
         "count": "1",
         "quote": "There are more things in heaven and earth than all the world's philosophers have dreamt."
@@ -4503,7 +4808,7 @@ var ext_mo_cards = {
         "deck": "monsters",
         "row": "agile",
         "strength": "10",
-        "ability": "hero",
+        "ability": "hero omen",
         "filename": "queen_night",
         "count": "1",
         "quote": "Those seduced by her charms find themselves willing to pay any price."
@@ -4528,6 +4833,16 @@ var ext_mo_cards = {
         "count": "1",
         "quote": "That is not dead which can eternal lie, and with strange aeons even death may die."
     },
+    "mo_cultist": {
+        "name": "Cultist",
+        "deck": "monsters",
+        "row": "close",
+        "strength": "7",
+        "ability": "sacrifice",
+        "filename": "cultist",
+        "count": "2",
+        "quote": "We will bring back the old gods. We will bring back the new gods. We will bring back the gods of the future."
+    },
     "mo_aguara": {
         "name": "Aguara",
         "deck": "monsters",
@@ -4547,6 +4862,46 @@ var ext_mo_cards = {
         "filename": "succubus",
         "count": "1",
         "quote": "Why fight? There are much better ways to work off excess energy..."
+    },
+    "mo_miruna": {
+        "name": "Miruna",
+        "deck": "monsters",
+        "row": "ranged_siege",
+        "strength": "4",
+        "ability": "hero sacrifice",
+        "filename": "miruna",
+        "count": "1",
+        "quote": "Once a maiden. Now the forest hums her dirge."
+    },
+    "mo_necromancer": {
+        "name": "Necromancer",
+        "deck": "monsters",
+        "row": "ranged",
+        "strength": "2",
+        "ability": "necromancy",
+        "filename": "necromancer",
+        "count": "3",
+        "quote": "To them, the veil between life and death is not sacred, just a minor inconvenience."
+    },
+    "mo_selfeater": {
+        "name": "Selfeater",
+        "deck": "monsters",
+        "row": "close",
+        "strength": "2",
+        "ability": "",
+        "filename": "selfeater",
+        "count": "4",
+        "quote": "Even starvation fears it."
+    },
+    "mo_incubus": {
+        "name": "Incubus",
+        "deck": "monsters",
+        "row": "close",
+        "strength": "3",
+        "ability": "",
+        "filename": "incubus",
+        "count": "1",
+        "quote": "He visits by night, feeds by sigh, and leaves no mark but guilt."
     }
 };
 
@@ -4580,7 +4935,7 @@ var ext_st_cards = {
         "deck": "scoiatael",
         "row": "ranged",
         "strength": "4",
-        "ability": "scorch",
+        "ability": "scorch_s",
         "filename": "vrihedd_sapper",
         "count": "1",
         "quote": "No matter what you may have heard, elves don't take human scalps. Too much lice."
@@ -4821,11 +5176,10 @@ var ext_st_cards = {
         "id": 1,
         "deck": "scoiatael",
         "row": "close",
-        "strength": "6",
-        "ability": "muster",
+        "strength": "3",
+        "ability": "guard",
         "filename": "mahakam_guard_1",
         "count": "1",
-        "target": "sc_mahakam_guard",
         "quote": "Only one punishment for disturbin' the peace in Mahakam: a hammer to the heid."
     },
     "sc_mahakam_guard_2": {
@@ -4834,10 +5188,9 @@ var ext_st_cards = {
         "deck": "scoiatael",
         "row": "close",
         "strength": "6",
-        "ability": "muster",
+        "ability": "guard",
         "filename": "mahakam_guard_2",
         "count": "1",
-        "target": "sc_mahakam_guard",
         "quote": "Only one punishment for disturbin' the peace in Mahakam: a hammer to the heid."
     },
     "sc_mahakam_ale": {
@@ -4957,7 +5310,7 @@ var ext_st_cards = {
     "sc_mahakam_marauder": {
         "name": "Mahakam Marauder",
         "deck": "scoiatael",
-        "row": "agile",
+        "row": "ranged_siege",
         "strength": "6",
         "ability": "",
         "filename": "mahakam_marauder",
@@ -5117,6 +5470,26 @@ var ext_sk_cards = {
         "count": "1",
         "quote": "Think o' the greater good?! War's the greatest good, the greatest bad, the greatest damn anythin' man's ever come up with!"
     },
+    "neutral_mysterious_elf": {
+        "name": "Avallach'h",
+        "deck": "scoiatael",
+        "row": "close",
+        "strength": "0",
+        "ability": "hero spy",
+        "filename": "mysterious_elf",
+        "count": "1",
+        "quote": "You humans have... unusual tastes."
+    },
+    "sc_bandit_camp": {
+        "name": "Ambush Unit",
+        "deck": "scoiatael",
+        "row": "any",
+        "strength": "7",
+        "ability": "waylay",
+        "filename": "bandit_camp",
+        "count": "2",
+        "quote": "We're not ghosts - we're just quicker than yer eyes."
+    },
     "sk_an_craite_greatsword": {
         "name": "Clan an Craite Greatsword",
         "deck": "skellige",
@@ -5184,8 +5557,9 @@ var ext_sk_cards = {
         "deck": "skellige",
         "row": "agile",
         "strength": "14",
-        "ability": "scorch_c",
+        "ability": "avenger",
         "filename": "champion_svalblod",
+        "target": "sk_svalblod",
         "count": "1",
         "quote": "This bear taste funny to you? "
     },
@@ -5204,9 +5578,9 @@ var ext_sk_cards = {
     "sk_dimun_pirate_captain": {
         "name": "Clan Dimun Pirate Captain",
         "deck": "skellige",
-        "row": "agile",
+        "row": "ranged",
         "strength": "6",
-        "ability": "",
+        "ability": "skellige_tactics hero",
         "filename": "dimun_pirate_captain",
         "count": "1",
         "quote": "Haul together, hoist the colors high!"
@@ -5250,7 +5624,7 @@ var ext_sk_cards = {
         "deck": "skellige",
         "row": "siege",
         "strength": "3",
-        "ability": "medic",
+        "ability": "",
         "filename": "heymaey_flaminica",
         "count": "1",
         "quote": "A flaminica, the highest position among the druidesses, commands a great deal of respect and wields a great deal of power."
@@ -5266,7 +5640,7 @@ var ext_sk_cards = {
         "quote": "Only death can cleanse me o' shame."
     },
     "sk_otkell": {
-        "name": "otkell",
+        "name": "Otkell",
         "deck": "skellige",
         "row": "ranged",
         "strength": "8",
@@ -5304,16 +5678,6 @@ var ext_sk_cards = {
         "filename": "jutta",
         "count": "1",
         "quote": "Some call her the Iron Maiden."
-    },
-    "sk_eist_tuirseach": {
-        "name": "Eist Tuirseach",
-        "deck": "skellige",
-        "row": "close",
-        "strength": "10",
-        "ability": "hero",
-        "filename": "eist_tuirseach",
-        "count": "1",
-        "quote": "Skellige and Cintra shall stand ever together!"
     },
     "sk_troll_errant": {
         "name": "Troll Errant",
@@ -5368,7 +5732,7 @@ var ext_sk_cards = {
     "sk_tuirseach_veteran": {
         "name": "Clan Tuirseach Veteran",
         "deck": "skellige",
-        "row": "agile",
+        "row": "melee_siege",
         "strength": "4",
         "ability": "",
         "filename": "tuirseach_veteran",
@@ -5439,8 +5803,8 @@ var ext_sk_cards = {
         "name": "Wild Boar of the Sea",
         "deck": "skellige",
         "row": "siege",
-        "strength": "6",
-        "ability": "",
+        "strength": "12",
+        "ability": "skellige_tactics horn",
         "filename": "wild_boar",
         "count": "1",
         "quote": "Merely mention this name to a Nilfgaardian, and they'll feel a spreading warmth in their knickers..."
@@ -5872,7 +6236,7 @@ var ext_wu_cards = {
         "name": "Geralt of Rivia",
         "deck": "witcher_universe",
         "row": "close",
-        "strength": "9",
+        "strength": "13",
         "ability": "scorch_c witcher_wolf_school",
         "filename": "geralt_1",
         "count": "1",
@@ -6352,7 +6716,7 @@ var ext_wu_cards = {
         "ability": "avenger",
         "filename": "roach",
         "count": "1",
-        "target": "ntr_geralt",
+        "target": "wu_geralt_1",
         "quote": "Geralt, we gotta have a man–to–horse talk. No offense, but your riding skills? They leave a bit to be desired, buddy."
     },
     "wu_kalkstein": {
@@ -6619,7 +6983,7 @@ var ext_wu_cards = {
         "quote": "To thine own self be judge and ruler for thou alone shalt answer for thine deeds before thee."
     },
     "wu_johnny": {
-        "name": "Johnny",
+        "name": "Snowdrop",
         "deck": "witcher_universe",
         "row": "siege",
         "strength": "8",
@@ -7375,6 +7739,16 @@ var ext_lr_cards = {
         "count": "1",
         "quote": "The Gods watch over us, we'll come through the fray unharmed."
     },
+    "lr_meve_resolute": {
+        "name": "Meve: The Resolute",
+        "deck": "lyria_rivia",
+        "row": "leader",
+        "strength": "",
+        "ability": "meve_resolute",
+        "filename": "meve_resolute",
+        "count": "1",
+        "quote": "We will prevail! I swear it, we will prevail!"
+    },
     "lr_rivian_mauler": {
         "name": "Rivia Mauler",
         "deck": "lyria_rivia",
@@ -7437,6 +7811,16 @@ var ext_lr_cards = {
         "count": "1",
         "quote": "Kneel an everyman, arise a knight."
     },
+    "lr_grenadiers": {
+        "name": "Grenadiers",
+        "deck": "lyria_rivia",
+        "row": "close",
+        "strength": "2",
+        "ability": "scorch_s",
+        "filename": "grenadiers",
+        "count": "3",
+        "quote": "For Lyria!"
+    },
     "lr_reynard_odo": {
         "name": "Reynard Odo",
         "deck": "lyria_rivia",
@@ -7486,7 +7870,7 @@ var ext_lr_cards = {
         "strength": "6",
         "ability": "",
         "filename": "pikeman",
-        "count": "1",
+        "count": "3",
         "quote": "Get off your high horse and face me!"
     },
     "lr_light_cavalry": {
@@ -7513,12 +7897,22 @@ var ext_lr_cards = {
     "lr_wagon": {
         "name": "Wagon",
         "deck": "lyria_rivia",
-        "row": "agile",
+        "row": "ranged_siege",
         "strength": "1",
         "ability": "medic",
         "filename": "wagon",
         "count": "1",
         "quote": "The driver swore he was carrying seeds. But seeds don't clank on bumps in the road..."
+    },
+    "lr_mounted_archers": {
+        "name": "Rivian Mounted Archer",
+        "deck": "lyria_rivia",
+        "row": "ranged_siege",
+        "strength": "1",
+        "ability": "scorch_r",
+        "filename": "mounted_archers",
+        "count": "1",
+        "quote": "Keep up, or keep out of the way."
     },
     "lr_lyrian_cavalry": {
         "name": "Lyrian Cavalry",
@@ -7527,7 +7921,7 @@ var ext_lr_cards = {
         "strength": "8",
         "ability": "",
         "filename": "lyrian_cavalry",
-        "count": "1",
+        "count": "2",
         "quote": "A horseman's worth no less than his steed. And Lyrian horses are among the Continent's best."
     },
     "lr_isbel_hagge": {
@@ -7668,7 +8062,7 @@ var ext_lr_cards = {
         "strength": "4",
         "ability": "scorch",
         "filename": "sapper",
-        "count": "1",
+        "count": "2",
         "quote": "First Nilfgaardian who tried to slip 'cross our line was a right sneaky bastard."
     },
     "lr_villem": {
@@ -7685,7 +8079,7 @@ var ext_lr_cards = {
         "name": "Scout",
         "deck": "lyria_rivia",
         "row": "siege",
-        "strength": "5",
+        "strength": "2",
         "ability": "spy",
         "filename": "scout",
         "count": "1",
@@ -7762,11 +8156,11 @@ var ext_lr_cards = {
         "quote": "Do not twitch, lie still..."
     },
     "lr_pyrokinesis": {
-        "name": "Pyrokinesis",
+        "name": "Pyrokineticist",
         "deck": "lyria_rivia",
         "row": "ranged",
-        "strength": "8",
-        "ability": "",
+        "strength": "5",
+        "ability": "scorch_c",
         "filename": "pyrokinesis",
         "count": "1",
         "quote": "I really hope that's boot leather I smell burning..."
@@ -7791,6 +8185,16 @@ var ext_lr_cards = {
         "count": "1",
         "quote": "What shall I call it? Perhaps Andúril..."
     },
+    "lr_spearwall": {
+        "name": "Spearwall",
+        "deck": "lyria_rivia",
+        "row": "close",
+        "strength": "2",
+        "ability": "morale guard",
+        "filename": "spearwall",
+        "count": "1",
+        "quote": "Hold the line, you sods!"
+    },
     "lr_siege": {
         "name": "Siege",
         "deck": "lyria_rivia",
@@ -7805,7 +8209,7 @@ var ext_lr_cards = {
         "name": "Rivian Onager",
         "deck": "lyria_rivia",
         "row": "siege",
-        "strength": "6",
+        "strength": "9",
         "ability": "",
         "filename": "onager",
         "count": "1",
@@ -7830,6 +8234,26 @@ var ext_lr_cards = {
         "filename": "peasant_militia",
         "count": "1",
         "quote": "We's the militia. We keep the peace."
+    },
+    "lr_queen_meve": {
+        "name": "Queen Meve",
+        "deck": "lyria_rivia",
+        "row": "close",
+        "strength": "10",
+        "ability": "hero morale",
+        "filename": "queen_meve",
+        "count": "1",
+        "quote": "It's war you want? Then war you shall have! For Lyria and Rivia! For the North!"
+    },
+    "lr_lyrian_heavy_cavalry": {
+        "name": "Lyrian Heavy Cavalry",
+        "deck": "lyria_rivia",
+        "row": "close",
+        "strength": "6",
+        "ability": "",
+        "filename": "lyrian_heavy_cavalry",
+        "count": "1",
+        "quote": "Gods save the queen!"
     }
 };
 
@@ -7864,6 +8288,16 @@ var ext_sy_cards = {
         "count": "1",
         "quote": "A war with Whoreson will see Novigrad's gutters run red with blood."
     },
+    "sy_doadrick": {
+        "name": "Doadric Leumaerts",
+        "deck": "syndicate",
+        "row": "siege",
+        "strength": "7",
+        "ability": "conspiracy hero",
+        "filename": "doadrick",
+        "count": "1",
+        "quote": "A bird in the hand is worth two in the bush. Or so they say."
+    },
     "sy_gudrun_bjornsdottir": {
         "name": "Gudrun Bjornsdottir: Pirate Queen",
         "deck": "syndicate",
@@ -7888,8 +8322,8 @@ var ext_sy_cards = {
         "name": "Sigi Reuven",
         "deck": "syndicate",
         "row": "close",
-        "strength": "8",
-        "ability": "hero morale",
+        "strength": "4",
+        "ability": "hero",
         "filename": "sigi_reuven",
         "count": "0",
         "quote": "You sure he don't look the least bit familar...?"
@@ -8202,15 +8636,15 @@ var ext_sy_cards = {
         "count": "1",
         "quote": "We've bedded more men than all Redania's army barracks combined."
     },
-    "sy_saul_navarette": {
-        "name": "Saul de Navarette",
+    "sy_cutthroat": {
+        "name": "Cutthroat",
         "deck": "syndicate",
-        "row": "siege",
-        "strength": "5",
-        "ability": "",
-        "filename": "saul_navarette",
+        "row": "close",
+        "strength": "4",
+        "ability": "execute",
+        "filename": "cutthroat",
         "count": "1",
-        "quote": "A connoisseur with bottomless pockets and a soul black as tar."
+        "quote": "A blade in the dark, a coin in the palm."
     },
     "sy_cleaver_gang_1": {
         "name": "Cleaver's Gang",
@@ -8413,7 +8847,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "5",
-        "ability": "morale",
+        "ability": "conspiracy",
         "filename": "sausage_maker",
         "count": "1",
         "quote": "Body disposal and sausage makin', that's what I do."
@@ -8577,11 +9011,11 @@ var ext_sy_cards = {
         "name": "Grand Inquisitor Helveed",
         "deck": "syndicate",
         "row": "siege",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "2",
+        "ability": "execute",
         "filename": "inquisitor_helveed",
         "count": "1",
-        "quote": "No sinful wretch shall escape his fate in the Fire. Of that, I will make sure."
+        "quote": "When mercy fails, fire prevails."
     },
     "sy_boris": {
         "name": "Boris",
@@ -8652,6 +9086,16 @@ var ext_sy_cards = {
         "filename": "bincy_blumerholdt",
         "count": "1",
         "quote": "In all Novigrad, she has the hairiest feet and the stickiest hands."
+    },
+    "sy_bounty_hunter": {
+        "name": "Bounty Hunter",
+        "deck": "syndicate",
+        "row": "close",
+        "strength": "5",
+        "ability": "",
+        "filename": "bounty_hunter",
+        "count": "1",
+        "quote": ""
     },
     "sy_freak_show_1": {
         "name": "Freak Show",
@@ -8811,7 +9255,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "5",
-        "ability": "",
+        "ability": "conspiracy",
         "filename": "lieutenant_herst",
         "count": "1",
         "quote": "The fall of the Order wasn’t so hard for him like for the others."
@@ -8926,6 +9370,47 @@ var ext_sy_cards = {
         "filename": "vivaldi_bank",
         "count": "2",
         "quote": "We're sorry to lose your business, but we wish ye well!"
+    },
+    "sy_cleaver": {
+        "name": "Cleaver",
+        "deck": "syndicate",
+        "row": "close",
+        "strength": "12",
+        "ability": "hero",
+        "filename": "cleaver",
+        "count": "1",
+        "quote": "Every problem can be solved with a big enough cleaver."
+    },
+    "sy_king_of_beggars": {
+        "name": "The King of Beggars",
+        "deck": "syndicate",
+        "row": "siege",
+        "strength": "8",
+        "ability": "hero",
+        "filename": "king_of_beggars",
+        "count": "1",
+        "quote": "Every beggar in Novigrad knows who really rules."
+    },
+    "sy_eternal_fire_initiate": {
+        "name": "Eternal Fire Initiate",
+        "deck": "syndicate",
+        "row": "close",
+        "strength": "2",
+        "ability": "muster",
+        "filename": "eternaleclipseinitiate",
+        "count": "3",
+        "target": "sy_eternal_fire_initiate",
+        "quote": "Their faith burns brighter than reason."
+    },
+    "sy_eternal_fire_deacon": {
+        "name": "Eternal Fire Deacon",
+        "deck": "syndicate",
+        "row": "ranged",
+        "strength": "6",
+        "ability": "medic",
+        "filename": "eternaleclipsedweacon",
+        "count": "2",
+        "quote": "Forgiveness comes through flame."
     }
 };
 
@@ -8973,7 +9458,7 @@ var ext_ze_cards = {
     "ze_myrgtabrakke": {
         "name": "Myrgtabrakke",
         "deck": "zerrikania",
-        "row": "siege",
+        "row": "any",
         "strength": "8",
         "ability": "whorshipped medic",
         "filename": "myrgtabrakke",
@@ -8999,6 +9484,16 @@ var ext_ze_cards = {
         "filename": "saulrenith",
         "count": "1",
         "quote": "Impulsive and violent - not the mixture of traits one would trifle with."
+    },
+    "ze_drone": {
+        "name": "Kikimore Drone",
+        "deck": "zerrikania",
+        "row": "agile",
+        "strength": "2",
+        "ability": "",
+        "filename": "drone",
+        "count": "4",
+        "quote": "They're like mosquitoes... only bigger, meaner and way nastier."
     },
     "ze_tea_vea_1": {
         "name": "Tea & Vea",
@@ -9065,7 +9560,7 @@ var ext_ze_cards = {
     "ze_lilit_niya": {
         "name": "Lilit-Niya",
         "deck": "zerrikania",
-        "row": "ranged",
+        "row": "any",
         "strength": "11",
         "ability": "hero",
         "filename": "lilit_niya",
@@ -9272,7 +9767,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "ranged",
         "strength": "4",
-        "ability": "muster",
+        "ability": "muster morale",
         "filename": "hippotoxotai_1",
         "count": "1",
         "target": "ze_hippotoxotai",
@@ -9283,7 +9778,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "ranged",
         "strength": "4",
-        "ability": "muster",
+        "ability": "muster morale",
         "filename": "hippotoxotai_2",
         "count": "1",
         "target": "ze_hippotoxotai",
@@ -9294,7 +9789,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "ranged",
         "strength": "4",
-        "ability": "muster",
+        "ability": "muster morale",
         "filename": "hippotoxotai_3",
         "count": "1",
         "target": "ze_hippotoxotai",
@@ -9345,7 +9840,7 @@ var ext_ze_cards = {
     "ze_heavy_fire_scorpion": {
         "name": "Heavy Zerrikanian Fire Scorprion",
         "deck": "zerrikania",
-        "row": "siege",
+        "row": "ranged_siege",
         "strength": "10",
         "ability": "",
         "filename": "heavy_fire_scorpion",
@@ -9531,7 +10026,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "ranged",
         "strength": "10",
-        "ability": "hero",
+        "ability": "hero scorch",
         "filename": "yellow_witch_korath",
         "count": "1",
         "quote": "A man once forgot her full title is mistakenly called her a 'sand witch'. Now is lacquered skull decorates her staff."
@@ -9546,6 +10041,16 @@ var ext_ze_cards = {
         "count": "1",
         "quote": "Despite its massive size, many sense it coming only too late."
     },
+    "ze_endrega": {
+        "name": "Giant Scorpion",
+        "deck": "zerrikania",
+        "row": "close",
+        "strength": "4",
+        "ability": "",
+        "filename": "endrega",
+        "count": "3",
+        "quote": "The nest! Take out the nest, or the bastards'll just keep coming!"
+    },
     "spe_giant_spider_web": {
         "name": "Giant Spider Webs",
         "deck": "weather zerrikania",
@@ -9557,7 +10062,7 @@ var ext_ze_cards = {
         "quote": "Zerrikania hosts spiders so large they can trap elephants in their webs."
     },
     "spe_tse_tse_flies": {
-        "name": "Biting Frost",
+        "name": "Swarm",
         "deck": "weather zerrikania",
         "row": "",
         "strength": "",
@@ -9567,7 +10072,7 @@ var ext_ze_cards = {
         "quote": "The flies are especially repulsive, laying their eggs in the human body, the resulting larvae maturing within the host's head."
     },
     "spe_dragon_wrath": {
-        "name": "Biting Frost",
+        "name": "Firestorm",
         "deck": "weather zerrikania",
         "row": "",
         "strength": "",
@@ -9590,3 +10095,350 @@ card_dict = Object.assign({}, card_dict, ext_to_cards);
 card_dict = Object.assign({}, card_dict, ext_lr_cards);
 card_dict = Object.assign({}, card_dict, ext_sy_cards);
 card_dict = Object.assign({}, card_dict, ext_ze_cards);
+
+var ext_ofir_cards = {
+    // Leader Cards
+    "ofir_aamad_wise": {
+        "name": "Aamad, the Wise",
+        "deck": "ofir",
+        "row": "leader",
+        "strength": "",
+        "ability": "ofir_aamad",
+        "filename": "aamad",
+        "count": "1",
+        "quote": "Gold flows like water through his fingers — and turns to dust in others' hands."
+    },
+    "ofir_aamad": {
+        "name": "Aamad, The Merchant King",
+        "deck": "ofir",
+        "row": "leader",
+        "strength": "",
+        "ability": "ofir_aamad_merchant",
+        "filename": "aamad1",
+        "count": "1",
+        "quote": "The riches of the desert are his to command."
+    },
+    "ofir_grand_vizier_saheem": {
+        "name": "Grand Vizier Saheem",
+        "deck": "ofir",
+        "row": "leader",
+        "strength": "",
+        "ability": "ofir_grand_vizier_saheem",
+        "filename": "grand_vizier_saheem",
+        "count": "1",
+        "quote": "Knowledge is the coin with which we buy victory."
+    },
+    "ofir_caravan_guard": {
+        "name": "Ofiri Caravan Guard",
+        "deck": "ofir",
+        "row": "close",
+        "strength": "4",
+        "ability": "bond",
+        "filename": "caravan_guard",
+        "count": "3",
+        "quote": "Guard the gold, guard the water, and guard your life last."
+    },
+    "ofir_fortuneteller": {
+        "name": "Fortune Teller",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "1",
+        "ability": "omen",
+        "filename": "fortuneteller",
+        "count": "1",
+        "quote": "The stars whisper to her; she whispers back in prophecy."
+    },
+    "ofir_cataphract": {
+        "name": "Cataphract",
+        "deck": "ofir",
+        "row": "melee_siege",
+        "strength": "7",
+        "ability": "",
+        "filename": "cataphract",
+        "count": "2",
+        "quote": "Iron hides beneath silk, and death rides beside gold."
+    },
+    "ofir_cavalry": {
+        "name": "Ofiri Cavalry",
+        "deck": "ofir",
+        "row": "agile",
+        "strength": "6",
+        "ability": "",
+        "filename": "cavalry",
+        "count": "3",
+        "quote": "No wall, no line, no man can stop a Ofieri charge."
+    },
+    "ofir_conjurerscandle": {
+        "name": "Conjurer's Candle",
+        "deck": "ofir",
+        "row": "siege",
+        "strength": "2",
+        "ability": "morale",
+        "filename": "conjurerscandle",
+        "count": "3",
+        "quote": "The candles are lit, the spell is cast, the enemy is doomed."
+    },
+    "ofir_envoy": {
+        "name": "Ofiri Envoy",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "5",
+        "ability": "emissary",
+        "filename": "envoy",
+        "count": "2",
+        "quote": "He speaks in riddles, and every riddle costs a kingdom."
+    },
+    "ofir_ifrit": {
+        "name": "Sand Ifrit",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "11",
+        "ability": "adaptive",
+        "filename": "sand_ifrit",
+        "count": "1",
+        "quote": "If the dunes start moving, pray it’s just the wind."
+    },
+    "ofir_king_cobra": {
+        "name": "Snake Charmer",
+        "deck": "ofir",
+        "row": "close",
+        "strength": "3",
+        "ability": "",
+        "filename": "king_cobra",
+        "count": "4",
+        "quote": "Coiled gold... with fangs."
+    },
+    "ofir_maraal": {
+        "name": "Maraal",
+        "deck": "ofir",
+        "row": "any",
+        "strength": "1",
+        "ability": "execute",
+        "filename": "maraal",
+        "count": "1",
+        "quote": "He brings silence where names once mattered."
+    },
+    "ofir_merchant": {
+        "name": "Merchant",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "4",
+        "ability": "trade",
+        "filename": "merchant",
+        "count": "3",
+        "quote": "Every coin tells a story, and I'm its author."
+    },
+    "ofir_rabble": {
+        "name": "Marketplace Rabble",
+        "deck": "ofir",
+        "row": "close",
+        "strength": "1",
+        "ability": "bond",
+        "filename": "rabble",
+        "count": "4",
+        "quote": "Trinkets and bauble for miles sparks some curiosity."
+    },
+    "ofir_radeyah": {
+        "name": "Radeyah the Seer",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "7",
+        "ability": "hero clairvoyance",
+        "filename": "radeyah",
+        "count": "1",
+        "quote": "The stars whisper to her; she whispers back in prophecy."
+    },
+    "ofir_raider": {
+        "name": "Ofiri Raider",
+        "deck": "ofir",
+        "row": "close",
+        "strength": "4",
+        "ability": "",
+        "filename": "raider",
+        "count": "2",
+        "quote": "They strike from the dunes — and vanish like mirages."
+    },
+    "ofir_runestone": {
+        "name": "Runestone",
+        "deck": "ofir",
+        "row": "agile",
+        "strength": "0",
+        "ability": "morale",
+        "filename": "runestone",
+        "count": "2",
+        "quote": "Shiny."
+    },
+    "ofir_traveling_merchant": {
+        "name": "Traveling Merchant",
+        "deck": "ofir",
+        "row": "siege",
+        "strength": "5",
+        "ability": "",
+        "filename": "traveling_merchant",
+        "count": "2",
+        "quote": "My wares? Finest under the sun. Just don't ask how I got 'em."
+    },
+    "ofir_treasure_huntress": {
+        "name": "Treasure Huntress",
+        "deck": "ofir",
+        "row": "siege",
+        "strength": "8",
+        "ability": "spy",
+        "filename": "treasure_huntress",
+        "count": "2",
+        "quote": "What's mine is mine."
+    },
+    "ofir_backalleychemist": {
+        "name": "Sahir, Purveyor of Edges",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "5",
+        "ability": "scorch_r",
+        "filename": "backalleychemist",
+        "count": "2",
+        "quote": "The best way to get rid of a problem is to slice it into itty bitty indistinguishable pieces."
+    },
+    "ofir_scribe": {
+        "name": "Scribe",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "6",
+        "ability": "",
+        "filename": "scribe",
+        "count": "2",
+        "quote": "The scrolls are written in blood, and the blood is written in sand."
+    },
+    "ofir_saer_quan": {
+        "name": "Saer Quan",
+        "deck": "ofir",
+        "row": "siege",
+        "strength": "7",
+        "ability": "hero",
+        "filename": "saer_quan",
+        "count": "1",
+        "quote": "His armor sings against the sand."
+    },
+    "ofir_sand_slasher": {
+        "name": "Ancient Tomb Guardian",
+        "deck": "ofir",
+        "row": "close",
+        "strength": "4",
+        "ability": "adaptive",
+        "filename": "sand_slasher",
+        "count": "2",
+        "quote": "The desert favors those who bleed with it."
+    },
+    "ofir_sorceress": {
+        "name": "Sorceress of the Golden City",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "5",
+        "ability": "clairvoyance",
+        "filename": "sorceress",
+        "count": "2",
+        "quote": "Even their mages bargain with destiny."
+    },
+    "ofir_war_elephant": {
+        "name": "Ofiri War Elephant",
+        "deck": "ofir",
+        "row": "siege",
+        "strength": "8",
+        "ability": "",
+        "filename": "war_elephant",
+        "count": "2",
+        "quote": "When the elephant moves, the ground obeys."
+    },
+    "ofir_desert_banshee": {
+        "name": "Desert Banshee",
+        "deck": "ofir",
+        "row": "close",
+        "strength": "3",
+        "ability": "adaptive scorch_c",
+        "filename": "desert_banshee",
+        "count": "2",
+        "quote": "Her cry rides the sand, and by dawn, it’s the only voice left."
+    },
+    "ofir_saul": {
+        "name": "Saul de Navarette",
+        "deck": "ofir",
+        "row": "siege",
+        "strength": "8",
+        "ability": "hero",
+        "filename": "saul",
+        "count": "1",
+        "quote": "A connoisseur with bottomless pockets and a soul black as tar."
+    },
+    "ofir_runewright": {
+        "name": "Runewright",
+        "deck": "ofir",
+        "row": "close",
+        "strength": "4",
+        "ability": "",
+        "filename": "runewright",
+        "count": "3",
+        "quote": "He’ll sell you power, but the price isn’t always gold."
+    },
+    "ofir_dulla": {
+        "name": "Dulla kh'Amanni",
+        "deck": "ofir",
+        "row": "agile",
+        "strength": "5",
+        "ability": "hero bribe",
+        "filename": "dulla",
+        "count": "1",
+        "quote": "My wares are priceless. Luckily for you, I accept contracts as payment."
+    },
+    "ofir_slave_trader": {
+        "name": "Slave Trader",
+        "deck": "ofir",
+        "row": "siege",
+        "strength": "4",
+        "ability": "trade",
+        "filename": "slave_trader",
+        "count": "2",
+        "quote": "All worlds have their markets. Ours simply trades in finer stock."
+    },
+    "ofir_courtesan": {
+        "name": "Courtesan",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "3",
+        "ability": "bribe",
+        "filename": "courtesan",
+        "count": "2",
+        "quote": "Loose women, loose lips, loose coin."
+    },
+    "ofir_giant_scorpion": {
+        "name": "Sandcrab",
+        "deck": "ofir",
+        "row": "ranged",
+        "strength": "3",
+        "ability": "adaptive",
+        "filename": "giant_scorpion",
+        "count": "3",
+        "quote": "Looks harmless till you lose a toe. Then a leg. Then the rest."
+    },
+    "ofir_starving_hyena": {
+        "name": "Starving Hyena",
+        "deck": "ofir",
+        "row": "close",
+        "strength": "2",
+        "ability": "muster",
+        "target": "ofir_starving_hyena",
+        "filename": "starving_hyena",
+        "count": "3",
+        "quote": "Who's laughing now?"
+    },
+    "spe_ofir_sandstorm": {
+        "name": "Sandstorm",
+        "deck": "weather ofir",
+        "row": "",
+        "strength": "",
+        "ability": "sandstorm",
+        "filename": "sandstorm",
+        "count": "3",
+        "quote": "The dunes march faster than armies."
+    }
+};
+
+card_dict = Object.assign({}, card_dict, ext_ofir_cards);

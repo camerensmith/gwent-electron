@@ -155,4 +155,11 @@ class StrategicManager {
                 return 2;
         }
     }
+
+    /**
+     * Get round strategy (delegates to RoundStrategy for Enhanced AI compatibility)
+     */
+    getRoundStrategy(roundNumber) {
+        return this.roundStrategy.getRoundStrategy(roundNumber);
+    }
 }

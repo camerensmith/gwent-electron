@@ -5,6 +5,9 @@ class EnhancedAIControllerV2 {
     constructor(player) {
         this.player = player;
         
+        // Store reference to the basic ControllerAI for fallback methods
+        this.basicController = null;
+        
         // Initialize AI modules
         this.strategicManager = new StrategicManager(player);
         this.gameState = new GameStateAnalyzer(player);
@@ -24,11 +27,30 @@ class EnhancedAIControllerV2 {
         this.gameStateHistory = [];
         this.adaptationData = {};
     }
+    
+    /**
+     * Set the basic controller for fallback methods
+     */
+    setBasicController(controller) {
+        this.basicController = controller;
+    }
 
     /**
      * Main AI turn logic - enhanced with integrated systems
      */
     async takeTurn() {
+		if (this.player.passed) {
+			console.log("⏭️ AI turn skipped (already passed)");
+			return;
+		}
+		// Check if opponent has passed - if we're winning, the round should end
+		const opponent = this.player.opponent();
+		if (opponent.passed && this.player.winning) {
+			// Opponent passed and we're winning - round is over, pass immediately
+			console.log("🏁 Opponent passed and AI is winning - ending round");
+			await this.pass();
+			return;
+		}
         // Get comprehensive game state analysis
         const gameState = this.gameState.analyzeGameState();
         this.gameStateHistory.push({...gameState, timestamp: Date.now()});
@@ -56,7 +78,7 @@ class EnhancedAIControllerV2 {
         }
 
         // Enhanced pass decision with game state analysis
-        if (this.shouldPassEnhanced(gameState, strategy, synergyAnalysis)) {
+		if (this.shouldPassEnhanced(gameState, strategy, synergyAnalysis)) {
             await this.pass();
             return;
         }
@@ -694,17 +716,63 @@ class EnhancedAIControllerV2 {
      * Enhanced pass decision with game state analysis
      */
     shouldPassEnhanced(gameState, strategy, synergyAnalysis) {
+        if (this.player.passed) return false;
+        
+        // Always pass if opponent passed and we're winning (round is over)
+        const opponent = this.player.opponent();
+        if (opponent.passed && this.player.winning) {
+            return true;
+        }
+        
+        const roundNumber = gameState.roundNumber || game.roundCount || 1;
+        const cardsInHand = this.player.hand.cards.length;
+        
+        // GENERAL: If we have 2 or fewer cards left, always pass (critical card conservation)
+        if (cardsInHand <= 2 && roundNumber < 3) {
+            console.log(`🛡️ AI passing to conserve critical cards (only ${cardsInHand} cards left)`);
+            return true;
+        }
+        
+        // CRITICAL: Card conservation for round 1 - don't play all cards
+        // In round 1, we need to save cards for rounds 2 and 3
+        if (roundNumber === 1) {
+            // If we have 3 or fewer cards left in round 1, strongly pass (80% chance)
+            if (cardsInHand <= 3) {
+                if (Math.random() > 0.2) {
+                    console.log(`🛡️ AI passing round 1 to conserve cards (only ${cardsInHand} cards remaining)`);
+                    return true;
+                }
+            }
+            // If we have 4-5 cards left and are winning by 10+, pass to save cards (70% chance)
+            if (cardsInHand <= 5 && gameState.powerAdvantage > 10) {
+                if (Math.random() > 0.3) {
+                    console.log(`🛡️ AI passing round 1 while winning (${cardsInHand} cards remaining, ${gameState.powerAdvantage} point lead)`);
+                    return true;
+                }
+            }
+            // If we have 4-5 cards left and opponent passed, pass to save cards
+            if (cardsInHand <= 5 && opponent.passed && this.player.winning) {
+                console.log(`🛡️ AI passing round 1 after opponent passed (${cardsInHand} cards remaining)`);
+                return true;
+            }
+        }
+        
         // Add randomization to pass decisions (like human players)
         const randomizationFactor = this.calculateRandomizationFactor(gameState);
         
+        // Reduce randomization impact if we're low on cards (strategic necessity)
+        const strategicOverride = (cardsInHand <= 3 && roundNumber < 3) || (cardsInHand <= 2);
+        
         // Sometimes make unexpected pass decisions (human unpredictability)
-        if (randomizationFactor < 0.1) {
+        // But not if we're low on cards (strategic necessity)
+        if (!strategicOverride && randomizationFactor < 0.1) {
             console.log("🎭 AI making unexpected pass (human-like unpredictability)");
             return true; // Pass when you wouldn't expect it
         }
         
         // Sometimes refuse to pass even when you should (human stubbornness)
-        if (randomizationFactor > 0.9) {
+        // But not if we're low on cards or in round 1 with few cards remaining
+        if (!strategicOverride && !(roundNumber === 1 && cardsInHand <= 4) && randomizationFactor > 0.9) {
             console.log("💪 AI refusing to pass (human-like stubbornness)");
             return false; // Don't pass even when you should
         }
@@ -736,10 +804,42 @@ class EnhancedAIControllerV2 {
             return true;
         }
         
+        // Concede unwinnable rounds: If opponent passed and we're behind by 30+ points,
+        // evaluate if continuing would put us in a card-hole for future rounds
+        if (opponent.passed && !this.player.winning) {
+            const pointDifferential = opponent.total - this.player.total;
+            
+            if (pointDifferential >= 30) {
+                // We're losing by 30+ and opponent passed - evaluate card conservation
+                const cardsInHand = this.player.hand.cards.length;
+                const cardsNeededToWin = Math.ceil(pointDifferential / 10); // Rough estimate: need ~10 points per card
+                const cardsRemainingAfterFight = cardsInHand - cardsNeededToWin;
+                
+                // Calculate future round impact
+                const roundsRemaining = 3 - game.roundCount;
+                const cardsPerRoundNeeded = Math.ceil(cardsRemainingAfterFight / Math.max(roundsRemaining, 1));
+                
+                // If fighting would leave us with < 4 cards per remaining round, concede
+                // This prevents getting into a "card-hole" where we can't compete in future rounds
+                if (cardsRemainingAfterFight < 4 * roundsRemaining || cardsPerRoundNeeded < 3) {
+                    console.log(`🏳️ AI conceding unwinnable round (${pointDifferential} point deficit, would leave ${cardsRemainingAfterFight} cards for ${roundsRemaining} rounds)`);
+                    return true; // Concede to save cards for future rounds
+                }
+                
+                // Also concede if we have very few cards left (can't afford to waste them)
+                if (cardsInHand <= 5 && pointDifferential >= 40) {
+                    console.log(`🏳️ AI conceding unwinnable round (${pointDifferential} point deficit, only ${cardsInHand} cards left)`);
+                    return true;
+                }
+            }
+        }
+        
         // If we're in a strong position and have card advantage, consider passing (but sometimes overcommit)
+        // But be more conservative in round 1
         if (gameState.powerAdvantage > 15 && gameState.cardAdvantage > 1) {
-            // 60% chance to pass, 40% chance to overcommit
-            if (randomizationFactor > 0.6) {
+            // In round 1, be more likely to pass (80% vs 60%)
+            const passThreshold = (roundNumber === 1) ? 0.8 : 0.6;
+            if (randomizationFactor > passThreshold) {
                 console.log("🎯 AI overcommitting despite strong position (human-like greed)");
                 return false;
             }
@@ -947,6 +1047,17 @@ class EnhancedAIControllerV2 {
      */
     calculateSpecialCardValue(specialCards, boardState) {
         let value = 0;
+        
+        // Handle case where specialCards is a number (count) instead of array
+        if (typeof specialCards === 'number') {
+            // If it's just a count, return a simple value based on count
+            return specialCards * 2;
+        }
+        
+        // Ensure specialCards is an array
+        if (!Array.isArray(specialCards)) {
+            return 0;
+        }
         
         // Count special cards by type
         const specialCounts = {
@@ -1193,8 +1304,35 @@ class EnhancedAIControllerV2 {
     findComplexAbilityCard() { return null; }
     getComplexAbilityName(card) { return null; }
     handleComplexAbility(card, abilityName, gameState, strategy) { return false; }
-    pass() { console.log("🔄 AI passing turn"); }
-    playCard(card, gameState, strategy) { console.log(`🎯 AI playing card: ${card.name}`); }
+    
+    async pass() { 
+        if (this.player.passed) {
+            console.log("⏭️ AI already passed, skipping pass action");
+            return;
+        }
+        console.log("🔄 AI passing turn");
+        await this.player.passRound();
+    }
+    
+    async playCard(card, gameState, strategy) { 
+        console.log(`🎯 AI playing card: ${card.name}`);
+        // Handle Peace Treaty specially (no row selection needed)
+        if (card.faction === "special" && card.abilities.includes("peace_treaty")) {
+            card.holder.hand.removeCard(card);
+            await ability_dict["peace_treaty"].placed(card);
+            this.player.endTurn();
+            return;
+        }
+        // Use the basic AI's playCard method to actually play the card
+        if (this.basicController && this.basicController.playCard) {
+            const max = this.basicController.getMaximums ? this.basicController.getMaximums() : null;
+            const data = this.basicController.getBoardData ? this.basicController.getBoardData() : null;
+            await this.basicController.playCard(card, max, data);
+        } else {
+            // Fallback: use player's playCard method
+            await this.player.playCard(card);
+        }
+    }
 
     /**
      * Advanced Decoy timing optimization

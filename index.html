@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang = "en-US">
 	<head>
-		<title>Gwent 3.1</title>
+		<title>Gwent Electron</title>
 		<meta charset = "utf-8" />
-		<meta name = "author" content = "Sundaram, Costa & Sylver" />
+		<meta name = "author" content = "Sundaram, Costa & Sylver. Updates by Cam Smith" />
 		<meta name = "description" content = "Play the original Gwent minigame from The Witcher 3 in your browser! Includes cards from Hearts of Stone and Blood & Wine!" />
 		<meta name = "keywords" content = "arun, sundaram, reynolds, costa, randompianist, sylver, romain, durban, programmer, gwent, tw3, witcher, card, game, gamedev, play" />
 		<meta name = "viewport" content = "width=device-width, initial-scale=1.0" />
@@ -158,8 +158,8 @@
 					<h3></h3>
 					<p></p>
 					<div>
-						<button class = "hover_un" onclick = "Popup.curr.selectYes()"></button>
-						<button class = "hover_un" onclick = "Popup.curr.selectNo()"></button>
+						<button class = "hover_un" onclick = "if (Popup.curr) Popup.curr.selectYes()"></button>
+						<button class = "hover_un" onclick = "if (Popup.curr) Popup.curr.selectNo()"></button>
 					</div>
 				</div>
 			</section>
@@ -313,7 +313,14 @@
 				var mainEl = document.getElementsByTagName("main")[0];
 				if (mainEl) mainEl.style.display = "none";
 				var deckEl = document.getElementById("deck-customization");
-				if (deckEl) deckEl.style.display = "block";
+				if (deckEl) {
+					deckEl.style.display = "block";
+					// Ensure table.jpg background is set
+					deckEl.style.backgroundImage = "url('images/table.jpg')";
+					deckEl.style.backgroundSize = "cover";
+					deckEl.style.backgroundPosition = "center";
+					deckEl.style.backgroundRepeat = "no-repeat";
+				}
 				var clickBg = document.getElementById("click-background");
 				if (clickBg) clickBg.classList.remove("noclick");
 			}

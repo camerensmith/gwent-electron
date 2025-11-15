@@ -8,8 +8,8 @@ let default_decks = [
 			["spe_horn", 1],
 			["spe_decoy", 3],
 			["spe_frost", 1],
+			["nr_peace_treaty", 1],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["nr_esterad", 1],
 			["nr_natalis", 1],
 			["nr_philippa", 1],
@@ -20,7 +20,6 @@ let default_decks = [
 			["ntr_villen", 1],
 			["ntr_yennefer", 1],
 			["nr_ballista", 1],
-			["ntr_olgierd", 1],
 			["nr_siege_tower", 1],
 			["nr_trebuchet", 1],
 			["nr_trebuchet_1", 1],
@@ -32,12 +31,10 @@ let default_decks = [
 			["nr_blue_stripes_1", 1],
 			["nr_blue_stripes_2", 1],
 			["nr_blue_stripes_3", 1],
-			["ntr_gaunter_odimm_darkness", 3],
 			["nr_dijkstra", 1],
 			["ntr_dandelion", 1],
-			["ntr_gaunter_odimm", 1],
 			["nr_thaler", 1],
-			["ntr_mysterious_elf", 1]
+			["nr_temerian_knight", 1],
 		]
 	},
 	{
@@ -52,8 +49,8 @@ let default_decks = [
 			["spe_clear", 1],
 			["spe_fog", 1],
 			["spe_rain", 1],
+			["nr_peace_treaty", 1],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["nr_esterad", 1],
 			["nr_natalis", 1],
 			["nr_philippa", 1],
@@ -64,7 +61,6 @@ let default_decks = [
 			["ntr_villen", 1],
 			["ntr_yennefer", 1],
 			["nr_ballista", 1],
-			["ntr_olgierd", 1],
 			["nr_siege_tower", 1],
 			["nr_trebuchet", 1],
 			["nr_trebuchet_1", 1],
@@ -76,12 +72,10 @@ let default_decks = [
 			["nr_blue_stripes_1", 1],
 			["nr_blue_stripes_2", 1],
 			["nr_blue_stripes_3", 1],
-			["ntr_gaunter_odimm_darkness", 3],
 			["nr_dijkstra", 1],
 			["ntr_dandelion", 1],
-			["ntr_gaunter_odimm", 1],
 			["nr_thaler", 1],
-			["ntr_mysterious_elf", 1]
+			["ntr_sunsetwanderers", 1],
 		]
 	},
 	{
@@ -98,7 +92,6 @@ let default_decks = [
 			["spe_fog", 1],
 			["spe_rain", 1],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["ne_black_archer", 1],
 			["ne_black_archer_1", 1],
 			["ne_heavy_zerri", 1],
@@ -108,21 +101,18 @@ let default_decks = [
 			["ne_shilard", 1],
 			["ntr_villen", 1],
 			["ntr_yennefer", 1],
-			["ntr_olgierd", 1],
 			["ne_young_emissary_1", 1],
 			["ne_young_emissary_2", 1],
-			["ntr_gaunter_odimm_darkness", 3],
 			["ne_vattier", 1],
 			["ne_impera_brigade_1", 1],
 			["ne_impera_brigade_2", 1],
 			["ne_impera_brigade_3", 1],
 			["ne_impera_brigade_4", 1],
 			["ntr_dandelion", 1],
-			["ntr_gaunter_odimm", 1],
 			["ne_archer_support", 1],
 			["ne_archer_support_1", 1],
-			["ntr_mysterious_elf", 1],
-			["ne_siege_support", 1]
+			["ne_siege_support", 1],
+			["ntr_highwaymen", 1]
 		]
 	},
 	{
@@ -138,7 +128,6 @@ let default_decks = [
 			["spe_fog", 1],
 			["spe_rain", 1],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["ne_black_archer", 1],
 			["ne_black_archer_1", 1],
 			["ne_heavy_zerri", 1],
@@ -149,7 +138,6 @@ let default_decks = [
 			["ne_assire", 1],
 			["ne_cahir", 1],
 			["ne_fringilla", 1],
-			["ntr_olgierd", 1],
 			["ntr_vesemir", 1],
 			["ne_young_emissary_1", 1],
 			["ne_young_emissary_2", 1],
@@ -162,8 +150,8 @@ let default_decks = [
 			["ne_archer_support", 1],
 			["ne_archer_support_1", 1],
 			["ntr_cow", 1],
-			["ntr_mysterious_elf", 1],
-			["ne_siege_support", 1]
+			["ne_siege_support", 1],
+			["ntr_highwaymen", 1]
 		]
 	},
 	{
@@ -179,7 +167,6 @@ let default_decks = [
 			["spe_fog", 1],
 			["spe_rain", 1],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["mo_imlerith", 1],
 			["mo_kayran", 1],
 			["mo_toad", 1],
@@ -189,23 +176,19 @@ let default_decks = [
 			["mo_witch_velen", 1],
 			["mo_witch_velen_1", 1],
 			["mo_witch_velen_2", 1],
-			["ntr_olgierd", 1],
 			["mo_katakan", 1],
 			["mo_arachas", 1],
 			["mo_arachas_1", 1],
 			["mo_arachas_2", 1],
 			["mo_botchling", 1],
-			["ntr_gaunter_odimm_darkness", 3],
 			["mo_bruxa", 1],
 			["mo_ekkima", 1],
 			["mo_fleder", 1],
 			["mo_garkain", 1],
 			["ntr_dandelion", 1],
-			["ntr_gaunter_odimm", 1],
 			["mo_nekker", 1],
 			["mo_nekker_1", 1],
 			["mo_nekker_2", 1],
-			["ntr_mysterious_elf", 1]
 		]
 	},
 	{
@@ -221,7 +204,6 @@ let default_decks = [
 			["spe_fog", 1],
 			["spe_rain", 1],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["mo_kayran", 1],
 			["ntr_villen", 1],
 			["ntr_yennefer", 1],
@@ -229,17 +211,14 @@ let default_decks = [
 			["mo_witch_velen", 1],
 			["mo_witch_velen_1", 1],
 			["mo_witch_velen_2", 1],
-			["ntr_olgierd", 1],
 			["mo_katakan", 1],
 			["mo_arachas", 1],
 			["mo_arachas_1", 1],
 			["mo_arachas_2", 1],
-			["ntr_gaunter_odimm_darkness", 3],
 			["mo_bruxa", 1],
 			["mo_ekkima", 1],
 			["mo_fleder", 1],
 			["mo_garkain", 1],
-			["ntr_mysterious_elf", 1]
 		]
 	},
 	{
@@ -256,27 +235,22 @@ let default_decks = [
 			["spe_fog", 1],
 			["spe_rain", 1],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["sc_isengrim", 1],
 			["sc_milva", 1],
 			["sc_schirru", 1],
 			["ntr_villen", 1],
 			["ntr_yennefer", 1],
 			["sc_dol_infantry", 1],
-			["ntr_olgierd", 1],
 			["sc_havekar_support", 1],
 			["sc_havekar_support_1", 1],
 			["sc_havekar_support_2", 1],
-			["ntr_gaunter_odimm_darkness", 3],
 			["sc_ciaran", 1],
 			["sc_dwarf", 1],
 			["sc_dwarf_1", 1],
 			["sc_dwarf_2", 1],
 			["ntr_dandelion", 1],
-			["ntr_gaunter_odimm", 1],
 			["sc_havekar_nurse", 1],
 			["sc_havekar_nurse_1", 1],
-			["ntr_mysterious_elf", 1]
 		]
 	},
 	{
@@ -293,7 +267,6 @@ let default_decks = [
 			["spe_fog", 1],
 			["spe_rain", 1],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["sc_isengrim", 1],
 			["sc_milva", 1],
 			["sc_schirru", 1],
@@ -303,17 +276,13 @@ let default_decks = [
 			["sc_dol_infantry_1", 1],
 			["sc_dol_infantry_2", 1],
 			["sc_filavandrel", 1],
-			["ntr_olgierd", 1],
 			["sc_havekar_support", 1],
 			["sc_havekar_support_1", 1],
 			["sc_havekar_support_2", 1],
-			["ntr_gaunter_odimm_darkness", 3],
 			["ntr_dandelion", 1],
-			["ntr_gaunter_odimm", 1],
 			["ntr_cow", 1],
 			["sc_havekar_nurse", 1],
 			["sc_havekar_nurse_1", 1],
-			["ntr_mysterious_elf", 1]
 		]
 	},
 	{
@@ -329,7 +298,6 @@ let default_decks = [
 			["spe_storm", 1],
 			["spe_rain", 1],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["sk_olaf", 1],
 			["sk_cerys", 1],
 			["sk_ermion", 1],
@@ -339,7 +307,6 @@ let default_decks = [
 			["sk_craite_warrior_2", 1],
 			["sk_craite_warrior_3", 1],
 			["sk_dimun_pirate", 1],
-			["ntr_olgierd", 1],
 			["sk_shield_maiden_1", 1],
 			["sk_shield_maiden_2", 1],
 			["sk_shield_maiden_3", 1],
@@ -348,7 +315,6 @@ let default_decks = [
 			["ntr_dandelion", 1],
 			["sk_young_berserker", 3],
 			["sk_kambi", 1],
-			["ntr_mysterious_elf", 1]
 		]
 	},
 	{
@@ -360,7 +326,6 @@ let default_decks = [
 			["spe_horn", 1],
 			["spe_decoy", 2],
 			["ntr_ciri", 1],
-			["ntr_geralt", 1],
 			["sk_olaf", 1],
 			["sk_cerys", 1],
 			["ntr_villen", 1],
@@ -368,16 +333,13 @@ let default_decks = [
 			["sk_craite_warrior_2", 1],
 			["sk_craite_warrior_3", 1],
 			["sk_dimun_pirate", 1],
-			["ntr_olgierd", 1],
 			["sk_war_longship_1", 1],
 			["sk_war_longship_2", 1],
 			["sk_shield_maiden_1", 1],
 			["sk_shield_maiden_2", 1],
 			["sk_shield_maiden_3", 1],
-			["ntr_gaunter_odimm_darkness", 3],
 			["sk_light_longship", 3],
 			["sk_birna", 1],
-			["ntr_mysterious_elf", 1]
 		]
 	}
 ];
@@ -393,6 +355,7 @@ var custom_decks = [
 			["spe_decoy", 1],
 			["spe_fog", 1],
 			["spe_scorch", 1],
+			["nr_peace_treaty", 1],
 			["nr_esterad", 1],
 			["nr_natalis", 1],
 			["ntr_triss", 1],
@@ -416,7 +379,8 @@ var custom_decks = [
 			["nr_foltest_pride", 1],
 			["nr_queen_adalia", 1],
 			["nr_mage_infiltrator", 1],
-			["nr_aretuza_adept", 1]
+			["nr_aretuza_adept", 1],
+			["nr_temerian_knight", 1]
 		]
 	},
 	{
@@ -430,6 +394,7 @@ var custom_decks = [
 			["spe_fog", 1],
 			["spe_clear", 1],
 			["spe_scorch", 2],
+			["nr_peace_treaty", 1],
 			["nr_stennis", 1],
 			["nr_vandergrift", 1],
 			["nr_kaedweni_siege_support_1", 1],
@@ -451,7 +416,8 @@ var custom_decks = [
 			["nr_odrin", 1],
 			["nr_seltkirk", 1],
 			["nr_kaedweni_sergeant", 1],
-			["nr_dethmold", 1]
+			["nr_dethmold", 1],
+			["nr_reinforcements", 1]
 		]
 	},
 	{
@@ -473,10 +439,10 @@ var custom_decks = [
 			["nr_kerack_fleet_marine_1", 1],
 			["nr_vissegerd", 1],
 			["nr_cintrian_royal_guard", 1],
-			["nr_eist_tuirseach", 1],
-			["nr_skellige_fleet_1", 1],
-			["nr_skellige_fleet_2", 1],
-			["nr_skellige_fleet_3", 1],
+			["sk_eist_tuirseach", 1],
+			["sk_skellige_fleet_1", 1],
+			["sk_skellige_fleet_2", 1],
+			["sk_skellige_fleet_3", 1],
 			["nr_cintrian_knight", 1],
 			["nr_roegner", 1],
 			["nr_pavetta", 1],
@@ -502,19 +468,13 @@ var custom_decks = [
 			["spe_rain", 1],
 			["spe_clear", 1],
 			["spe_scorch", 1],
-			["nr_redanian_elite", 1],
+			["nr_peace_treaty", 1],
 			["nr_donimir_troy", 1],
 			["nr_joachim_gratz", 1],
 			["nr_philippa", 1],
-			["nr_ewald_borsodi", 1],
-			["nr_flying_redanian", 1],
-			["nr_redanian_knight", 1],
-			["nr_shani", 1],
 			["nr_milo_vanderbeck", 1],
 			["nr_marching_orders", 1],
 			["nr_eyck_denesle", 1],
-			["nr_radovid_royal_guards", 1],
-			["nr_redanian_archer", 1],
 			["nr_trollololo", 1],
 			["nr_battering_ram", 1],
 			["nr_dijkstra", 1],
@@ -526,7 +486,8 @@ var custom_decks = [
 			["nr_crinfrid_3", 1],
 			["nr_voymir", 1],
 			["nr_reaver_scout", 1],
-			["nr_tridam_infantry", 1]
+			["nr_tridam_infantry", 1],
+			["nr_reinforcements", 1]
 		]
 	},
 	{
@@ -944,8 +905,6 @@ var custom_decks = [
 			["spe_scorch", 2],
 			["spe_clear", 1],
 			["wu_doppler_1", 1],
-			["ntr_gaunter_odimm_darkness", 3],
-			["ntr_gaunter_odimm", 1],
 			["wu_idr", 1],
 			["wu_iris_von_everec", 1],
 			["wu_sarah", 1],
@@ -958,7 +917,6 @@ var custom_decks = [
 			["wu_vlodimir_von_everec", 1],
 			["wu_phoenix", 1],
 			["wu_boris", 1],
-			["ntr_olgierd", 1],
 			["wu_marlene_trastamara", 1],
 			["wu_idarran_ulivo", 1],
 			["wu_mad_kiyan", 1],
@@ -981,7 +939,6 @@ var custom_decks = [
 			["wu_doppler_2", 1],
 			["wu_pellar", 1],
 			["ntr_yennefer", 1],
-			["ntr_geralt", 1],
 			["wu_kelpie", 1],
 			["wu_vysogota", 1],
 			["wu_angouleme", 1],
@@ -990,7 +947,6 @@ var custom_decks = [
 			["wu_iola", 1],
 			["ntr_villen", 1],
 			["wu_rhapsodic_melody", 1],
-			["ntr_mysterious_elf", 1],
 			["ntr_zoltan", 1],
 			["ntr_triss", 1],
 			["wu_nenneke", 1],
@@ -1102,7 +1058,6 @@ var custom_decks = [
 			["lr_lyrian_cavalry", 1],
 			["lr_isbel_hagge", 1],
 			["lr_hajduk", 1],
-			["ntr_geralt", 1],
 			["spe_wyvern_shield", 1],
 			["spe_mantlet", 1]
 		]
@@ -1244,7 +1199,8 @@ var custom_decks = [
 			["sy_madame_luiza", 1],
 			["sy_rico_meiersdorf", 1],
 			["sy_sewer_raider", 1],
-			["sy_boris", 1]
+			["sy_boris", 1],
+			["sy_doadrick", 1]
 		]
 	},
 	{
@@ -1316,6 +1272,94 @@ var custom_decks = [
 			["ze_myrgot", 1],
 			["ze_venomous_basilisk", 1],
 			["ze_saulrenith", 1],
+		]
+	},
+	{
+		"title": "Ofir - Desert Traders",
+		"description": "Ofir deck focusing on trade and commerce - Playstyle: Trade, Muster, Bond, Emissary",
+		"leader": "ofir_aamad",
+		"faction": "ofir",
+		"cards": [
+			["spe_horn", 1],
+			["spe_decoy", 2],
+			["spe_clear", 1],
+			["spe_scorch", 1],
+			["spe_ofir_sandstorm", 2],
+			["ofir_radeyah", 1],
+			["ofir_saer_quan", 1],
+			["ofir_saul", 1],
+			["ofir_merchant", 3],
+			["ofir_slave_trader", 2],
+			["ofir_caravan_guard", 3],
+			["ofir_rabble", 4],
+			["ofir_starving_hyena", 3],
+			["ofir_envoy", 2],
+			["ofir_traveling_merchant", 2],
+			["ofir_cavalry", 3],
+			["ofir_cataphract", 2],
+			["ofir_war_elephant", 2],
+			["ofir_fortuneteller", 1],
+			["ofir_sorceress", 2],
+			["ofir_scribe", 2],
+			["ofir_ifrit", 1]
+		]
+	},
+	{
+		"title": "Ofir - Golden City Mages",
+		"description": "Ofir deck focusing on magic and clairvoyance - Playstyle: Clairvoyance, Omen, Scorch, Adaptive",
+		"leader": "ofir_grand_vizier_saheem",
+		"faction": "ofir",
+		"cards": [
+			["spe_horn", 1],
+			["spe_decoy", 2],
+			["spe_clear", 1],
+			["spe_scorch", 1],
+			["spe_ofir_sandstorm", 2],
+			["ofir_radeyah", 1],
+			["ofir_saer_quan", 1],
+			["ofir_sorceress", 2],
+			["ofir_fortuneteller", 1],
+			["ofir_backalleychemist", 2],
+			["ofir_desert_banshee", 2],
+			["ofir_raider", 2],
+			["ofir_sand_slasher", 3],
+			["ofir_conjurerscandle", 3],
+			["ofir_runestone", 3],
+			["ofir_runewright", 3],
+			["ofir_cataphract", 2],
+			["ofir_war_elephant", 2],
+			["ofir_ifrit", 1],
+			["ofir_treasure_huntress", 2],
+			["ofir_maraal", 1]
+		]
+	},
+	{
+		"title": "Ofir - Merchant King's Court",
+		"description": "Ofir deck optimized for Aamad the Merchant King - Playstyle: Trade, Draw Cards, Muster, Bond",
+		"leader": "ofir_aamad",
+		"faction": "ofir",
+		"cards": [
+			["spe_horn", 1],
+			["spe_decoy", 3],
+			["spe_clear", 1],
+			["spe_scorch", 1],
+			["spe_ofir_sandstorm", 1],
+			["ofir_radeyah", 1],
+			["ofir_saul", 1],
+			["ofir_merchant", 3],
+			["ofir_slave_trader", 2],
+			["ofir_traveling_merchant", 2],
+			["ofir_envoy", 2],
+			["ofir_treasure_huntress", 2],
+			["ofir_caravan_guard", 3],
+			["ofir_rabble", 4],
+			["ofir_starving_hyena", 3],
+			["ofir_cavalry", 3],
+			["ofir_cataphract", 2],
+			["ofir_war_elephant", 2],
+			["ofir_dulla", 1],
+			["ofir_courtesan", 2],
+			["ofir_scribe", 2]
 		]
 	}
 ];

@@ -70,3 +70,7 @@ jspm_packages/
 # Shortcuts and local app folders
 *.lnk
 gwent-classic-app/
+
+# Batch files
+**/filenamegetter.bat
+filenamegetter.bat

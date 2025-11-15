@@ -447,17 +447,18 @@
 					</div>
 					<div class = "pure-g">
 						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_agile.png" alt = "Agile ability" />
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_agile.png" alt = "Agile row designation" />
 						</div>
 						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Agile</div>
+							<div class = "ability-list-name">Agile (Row Designation)</div>
 							<div class = "ability-list-description">
 								<p>
-									This ability is rarely used and thus rarely has a visible effect after the card is played.
+									This is not an ability, but rather a row designation. Cards with "Agile" can be placed in either the Melee (Close Combat) or Ranged row at the player's choice.
 									<br />
-									Basicaly, it goes in combination with cards which can be played on the Melee or Ranged row (which is the most useful part).
-									<br />
-									Under some limited circumpstances, agile cards can be moved later in the round to a more favourable row.
+									This flexibility allows players to adapt their strategy based on the board state, weather effects, or row bonuses. Once placed, the card cannot be moved to another row.
+								</p>
+								<p>
+									Other flexible row designations include "Any" (can be placed in any row), "Melee/Siege" (can be placed in Melee or Siege), and "Ranged/Siege" (can be placed in Ranged or Siege).
 								</p>
 							</div>
 						</div>
@@ -803,6 +804,278 @@
 									Be aware though that since all Inspire units will have the same strength (prior to effects), they are vulnerable to scorch and can all be destroyed at the same time.
 									<br />
 									Providing a boost to some of them can help remediate this effect.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_emissary.png" alt = "Emissary ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Emissary</div>
+							<div class = "ability-list-description">
+								<p>
+									Place on your opponent's battlefield (counts towards your opponent's total). Draw 3 cards from the top of your opponent's deck, keep 1 in your hand, discard 1, and shuffle the last one back.
+								</p>
+								<p>
+									This ability is similar to Spy, but instead of drawing from your own deck, you draw from your opponent's deck. This gives you information about their deck composition and allows you to disrupt their strategy by removing a card from their deck.
+									<br />
+									The card you keep goes to your hand, giving you card advantage. The discarded card goes to your opponent's graveyard, and the shuffled card goes back into their deck in a random position.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_trade.png" alt = "Trade ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Trade</div>
+							<div class = "ability-list-description">
+								<p>
+									When your opponent's total power reaches 12, 24, or 36, draw 1 card.
+								</p>
+								<p>
+									This ability triggers automatically when your opponent's total score hits specific thresholds. Only one Trade card on the field will trigger per threshold, regardless of how many Trade cards you have in play.
+									<br />
+									This ability rewards you for letting your opponent build up their board, making it useful for decks that want to play a longer game or need card advantage.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_waylay.png" alt = "Waylay ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Waylay</div>
+							<div class = "ability-list-description">
+								<p>
+									Play on your opponent's battlefield on the corresponding row (counts towards your opponent's total). If any unit is played on this row, the Waylay card is removed and you draw 2 cards.
+								</p>
+								<p>
+									This ability is similar to Spy in that it goes on your opponent's side and counts towards their score. However, it rewards you when your opponent plays units on that row, giving you card advantage.
+									<br />
+									The strategic value comes from predicting which row your opponent will play units on, making it a good tool for controlling the flow of the game.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_guard.png" alt = "Guard ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Guard</div>
+							<div class = "ability-list-description">
+								<p>
+									When placed on the battlefield, the unit adjacent gains Battle Guard - any attack that would kill the guarded unit instead kills the unit who guarded the unit.
+								</p>
+								<p>
+									This ability protects an adjacent unit by redirecting lethal damage to the Guard unit instead. This is particularly useful for protecting high-value units from abilities like Execute or Scorch.
+									<br />
+									The Guard unit must be placed next to the unit you want to protect, so positioning is important.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_necromancy.png" alt = "Necromancy ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Necromancy</div>
+							<div class = "ability-list-description">
+								<p>
+									When this unit is played, add a unit with base power 5 or less back to your hand from your discard pile.
+								</p>
+								<p>
+									This ability allows you to recover units from your graveyard, similar to Medic but with a power restriction. The restored card goes to your hand rather than being played immediately, giving you more flexibility.
+									<br />
+									The card is displayed in the center of the screen with an animation so both players can see what was restored.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_sacrifice.png" alt = "Sacrifice ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Sacrifice</div>
+							<div class = "ability-list-description">
+								<p>
+									When this unit is played, you may choose to kill a friendly unit of your choice and play a random higher cost unit from your deck immediately, then shuffle your deck. If no higher cost unit card exists, the friendly unit just dies.
+								</p>
+								<p>
+									This ability allows you to trade a weaker unit for a potentially stronger one from your deck. You choose which friendly unit to sacrifice, and if there's a unit in your deck with higher base power, it will be played immediately.
+									<br />
+									This is useful for upgrading weak units or units with beneficial death effects (like Martyr) into stronger units.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_execute.png" alt = "Execute ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Execute</div>
+							<div class = "ability-list-description">
+								<p>
+									Destroy a hero card if it is alone in the opposite row.
+								</p>
+								<p>
+									This ability specifically targets hero units, which are normally immune to most abilities. If there's exactly one hero in the opposite row and no other units, Execute will destroy it.
+									<br />
+									This is a powerful counter to hero-heavy strategies, but requires careful timing since the hero must be alone in the row.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_martyr.png" alt = "Martyr ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Martyr</div>
+							<div class = "ability-list-description">
+								<p>
+									If this unit dies, draw a card.
+								</p>
+								<p>
+									This ability provides card advantage when the unit is destroyed. This makes Martyr units valuable targets for Sacrifice or other abilities that destroy your own units, as you can trade them for card advantage.
+									<br />
+									The card draw happens whenever the unit is removed from the battlefield, whether by Scorch, Execute, or any other means.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_fortify.png" alt = "Fortify ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Fortify</div>
+							<div class = "ability-list-description">
+								<p>
+									When this unit is alone on its row, gain +5 strength.
+								</p>
+								<p>
+									This ability rewards you for playing a unit on an empty row. The +5 strength bonus is permanent as long as the unit remains alone, making it useful for early game tempo or for protecting a single strong unit.
+									<br />
+									If another unit is added to the row, the bonus is lost. If units are removed and the Fortify unit becomes alone again, the bonus is restored.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_clairvoyance.png" alt = "Clairvoyance ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Clairvoyance</div>
+							<div class = "ability-list-description">
+								<p>
+									Look at the top 3 cards of your deck.
+								</p>
+								<p>
+									This ability gives you information about what cards are coming up in your deck. The cards are shown in a carousel for viewing, but they remain in your deck in the same order.
+									<br />
+									This is useful for planning your strategy and knowing what resources you have available.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_omen.png" alt = "Omen ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Omen</div>
+							<div class = "ability-list-description">
+								<p>
+									Create a copy of Cat and Dog and add it to your hand.
+								</p>
+								<p>
+									This ability creates a neutral "Cat and Dog" card and adds it directly to your hand. The card is created from scratch, so it doesn't require having Cat and Dog in your deck or discard pile.
+									<br />
+									This provides card advantage and gives you a flexible unit that can be placed in multiple rows.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_conspiracy.png" alt = "Conspiracy ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Conspiracy</div>
+							<div class = "ability-list-description">
+								<p>
+									When this unit enters play, shuffle special cards in your discard pile back into your deck, and shuffle your deck.
+								</p>
+								<p>
+									This ability allows you to recover special cards from your graveyard, giving you another chance to use powerful special cards like Scorch, Clear Weather, or Commander's Horn.
+									<br />
+									After shuffling the special cards back, your entire deck is shuffled, which can help or hurt depending on your deck composition.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_skelligetactics.png" alt = "Skellige Tactics ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Skellige Tactics</div>
+							<div class = "ability-list-description">
+								<p>
+									When this unit is placed on the battlefield, move target Dimun Warship and target Cog into its row, as many as are in play (on the battlefield not in hand or deck or discard).
+								</p>
+								<p>
+									This ability consolidates your naval units onto a single row, making it easier to apply row bonuses like Commander's Horn or Morale Boost to all of them at once.
+									<br />
+									Only units already on the battlefield are moved - cards in hand, deck, or discard pile are not affected.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_scorch_siege.png" alt = "Scorch - Siege ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Scorch - Siege</div>
+							<div class = "ability-list-description">
+								<p>
+									Destroys your enemy's strongest Siege Combat unit(s) if the combined strength of all his or her Siege Combat units is 10 or more.
+								</p>
+								<p>
+									This is a row-specific version of Scorch that only affects the Siege row. Like Scorch - Close Combat and Scorch - Ranged, it only triggers if the row's total strength is 10 or more.
+									<br />
+									This allows you to target specific rows without affecting other rows, making it more precise than global Scorch.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_special_treaty.png" alt = "Peace Treaty special ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Peace Treaty</div>
+							<div class = "ability-list-description">
+								<p>
+									This card stays on the board until the start of your next turn. Prevents any damaging effects (execution, scorch, et al) to your units until the start of your next turn.
+								</p>
+								<p>
+									This special card provides temporary protection for all your units. It's placed in a special position on the board (between the decks) and has a blue glowing outline.
+									<br />
+									While active, your units cannot be destroyed by Scorch, Execute, Witch Hunt, or other damaging abilities. The card is automatically removed at the start of your next turn and goes to your discard pile.
+									<br />
+									This is useful for protecting a strong board position or preventing your opponent from removing key units.
 								</p>
 							</div>
 						</div>

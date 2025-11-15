@@ -21,6 +21,10 @@ var ability_dict = {
 		name: "Skellige Storm",
 		description: "Reduces the Strength of all Range and Siege Units to 1. "
 	},
+	sandstorm: {
+		name: "Sandstorm",
+		description: "Reduces the Strength of all Close Combat and Ranged Combat Units to 1 (non-Hero units only). "
+	},
 	hero: {
 		name: "Hero",
 		description: "Not affected by any Special Cards or abilities. "
@@ -33,6 +37,30 @@ var ability_dict = {
 		name: "Commander's Horn",
 		description: "Doubles the strength of all unit cards in that row. Limited to 1 per row. ",
 		placed: async card => await card.animate("horn")
+	},
+	redania_horn: {
+		name: "Redanian Horn",
+		description: "Doubles the strength of all unit cards in that row. Limited to 1 per row. ",
+		placed: async card => await card.animate("horn")
+	},
+	redania_purge: {
+		name: "Purge",
+		description: "Discard after playing. Kills the strongest card(s) on the battlefield. ",
+		activated: async card => {	
+			await ability_dict["scorch"].placed(card);
+			await board.toGrave(card, card.holder.hand);
+		},
+		placed: async (card, row) => {
+			if (card.isLocked() || game.scorchCancelled) return;
+			if (row !== undefined) row.cards.splice(row.cards.indexOf(card), 1);
+			let maxUnits = board.row.map(r => [r, r.maxUnits()]).filter(p => p[1].length > 0).filter(p => !p[0].isShielded());
+			if (row !== undefined) row.cards.push(card);
+			let maxPower = maxUnits.reduce((a,p) => Math.max(a, p[1][0].power), 0);
+			let scorched = maxUnits.filter(p => p[1][0].power === maxPower);
+			let cards = scorched.reduce((a, p) => a.concat(p[1].map(u => [p[0], u])), []);
+			await Promise.all(cards.map(async u => await u[1].animate("scorch", true, false)));
+			await Promise.all(cards.map(async u => await board.toGrave(u[1], u[0])));
+		}
 	},
 	mardroeme: {
 		name: "Mardroeme",
@@ -86,9 +114,17 @@ var ability_dict = {
 		description: "Destroys your enemy's strongest Siege Combat unit(s) if the combined strength of all his or her Siege Combat units is 10 or more. ",
 		placed: async (card) => await board.getRow(card, "siege", card.holder.opponent()).scorch()
 	},
-	agile: {
-		name:"Agile", 
-		description: "Can be placed in either the Close Combat or the Ranged Combat row. Cannot be moved once placed. "
+	any: {
+		name:"Any", 
+		description: "Can be placed in any row (Close Combat, Ranged Combat, or Siege). Cannot be moved once placed. "
+	},
+	melee_siege: {
+		name:"Melee/Siege", 
+		description: "Can be placed in either the Close Combat or Siege row. Cannot be moved once placed. "
+	},
+	ranged_siege: {
+		name:"Ranged/Siege", 
+		description: "Can be placed in either the Ranged Combat or Siege row. Cannot be moved once placed. "
 	},
 	muster: {
 		name:"Muster", 
@@ -175,31 +211,104 @@ var ability_dict = {
 		description: "When this card is removed from the battlefield, it summons a powerful new Unit Card to take its place. ",
 		removed: async (card) => {
 			if (game.over || game.roundHistory.length > 2 || card.isLocked()) return;
-			if (card_dict[card.target]["ability"].includes("muster") && (card.holder.deck.findCards(c => c.key === card.target).length === 0 && card.holder.hand.findCards(c => c.key === card.target).length === 0)) {
-				for (let i = 0; i < card_dict[card.target]["count"]; i++) {
-					let avenger = new Card(card.target, card_dict[card.target], card.holder);
-					avenger.removed.push(() => setTimeout(() => avenger.holder.grave.removeCard(avenger), 2000));
-					if (card.target != card.key) await board.addCardToRow(avenger, avenger.row, card.holder);
+			// Special case: Crow Messenger musters other Crow Messengers but avenges into Crowmother
+			let avengerTarget = card.target;
+			if (card.key === "sk_crow_messenger") {
+				avengerTarget = "sk_crowmother";
+			}
+			
+			// Helper function to determine the row for the avenged unit
+			// Prefer the same row where the original card died (if valid), otherwise use target's row
+			const getAvengerRow = (avengerCard, originalCard) => {
+				const avengerRowDesignation = avengerCard.row;
+				const originalRow = originalCard.currentLocation;
+				
+				// If original card died in a Row, check if that row is valid for the avenger
+				if (originalRow instanceof Row) {
+					const rowIndex = originalRow.getRowIndex();
+					// Convert row index to row name
+					// board.row[0] = siege (op), [1] = ranged (op), [2] = close (op)
+					// board.row[3] = close (me), [4] = ranged (me), [5] = siege (me)
+					let rowName;
+					if (rowIndex === 0 || rowIndex === 5) rowName = "siege";
+					else if (rowIndex === 1 || rowIndex === 4) rowName = "ranged";
+					else if (rowIndex === 2 || rowIndex === 3) rowName = "close";
+					else rowName = null;
+					
+					// Check if the avenger's row designation allows this row
+					if (rowName) {
+						if (avengerRowDesignation === "agile") {
+							// Agile can be close or ranged
+							if (rowName === "close" || rowName === "ranged") {
+								return rowName;
+							}
+						} else if (avengerRowDesignation === "any") {
+							// Any can be close, ranged, or siege
+							if (rowName === "close" || rowName === "ranged" || rowName === "siege") {
+								return rowName;
+							}
+						} else if (avengerRowDesignation === "melee_siege") {
+							// Melee/Siege can be close or siege
+							if (rowName === "close" || rowName === "siege") {
+								return rowName;
+							}
+						} else if (avengerRowDesignation === "ranged_siege") {
+							// Ranged/Siege can be ranged or siege
+							if (rowName === "ranged" || rowName === "siege") {
+								return rowName;
+							}
+						} else if (avengerRowDesignation === rowName) {
+							// Exact match
+							return rowName;
+						}
+					}
 				}
-			} else if (card.target === card.key) await board.moveTo(card, card.row, card.holder.grave);
+				
+				// Fallback: use target's row designation, with defaults for flexible rows
+				if (avengerRowDesignation === "agile" || avengerRowDesignation === "any" || avengerRowDesignation === "melee_siege") {
+					return "close";
+				} else if (avengerRowDesignation === "ranged_siege") {
+					return "ranged";
+				}
+				return avengerRowDesignation;
+			};
+			
+			if (card_dict[avengerTarget]["ability"].includes("muster") && (card.holder.deck.findCards(c => c.key === avengerTarget).length === 0 && card.holder.hand.findCards(c => c.key === avengerTarget).length === 0)) {
+				for (let i = 0; i < card_dict[avengerTarget]["count"]; i++) {
+					let avenger = new Card(avengerTarget, card_dict[avengerTarget], card.holder);
+					avenger.removed.push(() => setTimeout(() => avenger.holder.grave.removeCard(avenger), 2000));
+					if (avengerTarget != card.key) {
+						const targetRow = getAvengerRow(avenger, card);
+						await board.addCardToRow(avenger, targetRow, card.holder);
+					}
+				}
+			} else if (avengerTarget === card.key) await board.moveTo(card, card.row, card.holder.grave);
 			else {
 				let avenger;
-				if (card.holder.deck.findCards(c => c.key === card.target).length) {
-					avenger = card.holder.deck.findCard(c => c.key === card.target);
-					await board.moveTo(avenger, avenger.row, card.holder.deck);
-				} else if (card.holder.hand.findCards(c => c.key === card.target).length) {
-					avenger = card.holder.hand.findCard(c => c.key === card.target);
-					await board.moveTo(avenger, avenger.row, card.holder.hand);
+				if (card.holder.deck.findCards(c => c.key === avengerTarget).length) {
+					avenger = card.holder.deck.findCard(c => c.key === avengerTarget);
+					const targetRow = getAvengerRow(avenger, card);
+					await board.moveTo(avenger, targetRow, card.holder.deck);
+				} else if (card.holder.hand.findCards(c => c.key === avengerTarget).length) {
+					avenger = card.holder.hand.findCard(c => c.key === avengerTarget);
+					const targetRow = getAvengerRow(avenger, card);
+					await board.moveTo(avenger, targetRow, card.holder.hand);
 				} else {
-					avenger = new Card(card.target, card_dict[card.target], card.holder);
-					await board.addCardToRow(avenger, avenger.row, card.holder);
-					if (card.target != card.key) avenger.removed.push(() => setTimeout(() => avenger.holder.grave.removeCard(avenger), 2000));
+					avenger = new Card(avengerTarget, card_dict[avengerTarget], card.holder);
+					const targetRow = getAvengerRow(avenger, card);
+					await board.addCardToRow(avenger, targetRow, card.holder);
+					if (avengerTarget != card.key) avenger.removed.push(() => setTimeout(() => avenger.holder.grave.removeCard(avenger), 2000));
 				}
 			}
 		},
 		weight: (card) => {
 			if (game.roundHistory.length > 2) return 1;
-			return Number(card_dict[card.target]["strength"]);
+			// Special case: Crow Messenger avenges into Crowmother
+			let avengerTarget = card.target;
+			if (card.key === "sk_crow_messenger") {
+				avengerTarget = "sk_crowmother";
+			}
+			return Number(card_dict[avengerTarget]["strength"]);
 		}
 	},
 	cintra_slaughter: {
@@ -534,11 +643,247 @@ var ability_dict = {
 				game.scorchCancelled = false;
 				return true;
 			});
+		},
+		weight: (card, ai, max) => {
+			// If scorch is already cancelled, no point using this
+			if (game.scorchCancelled) return 0;
+			
+			// Calculate how vulnerable the player's units are to scorch
+			let vulnerableValue = 0;
+			const playerRows = ai.player.getAllRows();
+			
+			// First, check for global scorch vulnerability (strongest units across all rows)
+			// Get all player units from non-shielded rows
+			const allPlayerUnits = [];
+			playerRows.forEach(row => {
+				if (!row.isShielded()) {
+					allPlayerUnits.push(...row.cards.filter(c => c.isUnit()));
+				}
+			});
+			
+			if (allPlayerUnits.length > 0) {
+				const maxPower = Math.max(...allPlayerUnits.map(c => c.power));
+				// Check if player has the globally strongest units
+				const opponentRows = ai.player.opponent().getAllRows();
+				const allOpponentUnits = opponentRows.filter(r => !r.isShielded())
+					.reduce((acc, row) => acc.concat(row.cards.filter(c => c.isUnit())), []);
+				
+				if (allOpponentUnits.length === 0 || Math.max(...allOpponentUnits.map(c => c.power), 0) <= maxPower) {
+					// Player has the strongest units - vulnerable to global scorch
+					const globalScorchTargets = allPlayerUnits.filter(c => c.power === maxPower);
+					const globalLoss = globalScorchTargets.reduce((sum, c) => sum + c.power, 0);
+					vulnerableValue += globalLoss;
+				}
+			}
+			
+			// Also check for row-specific scorch vulnerability (scorch_c, scorch_r, scorch_s)
+			playerRows.forEach(row => {
+				// Row-specific scorch only works if row total >= 10 and row is not shielded
+				if (row.total >= 10 && !row.isShielded()) {
+					const units = row.cards.filter(c => c.isUnit());
+					if (units.length > 0) {
+						const maxPower = Math.max(...units.map(c => c.power));
+						const scorchTargets = units.filter(c => c.power === maxPower);
+						const rowLoss = scorchTargets.reduce((sum, c) => sum + c.power, 0);
+						vulnerableValue += rowLoss * 0.5; // Row-specific scorches are less common, weight them less
+					}
+				}
+			});
+			
+			// If no vulnerable units, weight is low
+			if (vulnerableValue === 0) return 0;
+			
+			// Weight is proportional to the potential loss
+			// Higher value = more important to protect
+			// Cap it at a reasonable maximum to avoid overvaluing
+			return Math.min(Math.floor(vulnerableValue), 50);
 		}
 	},
 	vilgefortz_magician_kovir: {
 		description: "Halves the strength of all spy cards (affects both players).",
 		gameStart: () => game.spyPowerMult = 0.5
+	},
+	redania_radovid_kingofredania: {
+		description: "Draw 2 cards from your deck, play one and discard the other.",
+		activated: async (card) => {
+			const player = card.holder;
+			const deck = board.getRow(card, "deck", player);
+			if (player.controller instanceof ControllerAI) {
+				// AI: Draw 2, play best, discard worst
+				const drawn = [];
+				for (let i = 0; i < 2 && deck.cards.length > 0; i++) {
+					const c = deck.cards[0];
+					deck.removeCard(c);
+					drawn.push(c);
+				}
+				if (drawn.length === 0) return;
+				// Play best card
+				drawn.sort((a, b) => player.controller.weightCard(b, player.controller.getMaximums(), player.controller.getBoardData()) - player.controller.weightCard(a, player.controller.getMaximums(), player.controller.getBoardData()));
+				await player.playCard(drawn[0]);
+				// Discard the other
+				if (drawn.length > 1) {
+					await board.toGrave(drawn[1], player.hand);
+				}
+			} else {
+				// Player: Draw 2, let them choose
+				const drawn = [];
+				for (let i = 0; i < 2 && deck.cards.length > 0; i++) {
+					const c = deck.cards[0];
+					deck.removeCard(c);
+					player.hand.addCard(c);
+					drawn.push(c);
+				}
+				if (drawn.length === 0) return;
+				// Let player choose which to play, which to discard
+				await ui.queueCarousel(player.hand, 1, async (c, i) => {
+					const selected = c.cards[i];
+					player.hand.removeCard(selected);
+					await player.playCard(selected);
+					// Discard the other
+					const other = drawn.find(c => c !== selected);
+					if (other) {
+						player.hand.removeCard(other);
+						await board.toGrave(other, player.hand);
+					}
+				}, c => drawn.includes(c), true);
+			}
+		},
+		weight: (card, ai, max) => {
+			// Good if we have cards in deck
+			return Math.min(ai.player.deck.cards.length * 5, 40);
+		}
+	},
+	redania_radovid_thestrategist: {
+		description: "Choose one hero card on your battlefield, put it into your hand.",
+		activated: async (card) => {
+			const player = card.holder;
+			const heroes = player.getAllRowCards().filter(c => c.hero);
+			if (heroes.length === 0) return;
+			if (player.controller instanceof ControllerAI) {
+				// AI: Return weakest hero
+				const weakest = heroes.sort((a, b) => a.power - b.power)[0];
+				await board.toHand(weakest, weakest.currentLocation);
+			} else {
+				// Player: Choose hero
+				const container = new CardContainer();
+				container.cards = heroes;
+				await ui.queueCarousel(container, 1, async (c, i) => {
+					await board.toHand(c.cards[i], c.cards[i].currentLocation);
+				}, () => true, true);
+			}
+		},
+		weight: (card, ai, max) => {
+			const heroes = ai.player.getAllRowCards().filter(c => c.hero);
+			if (heroes.length === 0) return 0;
+			// Value based on weakest hero (can replay it)
+			const weakest = heroes.sort((a, b) => a.power - b.power)[0];
+			return weakest.power * 2;
+		}
+	},
+	redania_radovid_themystic: {
+		description: "Your opponent must discard one card of their choosing and draw another one from their deck.",
+		activated: async (card) => {
+			const opponent = card.holder.opponent();
+			const hand = board.getRow(card, "hand", opponent);
+			const deck = board.getRow(card, "deck", opponent);
+			if (hand.cards.length === 0) return;
+			if (opponent.controller instanceof ControllerAI) {
+				// AI opponent: Discard worst card
+				const worst = hand.cards.sort((a, b) => opponent.controller.weightCard(a, opponent.controller.getMaximums(), opponent.controller.getBoardData()) - opponent.controller.weightCard(b, opponent.controller.getMaximums(), opponent.controller.getBoardData()))[0];
+				await board.toGrave(worst, hand);
+				if (deck.cards.length > 0) {
+					deck.draw(hand);
+				}
+			} else {
+				// Human opponent: Choose card to discard
+				await ui.queueCarousel(hand, 1, async (c, i) => {
+					await board.toGrave(c.cards[i], c);
+					if (deck.cards.length > 0) {
+						deck.draw(hand);
+					}
+				}, () => true);
+			}
+		},
+		weight: (card, ai, max) => {
+			const opponent = ai.player.opponent();
+			if (opponent.hand.cards.length === 0) return 0;
+			// Disrupt opponent's hand
+			return 15;
+		}
+	},
+	redania_radovid_thestern: {
+		description: "Destroy one unit (non hero) card on your side of the battlefield. That card's power total is permanently added to your total score this round.",
+		activated: async (card) => {
+			const player = card.holder;
+			const units = player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			if (units.length === 0) return;
+			if (player.controller instanceof ControllerAI) {
+				// AI: Destroy weakest unit for points
+				const weakest = units.sort((a, b) => a.power - b.power)[0];
+				const power = weakest.power;
+				await board.toGrave(weakest, weakest.currentLocation);
+				player.total += power;
+				player.updateScore();
+			} else {
+				// Player: Choose unit
+				const container = new CardContainer();
+				container.cards = units;
+				await ui.queueCarousel(container, 1, async (c, i) => {
+					const selected = c.cards[i];
+					const power = selected.power;
+					await board.toGrave(selected, selected.currentLocation);
+					player.total += power;
+					player.updateScore();
+				}, () => true, true);
+			}
+		},
+		weight: (card, ai, max) => {
+			const units = ai.player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			if (units.length === 0) return 0;
+			// Value based on weakest unit's power (sacrifice for points)
+			const weakest = units.sort((a, b) => a.power - b.power)[0];
+			return weakest.power;
+		}
+	},
+	redania_radovid_themadking: {
+		description: "Destroy your strongest card, and your opponent's strongest card. (Both nonhero)",
+		activated: async (card) => {
+			const player = card.holder;
+			const opponent = player.opponent();
+			const myUnits = player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			const oppUnits = opponent.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			
+			if (myUnits.length > 0) {
+				const maxPower = Math.max(...myUnits.map(c => c.power));
+				const strongest = myUnits.filter(c => c.power === maxPower)[0];
+				await strongest.animate("scorch", true, false);
+				await board.toGrave(strongest, strongest.currentLocation);
+			}
+			
+			if (oppUnits.length > 0) {
+				const maxPower = Math.max(...oppUnits.map(c => c.power));
+				const strongest = oppUnits.filter(c => c.power === maxPower)[0];
+				await strongest.animate("scorch", true, false);
+				await board.toGrave(strongest, strongest.currentLocation);
+			}
+		},
+		weight: (card, ai, max) => {
+			const player = ai.player;
+			const opponent = player.opponent();
+			const myUnits = player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			const oppUnits = opponent.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			
+			if (myUnits.length === 0 || oppUnits.length === 0) return 0;
+			
+			const myMax = Math.max(...myUnits.map(c => c.power));
+			const oppMax = Math.max(...oppUnits.map(c => c.power));
+			
+			// Good if opponent's strongest is stronger than ours
+			if (oppMax > myMax) {
+				return (oppMax - myMax) * 2;
+			}
+			return 0;
+		}
 	},
 	cosimo_malaspina: {
 		description: "Destroy your enemy's strongest Melee unit(s) if the combined strength of all his or her Melee units is 10 or more.",
@@ -801,6 +1146,96 @@ var ability_dict = {
 		description: "All medic cards can choose two unit cards from the discard pile (affects both players).",
 		gameStart: () => game.medicCount = 2
 	},
+	meve_resolute: {
+		description: "Once per game, boost the power of all allied units on the battlefield by +1 until the end of the round.",
+		activated: async (card, player) => {
+			// Get all units currently on the battlefield (not in hand)
+			const unitsToBoost = player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			
+			if (unitsToBoost.length === 0) {
+				// No units to boost, but ability is still used
+				return;
+			}
+			
+			// Initialize tracking if needed
+			if (!player.meveResoluteBoosted) {
+				player.meveResoluteBoosted = [];
+			}
+			
+			// Boost each unit by +1
+			for (const unit of unitsToBoost) {
+				const currentPower = unit.power;
+				unit.setPower(currentPower + 1);
+				player.meveResoluteBoosted.push(unit);
+				
+				// Update the row total
+				if (unit.currentLocation instanceof Row) {
+					const row = unit.currentLocation;
+					const oldTotal = row.total;
+					row.updateTotal(1);
+				}
+			}
+			
+			// Add roundEnd hook to reset the boost
+			game.roundEnd.push(async () => {
+				if (player.meveResoluteBoosted && player.meveResoluteBoosted.length > 0) {
+					// Create a copy of the array to avoid issues if units are removed during iteration
+					const boostedUnits = [...player.meveResoluteBoosted];
+					for (const unit of boostedUnits) {
+						// Check if unit still exists and is on the battlefield
+						if (unit && unit.currentLocation instanceof Row) {
+							const currentPower = unit.power;
+							// Only reduce if power is still boosted (safety check)
+							if (currentPower > unit.basePower) {
+								unit.setPower(currentPower - 1);
+								
+								// Update the row total
+								const row = unit.currentLocation;
+								row.updateTotal(-1);
+							}
+						}
+					}
+					player.meveResoluteBoosted = [];
+				}
+				return true; // Remove this hook after execution
+			});
+		},
+		weight: (card, ai, max) => {
+			const player = ai.player;
+			const unitsOnField = player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			const unitCount = unitsOnField.length;
+			
+			if (unitCount === 0) {
+				return 0; // No units to boost, not worth using
+			}
+			
+			// Base value: +1 per unit
+			let value = unitCount;
+			
+			// Bonus if we're behind or in a close game
+			const scoreDiff = player.opponent().total - player.total;
+			if (scoreDiff > 0) {
+				value += Math.min(scoreDiff, 10); // Extra value if behind
+			}
+			
+			// Bonus if opponent has passed (we can secure the round)
+			if (player.opponent().passed) {
+				value += 5;
+			}
+			
+			// Penalty if we're way ahead (save for later rounds)
+			if (scoreDiff < -15) {
+				value -= 5;
+			}
+			
+			// Higher value in later rounds (round 2 or 3)
+			if (game.roundCount >= 2) {
+				value += 3;
+			}
+			
+			return Math.max(1, Math.min(value, 30));
+		}
+	},
 	carlo_varese: {
 		description: "If the opponent has a total of 10 or higher on one row, destroy that row's strongest card(s) (affects only the opponent's side of the battle field).",
 		activated: async (card, player) => {
@@ -896,6 +1331,13 @@ var ability_dict = {
 		placed: async card => {
 			let row = card.currentLocation.getOppositeRow();
 			if (row.isShielded() || game.scorchCancelled) return;
+			
+			// Check for Peace Treaty protection
+			const targetPlayer = row.cards.length > 0 ? row.cards[0].holder : null;
+			if (targetPlayer && game.peaceTreatyActive && game.peaceTreatyActive[targetPlayer.tag]) {
+				return; // Peace Treaty prevents witch_hunt
+			}
+			
 			let units = row.minUnits();
 			await Promise.all(units.map(async c => await c.animate("scorch", true, false)));
 			await Promise.all(units.map(async c => await board.toGrave(c, row)));
@@ -963,5 +1405,1199 @@ var ability_dict = {
 	inspire: {
 		name: "Inspire",
 		description: "All units with Inspire ability take the highest base strength of the Inspire units on your side of the board. Still affected by weather.",
+	},
+	immortal: {
+		name: "Immortal",
+		description: "The card will remain on the battlefield for two rounds instead of one. Cannot die from any other effect.",
+		placed: async card => {
+			card.immortal = true;
+			card.immortalRounds = 2;
+			game.roundEnd.push(async () => {
+				if (card.immortal && card.immortalRounds > 0) {
+					card.immortalRounds--;
+					if (card.immortalRounds === 0) {
+						card.immortal = false;
+					} else {
+						card.noRemove = true;
+						await card.animate("resilience");
+						game.roundStart.push(async () => {
+							delete card.noRemove;
+							return true;
+						});
+					}
+				}
+				return false;
+			});
+		}
+	},
+	execute: {
+		name: "Execute",
+		description: "Destroy a hero card if it is alone in the opposite row.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			// Get the opposite row using the Row's getOppositeRow method
+			if (!(card.currentLocation instanceof Row)) return;
+			const oppositeRow = card.currentLocation.getOppositeRow();
+			if (!oppositeRow) return;
+			
+			// Check for Peace Treaty protection
+			const targetPlayer = oppositeRow.cards.length > 0 ? oppositeRow.cards[0].holder : null;
+			if (targetPlayer && game.peaceTreatyActive && game.peaceTreatyActive[targetPlayer.tag]) {
+				return; // Peace Treaty prevents execute
+			}
+			
+			const heroes = oppositeRow.cards.filter(c => c.isUnit() && c.hero && !c.immortal);
+			if (heroes.length === 1) {
+				await heroes[0].animate("execute", true, false);
+				await board.toGrave(heroes[0], oppositeRow);
+			}
+		},
+		weight: (card, ai, max) => {
+			// Check if opponent has Peace Treaty active
+			const opponent = ai.player.opponent();
+			if (game.peaceTreatyActive && game.peaceTreatyActive[opponent.tag]) {
+				return 0; // Peace Treaty blocks execute
+			}
+			// Value based on opponent having lone heroes
+			const rows = opponent.getAllRows();
+			let executeValue = 0;
+			for (const row of rows) {
+				const heroes = row.cards.filter(c => c.isUnit() && c.hero && !c.immortal);
+				const otherUnits = row.cards.filter(c => c.isUnit() && !c.hero);
+				// If there's exactly one hero and no other units, execute can kill it
+				if (heroes.length === 1 && otherUnits.length === 0) {
+					executeValue += heroes[0].power;
+				}
+			}
+			return Math.min(card.power + executeValue, 30);
+		}
+	},
+	curse: {
+		name: "Curse",
+		description: "Place this card on your opponent's battlefield on the corresponding row. The next non-hero unit card placed on this row will be destroyed.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			// Place on opponent's side (like spy)
+			card.holder = card.holder.opponent();
+			// Mark the row as cursed
+			const row = card.currentLocation;
+			if (!row.curseCard) {
+				row.curseCard = card;
+			}
+		}
+	},
+	waylay: {
+		name: "Waylay",
+		description: "Play on your opponent's battlefield on the corresponding row (counts towards your opponent's total). If any unit is played on this row, Bandit Camp is removed and you draw 2 cards.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			// Place on opponent's side (like spy/curse)
+			// The card is already on the opponent's row via getRow logic, and will count towards their score
+			card.holder = card.holder.opponent();
+			// Mark the row with waylay card
+			const row = card.currentLocation;
+			if (!row.waylayCard) {
+				row.waylayCard = card;
+			}
+		},
+		weight: (card, ai, max) => {
+			// Value based on opponent's likelihood to play units on that row
+			const opponent = ai.player.opponent();
+			const row = board.getRow(card, card.row, opponent);
+			const opponentUnits = opponent.getAllRowCards().filter(c => c.isUnit());
+			const rowUnits = opponentUnits.filter(c => {
+				const cardRow = board.getRow(c, c.row, opponent);
+				return cardRow === row;
+			});
+			// Higher value if opponent has many units that could be played on this row
+			const potentialValue = rowUnits.length * 3;
+			// Also consider opponent's hand size (more cards = more likely to play)
+			const handBonus = opponent.hand.cards.length * 2;
+			return Math.min(card.power + potentialValue + handBonus, 25);
+		}
+	},
+	decree: {
+		name: "Decree",
+		description: "Play your leader's ability now (even if it was used).",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			tocar("decree", false);
+			const player = card.holder;
+			// Trigger leader ability directly without affecting leader availability
+			// This acts as a pseudo-trigger that doesn't change the leader's state
+			try {
+				Carousel.curr.cancel();
+			} catch (err) {}
+			// Call leader's activated function directly
+			if (player.leader && player.leader.activated && player.leader.activated.length > 0) {
+				await player.leader.activated[0](player.leader, player);
+			}
+		}
+	},
+	omen: {
+		name: "Omen",
+		description: "Create a copy of Cat and Dog and add it to your hand.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			const player = card.holder;
+			const targetKey = "ne_catanddog";
+
+			// Play omen animation (like emissary)
+			await card.animate("omen");
+
+			// Create a new card instance and add to hand
+			const catAndDogData = card_dict[targetKey];
+			if (!catAndDogData) {
+				console.error("Cat and Dog card data not found for omen ability.");
+				return;
+			}
+			const newCard = new Card(targetKey, catAndDogData, player);
+			player.hand.addCard(newCard);
+		},
+		weight: (card, ai, max) => {
+			// Value based on getting Cat and Dog (0 power agile unit)
+			// Generally useful for hand size and potential synergies
+			return card.power + 8; // Moderate value for card advantage
+		}
+	},
+	trade: {
+		name: "Trade",
+		description: "When your opponent's total power reaches 12, 24, or 36, draw 1 card.",
+		placed: async (card) => {
+			// Trade is handled via game state tracking in gwent.js
+			// This placed function is just for ability definition
+		},
+		weight: (card, ai, max) => {
+			// Value based on opponent's current total and likelihood to reach thresholds
+			const opponent = ai.player.opponent();
+			const thresholds = [12, 24, 36];
+			const currentTotal = opponent.total;
+			// Check how close opponent is to next threshold
+			const nextThreshold = thresholds.find(t => t > currentTotal);
+			if (!nextThreshold) return card.power; // Already past all thresholds
+			const distanceToThreshold = nextThreshold - currentTotal;
+			// More conservative threshold bonus - only high value when very close
+			const thresholdBonus = distanceToThreshold <= 3 ? 6 : (distanceToThreshold <= 6 ? 3 : 0);
+			// Moderate synergy bonus (reduced from 3 to 2 per card)
+			const tradeCards = ai.player.getAllRowCards().filter(c => c.isUnit() && c.abilities.includes("trade"));
+			const synergyBonus = tradeCards.length * 2;
+			// Base power + conservative bonuses, capped lower
+			return Math.min(card.power + thresholdBonus + synergyBonus, 18);
+		}
+	},
+	adaptive: {
+		name: "Adaptive",
+		description: "This unit's base Strength is 2 (instead of 1) while affected by Weather.",
+	},
+	emissary: {
+		name: "Emissary",
+		description: "Place on your opponent's battlefield. Draw 3 cards from the top of your opponent's deck, keep 1 in your hand, discard 1, and shuffle the last one back.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			await card.animate("emissary");
+			const opponent = card.holder.opponent();
+			// Draw up to 3 cards from opponent's deck
+			const drawnCards = [];
+			for (let i = 0; i < 3 && opponent.deck.cards.length > 0; i++) {
+				const drawnCard = opponent.deck.cards[0];
+				opponent.deck.removeCard(drawnCard);
+				drawnCards.push(drawnCard);
+			}
+			if (drawnCards.length === 0) {
+				// Place on opponent's side (like spy)
+				card.holder = opponent;
+				return;
+			}
+			// Create a temporary container to manage the drawn cards
+			const tempContainer = new CardContainer();
+			drawnCards.forEach(c => {
+				c.currentLocation = tempContainer;
+				tempContainer.cards.push(c);
+			});
+			if (card.holder.controller instanceof ControllerAI) {
+				// AI: Keep the best card, discard the worst, shuffle the remaining card
+				const sortedCards = [...drawnCards].sort((a, b) => {
+					const weightA = card.holder.controller.weightCard(a, card.holder.controller.getMaximums(), card.holder.controller.getBoardData());
+					const weightB = card.holder.controller.weightCard(b, card.holder.controller.getMaximums(), card.holder.controller.getBoardData());
+					return weightB - weightA;
+				});
+				const keepCard = sortedCards[0];
+				if (keepCard && tempContainer.cards.includes(keepCard)) {
+					tempContainer.removeCard(keepCard);
+					card.holder.hand.addCard(keepCard);
+				}
+				const discardCard = sortedCards.length > 1 ? sortedCards[sortedCards.length - 1] : null;
+				if (discardCard && tempContainer.cards.includes(discardCard)) {
+					tempContainer.removeCard(discardCard);
+					await board.toGrave(discardCard, tempContainer);
+				}
+				if (tempContainer.cards.length > 0) {
+					const shuffleCard = tempContainer.cards[0];
+					tempContainer.removeCard(shuffleCard);
+					await board.toDeck(shuffleCard, tempContainer);
+				}
+			} else {
+				// Player: Let them choose which to keep, then which to discard
+				card.holder.endTurnAfterAbilityUse = false;
+				await ui.queueCarousel(tempContainer, 1, async (container, index) => {
+					const selectedCard = container.cards[index];
+					container.removeCard(selectedCard);
+					card.holder.hand.addCard(selectedCard);
+				}, () => true, false, true, "Choose a card to keep");
+				if (tempContainer.cards.length === 1) {
+					const discardCard = tempContainer.cards[0];
+					tempContainer.removeCard(discardCard);
+					await board.toGrave(discardCard, tempContainer);
+				} else if (tempContainer.cards.length === 2) {
+					await ui.queueCarousel(tempContainer, 1, async (container, index) => {
+						const discardCard = container.cards[index];
+						container.removeCard(discardCard);
+						await board.toGrave(discardCard, container);
+					}, () => true, false, true, "Choose a card to discard (remaining card will be shuffled)");
+					if (tempContainer.cards.length === 1) {
+						const shuffleCard = tempContainer.cards[0];
+						tempContainer.removeCard(shuffleCard);
+						await board.toDeck(shuffleCard, tempContainer);
+					}
+				}
+				card.holder.endTurnAfterAbilityUse = true;
+			}
+			// Place on opponent's side (like spy)
+			card.holder = opponent;
+		},
+		weight: (card, ai, max) => {
+			// Emissary is like a spy but with card advantage potential
+			// Value based on card advantage and opponent's deck quality
+			const opponent = ai.player.opponent();
+			const handSize = ai.player.hand.cards.length;
+			const opponentHandSize = opponent.hand.cards.length;
+			const cardAdvantage = opponentHandSize - handSize;
+			
+			// Base value similar to spy (15), but consider card advantage
+			let score = 12; // Slightly less than spy since it's more complex
+			
+			// More valuable if we're behind in cards
+			if (cardAdvantage > 0) {
+				score += Math.min(cardAdvantage * 2, 8);
+			}
+			
+			// Less valuable if we're ahead in cards (don't need more)
+			if (cardAdvantage < -2) {
+				score -= 3;
+			}
+			
+			// Consider opponent's deck size (more cards = more value)
+			const deckBonus = Math.min(opponent.deck.cards.length / 5, 3);
+			score += deckBonus;
+			
+			// Don't overvalue - cap at reasonable level
+			return Math.min(score, 20);
+		}
+	},
+	ofir_aamad: {
+		name: "Aamad, the Wise",
+		description: "Whenever you draw a card, you gain +1 total power for this round permanently (resets upon round completion back to 0).",
+		gameStart: (card, player) => {
+			// Initialize the bonus tracker
+			if (!player.aamadBonus) {
+				player.aamadBonus = 0;
+			}
+			
+			// Hook into the draw method to track card draws
+			const originalDraw = player.deck.draw.bind(player.deck);
+			player.deck.draw = async function(hand) {
+				const result = await originalDraw(hand);
+				// Check if the hand's owner has Aamad as leader
+				const drawingPlayer = hand.holder || player;
+				if (drawingPlayer.leader && drawingPlayer.leader.abilities && drawingPlayer.leader.abilities.includes("ofir_aamad")) {
+					drawingPlayer.aamadBonus = (drawingPlayer.aamadBonus || 0) + 1;
+					drawingPlayer.updateTotal(1);
+				}
+				return result;
+			};
+			
+			// Reset bonus at round start
+			game.roundStart.push(async () => {
+				if (player.aamadBonus && player.aamadBonus > 0) {
+					// Subtract the old bonus from total
+					player.updateTotal(-player.aamadBonus);
+					player.aamadBonus = 0;
+				}
+				return false; // Don't remove this hook
+			});
+		}
+	},
+	ofir_aamad_merchant: {
+		description: "Passive: If you've drawn 10 cards this round, you win the round.",
+		gameStart: (card, player) => {
+			// Initialize draw counter
+			if (!player.merchantKingDraws) {
+				player.merchantKingDraws = 0;
+			}
+			
+			// Track all card draws by hooking into hand.addCard
+			// This catches: normal draws, emissary, spy, trade, waylay, etc.
+			const originalAddCard = player.hand.addCard.bind(player.hand);
+			player.hand.addCard = function(card) {
+				const result = originalAddCard(card);
+				
+				// Check if this player has the merchant king ability
+				if (player.leader && player.leader.abilities && player.leader.abilities.includes("ofir_aamad_merchant")) {
+					// Increment draw counter
+					player.merchantKingDraws = (player.merchantKingDraws || 0) + 1;
+					
+					// Check if 10 cards have been drawn
+					if (player.merchantKingDraws >= 10 && !player.merchantKingWon) {
+						// Mark that we've triggered the win to prevent multiple triggers
+						player.merchantKingWon = true;
+						
+						// Win the round immediately
+						(async () => {
+							// Ensure player's total is higher than opponent to guarantee win
+							const opponent = player.opponent();
+							const currentDiff = player.total - opponent.total;
+							if (currentDiff <= 0) {
+								// Temporarily boost player's total to ensure win
+								player.updateTotal(Math.abs(currentDiff) + 1);
+							}
+							
+							// End the round (this will determine winner based on totals)
+							if (!game.over) {
+								// Force both players to pass if needed, then end round
+								if (!player.passed) {
+									player.setPassed(true);
+								}
+								if (!opponent.passed) {
+									opponent.setPassed(true);
+								}
+								await game.endRound();
+							}
+						})();
+					}
+				}
+				
+				return result;
+			};
+			
+			// Also track deck.draw for normal draws (as backup)
+			const originalDraw = player.deck.draw.bind(player.deck);
+			player.deck.draw = async function(hand) {
+				const result = await originalDraw(hand);
+				// The hand.addCard hook will catch this, but we track here too for safety
+				const drawingPlayer = hand.holder || player;
+				if (drawingPlayer.leader && drawingPlayer.leader.abilities && drawingPlayer.leader.abilities.includes("ofir_aamad_merchant")) {
+					// Counter is incremented in hand.addCard, so we don't need to do it here
+					// But we can add a check if needed
+				}
+				return result;
+			};
+			
+			// Reset draw counter and win flag at round start
+			game.roundStart.push(async () => {
+				if (player.merchantKingDraws !== undefined) {
+					player.merchantKingDraws = 0;
+				}
+				if (player.merchantKingWon !== undefined) {
+					player.merchantKingWon = false;
+				}
+				return false; // Don't remove this hook
+			});
+		},
+		weight: (card, ai, max) => {
+			const player = ai.player;
+			const currentDraws = player.merchantKingDraws || 0;
+			const drawsNeeded = 10 - currentDraws;
+			
+			// If we're close to 10 draws, this becomes very valuable
+			if (currentDraws >= 7) {
+				return 50; // Very high priority if close to winning
+			} else if (currentDraws >= 5) {
+				return 30; // High priority if halfway there
+			} else if (currentDraws >= 3) {
+				return 15; // Moderate priority
+			}
+			
+			// Base value: encourage drawing cards
+			// Value increases if we have cards/abilities that draw (emissary, spy, trade)
+			const drawAbilities = player.getAllRowCards().filter(c => 
+				c.abilities.includes("emissary") || 
+				c.abilities.includes("spy") || 
+				c.abilities.includes("trade")
+			).length;
+			
+			return Math.max(5, 5 + drawAbilities * 2);
+		}
+	},
+	ofir_grand_vizier_saheem: {
+		description: "Once per game, you may look at the top 3 cards of your opponent's deck, add one to your hand, and discard one.",
+		activated: async (card) => {
+			const player = card.holder;
+			const opponent = player.opponent();
+			
+			// Draw top 3 cards from opponent's deck
+			const drawnCards = [];
+			for (let i = 0; i < 3 && opponent.deck.cards.length > 0; i++) {
+				const drawnCard = opponent.deck.cards[0];
+				opponent.deck.removeCard(drawnCard);
+				drawnCards.push(drawnCard);
+			}
+			
+			if (drawnCards.length === 0) return; // No cards to draw
+			
+			if (player.controller instanceof ControllerAI) {
+				// AI: Choose best card to keep, discard worst
+				drawnCards.sort((a, b) => {
+					const weightA = player.controller.weightCard(a, player.controller.getMaximums(), player.controller.getBoardData());
+					const weightB = player.controller.weightCard(b, player.controller.getMaximums(), player.controller.getBoardData());
+					return weightB - weightA;
+				});
+				// Keep best, discard others
+				player.hand.addCard(drawnCards[0]);
+				for (let i = 1; i < drawnCards.length; i++) {
+					await board.toGrave(drawnCards[i], player.hand);
+				}
+			} else {
+				// Player: Let them choose which to keep, discard others
+				player.endTurnAfterAbilityUse = false;
+				// Create a temporary container for the carousel
+				const tempContainer = new CardContainer();
+				drawnCards.forEach(c => {
+					c.currentLocation = tempContainer;
+					tempContainer.cards.push(c);
+				});
+				await ui.queueCarousel(tempContainer, 1, async (container, index) => {
+					const selectedCard = container.cards[index];
+					const otherCards = drawnCards.filter(c => c !== selectedCard);
+					container.removeCard(selectedCard);
+					player.hand.addCard(selectedCard);
+					// Discard the others
+					for (let otherCard of otherCards) {
+						await board.toGrave(otherCard, container);
+					}
+					player.endTurnAfterAbilityUse = true;
+				}, () => true, false, true, "Choose a card to add to your hand (others will be discarded)");
+			}
+		},
+		weight: (card, ai, max) => {
+			// Good if opponent has cards in deck
+			const opponent = ai.player.opponent();
+			return Math.min(opponent.deck.cards.length * 3, 30);
+		}
+	},
+	fortify: {
+		name: "Fortify",
+		description: "When this unit is alone on its row, gain +5 strength.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			// Check if alone and trigger animation/update
+			const row = card.currentLocation;
+			if (row instanceof Row) {
+				const unitsInRow = row.cards.filter(c => c.isUnit() && c !== card);
+				if (unitsInRow.length === 0) {
+					await card.animate("fortify");
+					row.updateScore();
+				}
+			}
+		},
+		weight: (card, ai, max) => {
+			// Value based on likelihood of being alone
+			const player = ai.player;
+			// Handle flexible row designations - default to close row for evaluation
+			let rowName = card.row;
+			if (rowName === "agile" || rowName === "any" || rowName === "melee_siege") {
+				rowName = "close";
+			} else if (rowName === "ranged_siege") {
+				rowName = "ranged";
+			}
+			const row = board.getRow(card, rowName, player);
+			if (!row) {
+				// Fallback if row is still undefined
+				return card.power;
+			}
+			const currentUnits = row.cards.filter(c => c.isUnit()).length;
+			// More valuable if row is empty or has few units
+			const aloneBonus = currentUnits === 0 ? 5 : (currentUnits === 1 ? 3 : 0);
+			return Math.min(card.power + aloneBonus, 20);
+		}
+	},
+	guard: {
+		name: "Guard",
+		description: "When placed on the battlefield, the unit adjacent gains Battle Guard - any attack that would kill the guarded unit instead kills the unit who guarded the unit.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			const row = card.currentLocation;
+			if (!row || !row.cards) return;
+			const index = row.cards.indexOf(card);
+			if (index === -1) return;
+			// Find adjacent unit (before or after this card)
+			let adjacentCard = null;
+			if (index > 0) {
+				adjacentCard = row.cards[index - 1];
+			} else if (index < row.cards.length - 1) {
+				adjacentCard = row.cards[index + 1];
+			}
+			if (adjacentCard && adjacentCard.isUnit() && !adjacentCard.hero) {
+				// Mark this card as the guard for the adjacent unit
+				adjacentCard.guardedBy = card;
+				// Play guard animation on both the guard card and the guarded unit
+				await Promise.all([
+					card.animate("guard"),
+					adjacentCard.animate("guard")
+				]);
+			}
+		},
+		weight: (card, ai, max) => {
+			// Value based on protecting high-value units
+			// Check if we have valuable units that could be guarded
+			const player = ai.player;
+			const allUnits = player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			if (allUnits.length === 0) return card.power;
+			// Find highest value unit that could be protected
+			const highestValue = Math.max(...allUnits.map(c => c.power));
+			// Guard is more valuable if protecting high-power units
+			const protectionValue = highestValue >= 10 ? 8 : (highestValue >= 5 ? 4 : 0);
+			return Math.min(card.power + protectionValue, 20);
+		}
+	},
+	necromancy: {
+		name: "Necromancy",
+		description: "When this unit is played, add a unit cost 5 or less back to your hand from your discard pile.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			const player = card.holder;
+			// Find units in grave with basePower <= 3
+			const eligibleCards = player.grave.cards.filter(c => c.isUnit() && c.basePower <= 5);
+			if (eligibleCards.length === 0) return;
+			await card.animate("necromancy", false, false);
+			
+			let selectedCard = null;
+			if (player.controller instanceof ControllerAI) {
+				// AI: Choose best card (highest power)
+				selectedCard = eligibleCards.sort((a, b) => b.basePower - a.basePower)[0];
+			} else {
+				// Player: Let them choose
+				player.endTurnAfterAbilityUse = false;
+				const container = new CardContainer();
+				eligibleCards.forEach(c => {
+					c.currentLocation = container;
+					container.cards.push(c);
+				});
+				await ui.queueCarousel(container, 1, async (c, i) => {
+					selectedCard = c.cards[i];
+					c.removeCard(selectedCard);
+					player.endTurnAfterAbilityUse = true;
+				}, () => true, false, true, "Choose a unit to restore from your discard pile");
+			}
+			
+			if (selectedCard) {
+				// Remove from grave
+				player.grave.removeCard(selectedCard);
+				
+				// Display card in center with necromancy animation
+				await ability_dict.necromancy.showNecromancyCard(selectedCard);
+				
+				// Add to hand
+				player.hand.addCard(selectedCard);
+			}
+		},
+		async showNecromancyCard(card) {
+			// Use the existing preview system to show the card in the center
+			const preview = document.getElementsByClassName("card-preview")[0];
+			const previewCard = preview.getElementsByClassName("card-lg")[0];
+			
+			// Show the preview
+			preview.classList.remove("hide");
+			getPreviewElem(previewCard, card);
+			
+			// Wait a moment for the card to appear
+			await sleep(300);
+			
+			// Play necromancy animation on the preview card
+			// The preview card should have the same structure as a regular card
+			const anim = previewCard.children[previewCard.children.length - 1];
+			if (anim) {
+				anim.style.backgroundImage = iconURL("anim_necromancy");
+				anim.style.opacity = "0";
+				await sleep(50);
+				fadeIn(anim, 300);
+				anim.style.backgroundSize = "100% auto";
+				await sleep(300);
+				anim.style.backgroundSize = "80% auto";
+				await sleep(1000);
+				fadeOut(anim, 300);
+				anim.style.backgroundSize = "40% auto";
+				await sleep(300);
+				anim.style.backgroundImage = "";
+			}
+			
+			// Wait a bit more before hiding
+			await sleep(200);
+			
+			// Hide the preview
+			preview.classList.add("hide");
+		},
+		weight: (card, ai, max) => {
+			// Value based on good units in grave
+			const player = ai.player;
+			const eligibleCards = player.grave.cards.filter(c => c.isUnit() && c.basePower <= 3);
+			if (eligibleCards.length === 0) return card.power;
+			// Find best card that could be restored
+			const best = eligibleCards.sort((a, b) => b.basePower - a.basePower)[0];
+			// Value is based on the best card we can get back
+			const restoreValue = best.basePower + (best.abilities.length > 0 ? 3 : 0);
+			return Math.min(card.power + restoreValue, 20);
+		}
+	},
+		sacrifice: {
+		name: "Sacrifice",
+		description: "When this unit is played, you may choose to kill a friendly unit of your choice and play a random higher cost unit from your deck immediately and then shuffle your deck. If no higher cost unit card exists, the friendly unit just dies.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			const player = card.holder;
+			const friendlyUnits = player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			if (friendlyUnits.length === 0) return; // No units to sacrifice
+			await card.animate("sacrifice", false, false);
+			let sacrificeTarget = null;
+			
+			// Show carousel for both AI and player to see the selection
+			player.endTurnAfterAbilityUse = false;
+			const container = new CardContainer();
+			friendlyUnits.forEach(c => {
+				c.currentLocation = container;
+				container.cards.push(c);
+			});
+			
+			if (player.controller instanceof ControllerAI) {
+				// AI: Choose weakest unit, but prefer martyr units if we need card draw
+				const handSize = player.hand.cards.length;
+				const opponentHandSize = player.opponent().hand.cards.length;
+				const needCards = opponentHandSize - handSize > 1;
+				
+				if (needCards) {
+					// Prefer martyr units if we need card draw
+					const martyrUnits = friendlyUnits.filter(c => c.abilities.includes("martyr"));
+					if (martyrUnits.length > 0) {
+						// Choose weakest martyr unit
+						sacrificeTarget = martyrUnits.sort((a, b) => a.basePower - b.basePower)[0];
+					} else {
+						// No martyrs, choose weakest unit
+						sacrificeTarget = friendlyUnits.sort((a, b) => a.basePower - b.basePower)[0];
+					}
+				} else {
+					// Don't need cards, choose weakest unit (may still be martyr)
+					sacrificeTarget = friendlyUnits.sort((a, b) => a.basePower - b.basePower)[0];
+				}
+				
+				// Show carousel for AI (it will auto-select)
+				await ui.queueCarousel(container, 1, async (c, i) => {
+					sacrificeTarget = c.cards[i];
+				}, () => true, false, true, "AI selecting unit to sacrifice");
+			} else {
+				// Player: Let them choose
+				await ui.queueCarousel(container, 1, async (c, i) => {
+					sacrificeTarget = c.cards[i];
+					player.endTurnAfterAbilityUse = true;
+				}, () => true, false, true, "Choose a friendly unit to sacrifice");
+				if (!sacrificeTarget) {
+					player.endTurnAfterAbilityUse = true;
+					return; // Player cancelled
+				}
+			}
+			
+			if (!sacrificeTarget) {
+				player.endTurnAfterAbilityUse = true;
+				return;
+			}
+			
+			// Get the sacrifice power before removing
+			const sacrificePower = sacrificeTarget.basePower;
+			
+			// Simultaneously play anim_sacrifice over the selected card on the battlefield and over the deck
+			const deckElem = player.deck.elem;
+			let deckAnim = null;
+			
+			if (deckElem) {
+				// Create animation overlay on deck
+				deckAnim = document.createElement("div");
+				deckAnim.style.position = "absolute";
+				deckAnim.style.top = "0";
+				deckAnim.style.left = "0";
+				deckAnim.style.width = "100%";
+				deckAnim.style.height = "100%";
+				deckAnim.style.backgroundImage = iconURL("anim_sacrifice");
+				deckAnim.style.backgroundSize = "cover";
+				deckAnim.style.backgroundPosition = "center";
+				deckAnim.style.pointerEvents = "none";
+				deckAnim.style.zIndex = "1000";
+				deckAnim.style.opacity = "0";
+				deckElem.style.position = "relative";
+				deckElem.appendChild(deckAnim);
+			}
+			
+			// Play animations simultaneously
+			await Promise.all([
+				// Animate the card on battlefield
+				(async () => {
+					await sacrificeTarget.animate("sacrifice", false, false);
+				})(),
+				// Animate the deck
+				(async () => {
+					if (deckAnim) {
+						await sleep(50);
+						fadeIn(deckAnim, 300);
+						await sleep(300);
+						await sleep(1000);
+						fadeOut(deckAnim, 300);
+						await sleep(300);
+						if (deckElem && deckAnim.parentNode === deckElem) {
+							deckElem.removeChild(deckAnim);
+						}
+					}
+				})()
+			]);
+			
+			// Kill the sacrifice target and put it in the discard pile
+			await board.toGrave(sacrificeTarget, sacrificeTarget.currentLocation);
+			
+			// Find units in deck with higher basePower
+			const higherCostUnits = player.deck.cards.filter(c => c.isUnit() && c.basePower > sacrificePower);
+			if (higherCostUnits.length > 0) {
+				// Play random higher cost unit
+				const randomUnit = higherCostUnits[Math.floor(Math.random() * higherCostUnits.length)];
+				player.deck.removeCard(randomUnit);
+				// Shuffle deck
+				for (let i = player.deck.cards.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					[player.deck.cards[i], player.deck.cards[j]] = [player.deck.cards[j], player.deck.cards[i]];
+				}
+				// Play the unit
+				await player.playCard(randomUnit);
+			}
+			
+			player.endTurnAfterAbilityUse = true;
+		},
+		weight: (card, ai, max) => {
+			// Value based on having weak units to sacrifice and good units in deck
+			const player = ai.player;
+			const friendlyUnits = player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+			if (friendlyUnits.length === 0) return card.power;
+			// Find weakest unit we could sacrifice
+			const weakest = friendlyUnits.sort((a, b) => a.basePower - b.basePower)[0];
+			const sacrificePower = weakest.basePower;
+			// Find units in deck with higher basePower
+			const higherCostUnits = player.deck.cards.filter(c => c.isUnit() && c.basePower > sacrificePower);
+			if (higherCostUnits.length === 0) {
+				// No upgrade available, sacrifice is just killing a unit
+				return Math.max(card.power - weakest.basePower, 0);
+			}
+			// Calculate average value of potential upgrades
+			const avgUpgradePower = higherCostUnits.reduce((sum, c) => sum + c.basePower, 0) / higherCostUnits.length;
+			const upgradeValue = avgUpgradePower - sacrificePower;
+			return Math.min(card.power + upgradeValue, 25);
+		}
+	},
+	bribe: {
+		name: "Bribe",
+		description: "When this unit enters play, take a random non-hero, non-modified unit card strength 6 or less from your opponent's deck, and place it on your board in their appropriate row. Your opponent draws a card into their hand.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			const player = card.holder;
+			const opponent = player.opponent();
+			await card.animate("bribe", false, false);
+			
+			// Find eligible cards: non-hero, non-strength-modified, strength 6 or less
+			// Only search in opponent's deck
+			const eligibleCards = opponent.deck.cards.filter(c => 
+				c.isUnit() && 
+				!c.hero && 
+				c.basePower <= 6 && 
+				c.power === c.basePower // non-strength-modified
+			);
+			
+			if (eligibleCards.length === 0) {
+				// Opponent draws a card anyway
+				if (opponent.deck.cards.length > 0) {
+					await opponent.deck.draw(opponent.hand);
+				}
+				return; // No eligible cards found
+			}
+			
+			// Pick a random eligible card
+			const randomCard = eligibleCards[Math.floor(Math.random() * eligibleCards.length)];
+			
+			// Set the holder to the player who played bribe
+			randomCard.holder = player;
+			
+			// Get the appropriate row for this card on the player's side
+			const targetRow = board.getRow(randomCard, randomCard.row, player);
+			
+			// Place it on the player's board (from opponent's deck)
+			await board.moveTo(randomCard, targetRow, opponent.deck);
+			
+			// Opponent draws a card
+			if (opponent.deck.cards.length > 0) {
+				await opponent.deck.draw(opponent.hand);
+			}
+		}
+	},
+	martyr: {
+		name: "Martyr",
+		description: "If this unit dies, draw a card.",
+		removed: async (card) => {
+			if (card.isLocked() || game.over) return;
+			const player = card.holder;
+			// Draw a card when this unit dies
+			if (player.deck.cards.length > 0) {
+				await player.deck.draw(player.hand);
+			}
+		},
+		weight: (card, ai, max) => {
+			// Value based on card advantage when unit dies
+			const player = ai.player;
+			const unitCount = player.getAllRowCards().filter(c => c.isUnit()).length;
+			const handSize = player.hand.cards.length;
+			const deckSize = player.deck.cards.length;
+			
+			// Base value for card draw on death
+			const drawValue = 8; // Card advantage is valuable
+			
+			// More valuable if we have few cards in hand (need card advantage)
+			const handBonus = handSize < 5 ? 5 : (handSize < 7 ? 2 : 0);
+			
+			// More valuable if we have cards in deck to draw
+			const deckBonus = deckSize > 0 ? 2 : 0;
+			
+			// Consider if we can strategically sacrifice this unit
+			// If it's a weak unit, it's easier to trigger the draw
+			const sacrificeValue = card.power <= 3 ? 3 : (card.power <= 5 ? 1 : 0);
+			
+			// Less valuable if we're ahead and don't need card advantage
+			const opponent = player.opponent();
+			const cardAdvantage = handSize - opponent.hand.cards.length;
+			const powerAdvantage = player.total - opponent.total;
+			const aheadPenalty = (cardAdvantage > 2 && powerAdvantage > 10) ? -2 : 0;
+			
+			return Math.min(card.power + drawValue + handBonus + deckBonus + sacrificeValue + aheadPenalty, 25);
+		}
+	},
+	clairvoyance: {
+		name: "Clairvoyance",
+		description: "Look at the top 3 cards of your deck.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			const player = card.holder;
+			
+			// Get top 3 cards from deck
+			const topCards = [];
+			for (let i = 0; i < 3 && player.deck.cards.length > 0; i++) {
+				const deckCard = player.deck.cards[i];
+				topCards.push(deckCard);
+			}
+			
+			if (topCards.length === 0) return; // No cards in deck
+			
+			// Play clairvoyance animation (like emissary)
+			await card.animate("clairvoyance");
+			
+			// Create a temporary container for viewing
+			const tempContainer = new CardContainer();
+			topCards.forEach(c => {
+				c.currentLocation = tempContainer;
+				tempContainer.cards.push(c);
+			});
+			
+			// For AI: Just view and continue (no action needed)
+			if (player.controller instanceof ControllerAI) {
+				// AI can see the cards internally, no UI needed
+				// Cards remain in deck in same order
+				return;
+			}
+			
+			// For player: Show cards in carousel for viewing
+			player.endTurnAfterAbilityUse = false;
+			// Use count 1 but the action just closes - cards remain in deck
+			await ui.queueCarousel(tempContainer, 1, async (container, index) => {
+				// Just viewing - no action needed, cards stay in deck in same order
+				// The carousel allows viewing, then player clicks to close
+				player.endTurnAfterAbilityUse = true;
+			}, () => true, false, true, "Clairvoyance: View the top 3 cards of your deck (click to close)");
+			
+			// Cards remain in deck in the same order (no removal happened)
+		}
+	},
+	mo_bloody_baron: {
+		description: "When a unit dies from a Curse, draw a card from your deck and play it immediately.",
+		gameStart: (card, player) => {
+			// This is a passive ability that triggers when curse kills a unit
+			// The logic is handled in Row.addCard when curse triggers
+		}
+	},
+	peace_treaty: {
+		name: "Peace Treaty",
+		description: "This card stays on the board until the start of your next turn. Prevents any damaging effects (execution, scorch, et al) to your units until the start of your next turn.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			const player = card.holder;
+			
+			// Create custom container for Peace Treaty on the right side, between decks
+			const panelRight = document.getElementById("panel-right");
+			if (!panelRight) {
+				console.error("panel-right not found for Peace Treaty placement");
+				return;
+			}
+			
+			// Create or get the peace treaty container
+			let treatyContainer = document.getElementById("peace-treaty-container");
+			if (!treatyContainer) {
+				treatyContainer = document.createElement("div");
+				treatyContainer.id = "peace-treaty-container";
+				treatyContainer.className = "peace-treaty-container";
+				// Position between decks (between deck-op and deck-me)
+				const deckMe = document.getElementById("deck-me");
+				if (deckMe) {
+					panelRight.insertBefore(treatyContainer, deckMe);
+				} else {
+					panelRight.appendChild(treatyContainer);
+				}
+			}
+			
+			// Add the card to the container
+			card.currentLocation = treatyContainer;
+			if (card.elem && card.elem.parentNode) {
+				card.elem.parentNode.removeChild(card.elem);
+			}
+			if (card.elem) {
+				treatyContainer.appendChild(card.elem);
+				card.elem.classList.add("peace-treaty-card");
+			}
+			
+			// Set up protection flag
+			if (!game.peaceTreatyActive) {
+				game.peaceTreatyActive = {};
+			}
+			game.peaceTreatyActive[player.tag] = true;
+			
+			// Set up removal at start of next turn
+			const removeHook = async () => {
+				// turnStart runs before currPlayer switches, so check if opponent is the player who played Peace Treaty
+				// Check if it's the player's turn starting and they have a peace treaty
+				if (game.currPlayer && game.currPlayer.opponent() === player && game.peaceTreatyActive && game.peaceTreatyActive[player.tag]) {
+					// Remove protection
+					delete game.peaceTreatyActive[player.tag];
+					
+					// Remove blue glow class before sending to discard
+					if (card.elem) {
+						card.elem.classList.remove("peace-treaty-card");
+					}
+					
+					// Remove card from container and send to grave
+					if (card.elem && card.elem.parentNode === treatyContainer) {
+						treatyContainer.removeChild(card.elem);
+					}
+					await board.toGrave(card, treatyContainer);
+					
+					// Clean up container if empty
+					if (treatyContainer.children.length === 0 && treatyContainer.parentNode) {
+						treatyContainer.remove();
+					}
+					
+					return true; // Signal that this hook has been processed
+				}
+				return false;
+			};
+			
+			game.turnStart.push(removeHook);
+		},
+		weight: (card, ai, max) => {
+			// Value based on protecting units from damage
+			const player = ai.player;
+			const opponent = player.opponent();
+			const totalUnits = player.getAllRowCards().filter(c => c.isUnit()).length;
+			
+			// AI should err on the side of not using Peace Treaty unless there are units on the field
+			if (totalUnits === 0) {
+				return 0; // Don't use Peace Treaty if no units to protect
+			}
+			
+			const highValueUnits = player.getAllRowCards().filter(c => c.isUnit() && c.power >= 8).length;
+			
+			// More valuable if we have many units or high-value units to protect
+			const protectionValue = totalUnits * 2 + highValueUnits * 5;
+			
+			// Check if opponent has damaging abilities
+			const opponentHasScorch = opponent.getAllRowCards().some(c => 
+				c.abilities.includes("scorch") || c.abilities.includes("scorch_c") || 
+				c.abilities.includes("scorch_r") || c.abilities.includes("scorch_s")
+			);
+			const opponentHasExecute = opponent.getAllRowCards().some(c => 
+				c.abilities.includes("execute")
+			);
+			
+			const threatBonus = (opponentHasScorch ? 10 : 0) + (opponentHasExecute ? 5 : 0);
+			
+			return Math.min(protectionValue + threatBonus, 30);
+		}
+	},
+	conspiracy: {
+		name: "Conspiracy",
+		description: "When this unit enters play, shuffle special cards in your discard pile back into your deck, and shuffle your deck.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			const player = card.holder;
+			
+			// Find all special cards in the discard pile
+			const specialCardsInGrave = player.grave.cards.filter(c => c.isSpecial());
+			
+			if (specialCardsInGrave.length === 0) {
+				// No special cards to shuffle back, but still shuffle the deck
+				await card.animate("conspiracy", false, false);
+				// Shuffle deck
+				for (let i = player.deck.cards.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					[player.deck.cards[i], player.deck.cards[j]] = [player.deck.cards[j], player.deck.cards[i]];
+				}
+				return;
+			}
+			
+			await card.animate("conspiracy", false, false);
+			
+			// Move all special cards from grave to deck
+			for (const specialCard of specialCardsInGrave) {
+				await board.toDeck(specialCard, player.grave);
+			}
+			
+			// Shuffle the deck
+			for (let i = player.deck.cards.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[player.deck.cards[i], player.deck.cards[j]] = [player.deck.cards[j], player.deck.cards[i]];
+			}
+		},
+		weight: (card, ai, max) => {
+			const player = ai.player;
+			const specialCardsInGrave = player.grave.cards.filter(c => c.isSpecial());
+			
+			// Value based on number of special cards in grave
+			// Each special card returned is worth some value
+			const returnValue = specialCardsInGrave.length * 3;
+			
+			// Also consider if we're low on cards in deck
+			const deckSize = player.deck.cards.length;
+			const deckBonus = deckSize < 10 ? 5 : (deckSize < 20 ? 2 : 0);
+			
+			return Math.min(card.power + returnValue + deckBonus, 25);
+		}
+	},
+	skellige_tactics: {
+		name: "Skellige Tactics",
+		description: "When this unit is placed on the battlefield, move target Dimun Warship and target Cog into its row, as many as are in play (on the battlefield not in hand or deck or discard).",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			const player = card.holder;
+			const targetRow = card.currentLocation;
+			
+			if (!(targetRow instanceof Row)) return;
+			
+			await card.animate("skelligetactics", false, false);
+			
+			// Find all Dimun Warship and Cog cards on the battlefield
+			const dimunWarships = player.getAllRowCards().filter(c => 
+				c.key === "sk_dimun_warship" && 
+				c.isUnit() && 
+				c !== card &&
+				!(c.currentLocation instanceof Row && c.currentLocation === targetRow) &&
+				!c.isLocked()
+			);
+			
+			const cogs = player.getAllRowCards().filter(c => 
+				c.key === "sk_cog" && 
+				c.isUnit() && 
+				c !== card &&
+				!(c.currentLocation instanceof Row && c.currentLocation === targetRow) &&
+				!c.isLocked()
+			);
+			
+			const cardsToMove = [...dimunWarships, ...cogs];
+			
+			if (cardsToMove.length === 0) return;
+			
+			// Move all target cards to the same row as this card
+			await Promise.all(cardsToMove.map(async c => {
+				const currentRow = c.currentLocation;
+				if (currentRow instanceof Row && currentRow !== targetRow) {
+					await board.moveTo(c, targetRow, currentRow);
+				}
+			}));
+		},
+		weight: (card, ai, max) => {
+			const player = ai.player;
+			// Count how many Dimun Warships and Cogs are on the battlefield
+			const dimunWarships = player.getAllRowCards().filter(c => c.key === "sk_dimun_warship" && c.isUnit());
+			const cogs = player.getAllRowCards().filter(c => c.key === "sk_cog" && c.isUnit());
+			const totalShips = dimunWarships.length + cogs.length;
+			
+			if (totalShips === 0) {
+				// No ships to pull, just base power
+				return card.power;
+			}
+			
+			// Calculate value based on consolidating ships
+			let consolidationValue = totalShips * 2;
+			
+			// Bonus if ships are spread across multiple rows (more value in consolidating)
+			const shipRows = new Set();
+			[...dimunWarships, ...cogs].forEach(ship => {
+				if (ship.currentLocation instanceof Row) {
+					shipRows.add(ship.currentLocation);
+				}
+			});
+			
+			if (shipRows.size > 1) {
+				consolidationValue += 3; // Bonus for consolidating from multiple rows
+			}
+			
+			// Consider which row we'd place this card in
+			// If card has flexible row placement, evaluate best row
+			let bestRowValue = 0;
+			if (card.row === "agile" || card.row === "any" || card.row === "ranged_siege" || card.row === "melee_siege") {
+				// Evaluate potential rows
+				const potentialRows = [];
+				if (card.row === "agile" || card.row === "any" || card.row === "melee_siege") {
+					potentialRows.push(board.getRow(card, "close", player));
+				}
+				if (card.row === "agile" || card.row === "any" || card.row === "ranged_siege") {
+					potentialRows.push(board.getRow(card, "ranged", player));
+				}
+				if (card.row === "any" || card.row === "ranged_siege" || card.row === "melee_siege") {
+					potentialRows.push(board.getRow(card, "siege", player));
+				}
+				
+				// Find row with best synergies (horn, morale, existing units)
+				potentialRows.forEach(row => {
+					let rowValue = row.total;
+					// Bonus if row has horn
+					if (row.special.findCards(c => c.abilities.includes("horn")).length > 0) {
+						rowValue += totalShips * 2; // Ships will benefit from horn
+					}
+					// Bonus if row has units (morale synergy)
+					const rowUnits = row.cards.filter(c => c.isUnit()).length;
+					if (rowUnits > 0) {
+						rowValue += rowUnits; // Consolidation bonus
+					}
+					bestRowValue = Math.max(bestRowValue, rowValue);
+				});
+			} else {
+				// Fixed row - evaluate that row
+				const targetRow = board.getRow(card, card.row, player);
+				bestRowValue = targetRow.total;
+				if (targetRow.special.findCards(c => c.abilities.includes("horn")).length > 0) {
+					bestRowValue += totalShips * 2;
+				}
+			}
+			
+			// Combine base value with consolidation and row synergy
+			const totalValue = card.power + consolidationValue + Math.min(bestRowValue / 10, 5);
+			
+			return Math.min(totalValue, 30);
+		}
 	},
 };

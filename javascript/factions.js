@@ -24,7 +24,7 @@ var factions = {
 		name: "Monsters",
 		factionAbility: player => game.roundEnd.push( () => {
 			let units = board.row.filter( (r,i) => player === player_me ^ i < 3)
-				.reduce((a,r) => r.cards.filter(c => c.isUnit()).concat(a), []);
+				.reduce((a,r) => r.cards.filter(c => c.isUnit() && !c.immortal).concat(a), []);
 			if (units.length === 0)
 				return;
 			let card = units[randomInt(units.length)];
@@ -173,5 +173,65 @@ var factions = {
 		activeAbility: false,
 		abilityUses: 0,
 		description: "Restore a unit card of your choice whenever you lose a round."
+	},
+	ofir: {
+		name: "Ofir",
+		factionAbility: async player => {
+			// Search deck for weather cards
+			const weatherCards = player.deck.findCards(c => c.faction === "weather");
+			
+			if (weatherCards.length === 0) {
+				await ui.notification("ofir", 1200);
+				return; // No weather cards in deck
+			}
+			
+			await ui.notification("ofir", 1200);
+			
+			if (player.controller instanceof ControllerAI) {
+				// AI: Choose best weather card based on weight
+				let bestCard = null;
+				let bestWeight = -1;
+				for (let card of weatherCards) {
+					const weight = player.controller.weightWeather(card);
+					if (weight > bestWeight) {
+						bestWeight = weight;
+						bestCard = card;
+					}
+				}
+				if (bestCard) {
+					player.deck.removeCard(bestCard);
+					await board.toWeather(bestCard, player.deck);
+				}
+			} else {
+				// Player: Let them choose from weather cards
+				player.endTurnAfterAbilityUse = false;
+				await ui.queueCarousel(player.deck, 1, async (container, index) => {
+					const selectedCard = container.cards[index];
+					if (selectedCard && selectedCard.faction === "weather") {
+						container.removeCard(selectedCard);
+						await board.toWeather(selectedCard, container);
+					}
+					player.endTurnAfterAbilityUse = true;
+				}, c => c.faction === "weather", false, true, "Choose a weather card to play");
+			}
+		},
+		activeAbility: true,
+		abilityUses: 1,
+		description: "Once per game, you may search your deck for a weather card and play it.",
+		weight: (player) => {
+			// Check if there are weather cards in deck
+			const weatherCards = player.deck.findCards(c => c.faction === "weather");
+			if (weatherCards.length === 0) return 0;
+			
+			// Find the best weather card value
+			let bestWeight = -1;
+			for (let card of weatherCards) {
+				const weight = player.controller.weightWeather(card);
+				if (weight > bestWeight) {
+					bestWeight = weight;
+				}
+			}
+			return Math.max(0, bestWeight);
+		}
 	}
 }

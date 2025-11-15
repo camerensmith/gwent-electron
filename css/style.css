@@ -527,6 +527,14 @@ div.abs {
 	content:"Zerrikania faction ability used:\A Unit restored from the discard pile."
 }
 
+#notif-ofir {
+	background-image:url("../images/icons/notif_ofir.png")
+}
+
+#notif-ofir::after {
+	content:"Ofir faction ability used:\A Weather card played from deck."
+}
+
 /*------------------------------------------------------------------------------------------------------------*/
 
 #end-screen > :nth-child(1) {
@@ -736,7 +744,39 @@ div.abs {
 	width:43%;
 	height:43%;
 	left:-10.5%;
-	top:.5%
+	top:.5%;
+	cursor:pointer;
+	position:relative;
+	overflow:hidden;
+	transition:transform 0.2s ease
+}
+
+.profile-img > div > div::before {
+	content:"";
+	position:absolute;
+	top:-50%;
+	left:-50%;
+	width:200%;
+	height:200%;
+	background:linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.5) 50%, transparent 70%);
+	transform:rotate(45deg);
+	animation:deckShine 10s infinite;
+	pointer-events:none
+}
+
+@keyframes deckShine {
+	0%, 90%, 100% {
+		opacity:0;
+		transform:translateX(-100%) translateY(-100%) rotate(45deg)
+	}
+	5% {
+		opacity:1;
+		transform:translateX(-100%) translateY(-100%) rotate(45deg)
+	}
+	10% {
+		opacity:0;
+		transform:translateX(100%) translateY(100%) rotate(45deg)
+	}
 }
 
 .faction-ability {
@@ -953,6 +993,14 @@ div.abs {
 	background-image:url("../images/icons/overlay_fog.png")
 }
 
+.sandstorm {
+	background-image:url("../images/icons/overlay_sandstorm.png")
+}
+
+.storm {
+	background-image:url("../images/icons/overlay_rain.png")
+}
+
 #hand-row {
 	top:8%;
 	height:91%;
@@ -1021,6 +1069,34 @@ div.abs {
 	left:51%
 }
 
+.peace-treaty-container {
+	position:absolute;
+	top:41.5%;
+	left:50%;
+	transform:translate(-50%, -50%);
+	width:4.45vw;
+	height:6.675vw;
+	z-index:100;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+}
+
+.peace-treaty-card {
+	position:relative;
+	width:100%;
+	height:100%;
+	border-radius:.6vw;
+	box-shadow:0 0 1.5vw rgba(77, 162, 255, 0.8), 0 0 3vw rgba(77, 162, 255, 0.5);
+	animation:peaceTreatyGlow 2s ease-in-out infinite;
+}
+
+@keyframes peaceTreatyGlow {
+	0% { box-shadow: 0 0 1.5vw rgba(77, 162, 255, 0.8), 0 0 3vw rgba(77, 162, 255, 0.5); }
+	50% { box-shadow: 0 0 2vw rgba(77, 162, 255, 1), 0 0 4vw rgba(77, 162, 255, 0.7); }
+	100% { box-shadow: 0 0 1.5vw rgba(77, 162, 255, 0.8), 0 0 3vw rgba(77, 162, 255, 0.5); }
+}
+
 .deck-card {
 	height:6.675vw;
 	width:4.45vw;
@@ -1042,7 +1118,12 @@ div.abs {
 }
 
 #deck-customization {
-	z-index:85
+	z-index:85;
+	background-image:url("../images/table.jpg");
+	background-size:cover;
+	background-position:center;
+	background-repeat:no-repeat;
+	background-color:rgba(10, 10, 10, 0.3)
 }
 
 #faction-title {
@@ -1973,9 +2054,12 @@ body,
 
 #end-screen,
 #notification-bar,
-#deck-customization,
 #carousel > :nth-child(3) {
 	background-color:rgba(10, 10, 10, .95)
+}
+
+#deck-customization {
+	background-color:rgba(10, 10, 10, .3)
 }
 
 .card-lg,
