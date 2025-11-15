@@ -2095,6 +2095,16 @@ var default_cards = {
         "count": "2",
         "quote": "So ye can hit a movin' target at two hundred paces. Me, too. In a storm."
     },
+    "sk_effigy": {
+        "name": "Effigy",
+        "deck": "skellige",
+        "row": "any",
+        "strength": "1",
+        "ability": "decoy",
+        "filename": "effigy",
+        "count": "2",
+        "quote": "The moment they hear 'effigy', they know they're doomed."
+    },
     "sk_cog": {
         "name": "Cog",
         "deck": "skellige",
