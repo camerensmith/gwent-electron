@@ -3750,6 +3750,12 @@ class Carousel {
 			this._wheelHandler = wheelHandler;
 			this.elem.addEventListener('wheel', wheelHandler, { passive: false });
 		} catch(_) {}
+		
+		// Enable touch/swipe navigation for mobile and tablet
+		if (this.isTouchDevice()) {
+			this.setupTouchHandlers();
+		}
+		
 		fimC = false;
 		setTimeout(function() {
 			var label = document.getElementById("carousel_label");
@@ -3840,12 +3846,90 @@ class Carousel {
 		ui.setDescription(this.container.cards[this.indices[this.index]], this.desc);
 	}
 
+	isTouchDevice() {
+		// Check if device supports touch events and is likely mobile/tablet
+		return ('ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0) &&
+		       (window.matchMedia('(max-width: 1024px)').matches || window.matchMedia('(pointer: coarse)').matches);
+	}
+
+	setupTouchHandlers() {
+		let touchStartX = 0;
+		let touchStartY = 0;
+		let touchEndX = 0;
+		let touchEndY = 0;
+		let isHorizontalSwipe = false;
+		const minSwipeDistance = 50; // Minimum distance in pixels to trigger a swipe
+
+		const touchStartHandler = (e) => {
+			const touch = e.touches[0];
+			touchStartX = touch.clientX;
+			touchStartY = touch.clientY;
+			isHorizontalSwipe = false;
+		};
+
+		const touchMoveHandler = (e) => {
+			if (e.touches.length === 1) {
+				const touch = e.touches[0];
+				const deltaX = Math.abs(touch.clientX - touchStartX);
+				const deltaY = Math.abs(touch.clientY - touchStartY);
+				
+				// If horizontal movement is greater than vertical, treat as horizontal swipe
+				// and prevent default to stop page scrolling
+				if (deltaX > deltaY && deltaX > 10) {
+					isHorizontalSwipe = true;
+					e.preventDefault();
+				}
+			}
+		};
+
+		const touchEndHandler = (e) => {
+			if (!e.changedTouches || e.changedTouches.length === 0) return;
+			
+			const touch = e.changedTouches[0];
+			touchEndX = touch.clientX;
+			touchEndY = touch.clientY;
+
+			const deltaX = touchEndX - touchStartX;
+			const deltaY = touchEndY - touchStartY;
+			const absDeltaX = Math.abs(deltaX);
+			const absDeltaY = Math.abs(deltaY);
+
+			// Only trigger swipe if horizontal movement is greater than vertical (horizontal swipe)
+			// and exceeds minimum distance
+			if (absDeltaX > absDeltaY && absDeltaX > minSwipeDistance) {
+				if (deltaX > 0) {
+					// Swipe right - go to previous card
+					this.shift(e, -1);
+				} else {
+					// Swipe left - go to next card
+					this.shift(e, 1);
+				}
+			}
+		};
+
+		// Store handlers for cleanup
+		this._touchStartHandler = touchStartHandler;
+		this._touchMoveHandler = touchMoveHandler;
+		this._touchEndHandler = touchEndHandler;
+
+		// Add event listeners to the carousel element
+		this.elem.addEventListener('touchstart', touchStartHandler, { passive: true });
+		this.elem.addEventListener('touchmove', touchMoveHandler, { passive: false });
+		this.elem.addEventListener('touchend', touchEndHandler, { passive: true });
+	}
+
 	exit() {
 		for (let x of this.previews) {
 			x.style.backgroundImage = "";
 			x.classList.remove("selection");
 		}
 		try { if (this._wheelHandler) this.elem.removeEventListener('wheel', this._wheelHandler); } catch(_) {}
+		// Clean up touch handlers
+		try {
+			if (this._touchStartHandler) this.elem.removeEventListener('touchstart', this._touchStartHandler);
+			if (this._touchMoveHandler) this.elem.removeEventListener('touchmove', this._touchMoveHandler);
+			if (this._touchEndHandler) this.elem.removeEventListener('touchend', this._touchEndHandler);
+		} catch(_) {}
 		this.elem.classList.add("hide");
 		Carousel.clearCurrent();
 		ui.quitCarousel();

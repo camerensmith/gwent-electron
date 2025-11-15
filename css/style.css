@@ -1467,6 +1467,25 @@ div.abs {
 	z-index:90
 }
 
+/* Touch-friendly carousel for mobile and tablet */
+@media (max-width: 1024px), (pointer: coarse) {
+	#carousel {
+		touch-action: pan-y pinch-zoom;
+		-webkit-overflow-scrolling: touch;
+	}
+	
+	#carousel > :nth-child(1) {
+		touch-action: pan-x;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	
+	#carousel > :nth-child(1) > div.card-lg {
+		touch-action: manipulation;
+		-webkit-tap-highlight-color: transparent;
+	}
+}
+
 #carousel .selection {
 	border:.3vw solid green;
 	box-shadow:0 0 4vw green
