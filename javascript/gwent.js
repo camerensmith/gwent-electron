@@ -2727,6 +2727,10 @@ class Card {
 			}
 			for (let x of this.abilities) {
 				let ab = ability_dict[x];
+				if (!ab) {
+					console.warn(`Ability "${x}" not found in ability_dict for card ${this.key || this.name}`);
+					continue;
+				}
 				if ("placed" in ab) this.placed.push(ab.placed);
 				if ("removed" in ab) this.removed.push(ab.removed);
 				if ("activated" in ab) this.activated.push(ab.activated);
@@ -2734,8 +2738,16 @@ class Card {
 		}
 		if (this.row === "leader") this.desc_name = "Leader Ability";
 		else if (this.abilities.length > 0) {
-			this.desc_name = ability_dict[this.abilities[this.abilities.length - 1]].name;
-			if (this.abilities.length > 1) this.desc_name += " / " + ability_dict[this.abilities[this.abilities.length - 2]].name;
+			const lastAbility = ability_dict[this.abilities[this.abilities.length - 1]];
+			if (lastAbility) {
+				this.desc_name = lastAbility.name;
+				if (this.abilities.length > 1) {
+					const secondLastAbility = ability_dict[this.abilities[this.abilities.length - 2]];
+					if (secondLastAbility) {
+						this.desc_name += " / " + secondLastAbility.name;
+					}
+				}
+			}
 		} else if (this.row === "agile") this.desc_name = "Agile";
 		else if (this.row === "any") this.desc_name = "Any";
 		else if (this.row === "melee_siege") this.desc_name = "Melee/Siege";
@@ -2743,8 +2755,13 @@ class Card {
 		else this.desc_name = "";
 		this.desc = this.row === "agile" ? "<p><b>Agile:</b> Can be placed in either the Close Combat or the Ranged Combat row.</p>" : (this.row === "any" ? "<p><b>Any:</b> " + ability_dict["any"].description + "</p>" : (this.row === "melee_siege" ? "<p><b>Melee/Siege:</b> " + ability_dict["melee_siege"].description + "</p>" : (this.row === "ranged_siege" ? "<p><b>Ranged/Siege:</b> " + ability_dict["ranged_siege"].description + "</p>" : "")));
 		for (let i = this.abilities.length - 1; i >= 0; --i) {
-			let abi_name = (ability_dict[this.abilities[i]].name ? ability_dict[this.abilities[i]].name : "Leader Ability");
-			this.desc += "<p><b>" + abi_name + ":</b> " + ability_dict[this.abilities[i]].description + "</p>";
+			const ability = ability_dict[this.abilities[i]];
+			if (!ability) {
+				console.warn(`Ability "${this.abilities[i]}" not found in ability_dict for card ${this.key || this.name} when building description`);
+				continue;
+			}
+			let abi_name = (ability.name ? ability.name : "Leader Ability");
+			this.desc += "<p><b>" + abi_name + ":</b> " + (ability.description || "") + "</p>";
 		}
 		if (this.abilities.includes("avenger") && this.target) {
 			// Special case: Crow Messenger avenges into Crowmother

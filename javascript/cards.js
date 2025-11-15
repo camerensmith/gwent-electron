@@ -7065,6 +7065,16 @@ var ext_to_cards = {
         "count": "1",
         "quote": "With a thunderous roar, hooves pound the ground!"
     },
+    "to_bard": {
+        "name": "Bard",
+        "deck": "toussaint",
+        "row": "agile",
+        "strength": "2",
+        "ability": "wine",
+        "filename": "bard",
+        "count": "3",
+        "quote": "The bard's song roars as the wine flows."
+    },
     "to_panther_1": {
         "name": "Panthers",
         "id": 1,
@@ -7172,7 +7182,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "close",
         "strength": "8",
-        "ability": "morale",
+        "ability": "horn",
         "filename": "jousting_champion",
         "count": "1",
         "quote": "The flower of chivalry, at your command!"
@@ -7182,7 +7192,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "close",
         "strength": "3",
-        "ability": "",
+        "ability": "morale",
         "filename": "guillaume",
         "count": "1",
         "quote": "Guillaume was the very model of a knight-errant - the placard boy for Toussaint."
@@ -7331,7 +7341,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "agile",
         "strength": "11",
-        "ability": "hero",
+        "ability": "hero scorch",
         "filename": "dettlaff_higher_vampire",
         "count": "1",
         "quote": "In his true form, the Beast of Beauclair could cause even a witcher to quake in his boots."
@@ -7376,8 +7386,8 @@ var ext_to_cards = {
         "name": "Cloud Giant",
         "deck": "toussaint",
         "row": "close",
-        "strength": "5",
-        "ability": "scorch",
+        "strength": "6",
+        "ability": "",
         "filename": "cloud_giant",
         "count": "1",
         "quote": "Many things fall from the sky. Frogs for instance... And the Cloud Giant."
@@ -7471,8 +7481,8 @@ var ext_to_cards = {
         "name": "Dettlaff: Ghastly Beast",
         "deck": "toussaint",
         "row": "close",
-        "strength": "10",
-        "ability": "",
+        "strength": "8",
+        "ability": "scorch_r",
         "filename": "dettlaff_ghastly_beast",
         "count": "1",
         "quote": "The gentleman suddenly turned into a ghastly beast and... tore those men to shreds."
@@ -7693,7 +7703,7 @@ var ext_to_cards = {
         "strength": "3",
         "ability": "scorch_c",
         "filename": "poisoner",
-        "count": "1",
+        "count": "2",
         "quote": "For a courtesan, a single drop. For a rock troll, an entire bottle. And for Nordling scum? Why waste good poison when a rusty dagger will do?"
     },
     "to_wicked_witch": {

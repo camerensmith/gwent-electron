@@ -1088,6 +1088,11 @@ var ability_dict = {
 		description: "Placed on Melee or Ranged row, boosts all units of the selected row by two. Limited to one per row.",
 		placed: async card => await card.animate("morale")
 	},
+	wine: {
+		name: "Toussaint Wine",
+		description: "Placed on Melee or Ranged row, boosts all units of the selected row by two. Limited to one per row.",
+		placed: async card => await card.animate("morale")
+	},
 	anna_henrietta_ladyship: {
 		description: "Restore a unit from your discard pile and play it immediatly.",
 		activated: async card => {
