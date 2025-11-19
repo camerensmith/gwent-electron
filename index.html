@@ -214,10 +214,12 @@
 				<a href = "rules.html" target = "_blank">Rules of Gwent</a>
 			</div>
 			<p id = "faction-description"></p>
-			<a id = "change-faction" class = "deck-options">Select Faction</a>
 			<a id = "save-deck" class = "deck-options">Save Deck</a>
 			<a id = "load-deck" class = "deck-options">Load Deck</a>
+			<a id = "clear-deck" class = "deck-options">Clear Deck</a>
+			<a id = "randomize-deck" class = "deck-options">Randomize Deck</a>
 			<a id = "download-json" style = "display:none;"></a>
+			<a id = "change-faction" class = "deck-options">Select Faction</a>
 			<a id = "select-op-deck" class = "deck-options">Select Opponent Deck ></a>
 			<span id = "op-deck-name" class = "deck-options">Random deck</span>
 			<h2 id = "card-bank-title" class = "card-contianer-title">Card Collection</h2>
@@ -248,7 +250,9 @@
 			// Initialize local music system when page loads
 			window.addEventListener('load', function() {
 				setTimeout(function() {
-					initLocalMusicSystem();
+					if (typeof initLocalMusicSystem === 'function') {
+						initLocalMusicSystem();
+					}
 					try { playIntroOnce(); } catch (e) {}
 				}, 1000);
 			});

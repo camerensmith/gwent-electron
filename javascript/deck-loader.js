@@ -15,6 +15,9 @@ class DeckLoader {
      */
     async initialize() {
         try {
+            // Export default_decks to aidecks if directory is empty
+            await this.exportAIDecksIfNeeded();
+            
             await this.loadExternalDecks();
             this.mergeWithExistingDecks();
             this.isLoaded = true;
@@ -27,53 +30,86 @@ class DeckLoader {
     }
 
     /**
+     * Export default_decks to decks/aidecks/ if the directory is empty
+     */
+    async exportAIDecksIfNeeded() {
+        if (!window.deckAPI || !window.default_decks) {
+            return; // Can't export without deckAPI or default_decks
+        }
+        
+        try {
+            const existingFiles = await window.deckAPI.listFiles('decks/aidecks');
+            if (existingFiles.length > 0) {
+                console.log(`AI decks directory already has ${existingFiles.length} files, skipping export.`);
+                return;
+            }
+            
+            // Directory is empty, export all default_decks
+            console.log('Exporting default_decks to decks/aidecks/...');
+            let exported = 0;
+            for (const deck of window.default_decks) {
+                try {
+                    const safeFilename = deck.title.toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '_')
+                        .replace(/^_+|_+$/g, '') + '.json';
+                    const filePath = `decks/aidecks/${safeFilename}`;
+                    await window.deckAPI.writeFile(filePath, JSON.stringify(deck, null, 2));
+                    exported++;
+                } catch (e) {
+                    console.warn(`Error exporting deck "${deck.title}":`, e);
+                }
+            }
+            console.log(`✅ Exported ${exported} AI decks to decks/aidecks/`);
+        } catch (error) {
+            console.warn('Error checking/exporting AI decks:', error);
+        }
+    }
+
+    /**
      * Load all external deck JSON files
      */
     async loadExternalDecks() {
-        const deckFiles = [
-            // Northern Realms (using actual file names)
-            'decks/northern_realms_5_royal_command.json',
-            'decks/northern_realms_6_steel_forged.json',
-            'decks/northern_realms_7_medell_legacy.json',
+        // Load AI decks from decks/aidecks/ directory
+        try {
+            const deckFiles = await this.listAIDeckFiles();
+            console.log(`Found ${deckFiles.length} AI deck files in decks/aidecks/`);
             
-            // Monsters (using actual file names)
-            'decks/monsters_3_eredin_destroyer.json',
-            'decks/monsters_4_eredin_king.json',
-            'decks/monsters_5_eredin_treacherous.json',
-            'decks/monsters_6_beasts_horrors.json',
-            
-            // Lyria & Rivia (using actual file names)
-            'decks/lyria_rivia_3_royal_knights.json',
-            'decks/lyria_rivia_4_siege_masters.json',
-            
-            // Scoia'tael (using actual file names)
-            'decks/scoiatael_3_elven_archers.json',
-            'decks/scoiatael_4_dwarven_engineers.json',
-            
-            // Skellige (using actual file names)
-            'decks/skellige_3_berserker_rage.json',
-            'decks/skellige_4_naval_power.json',
-            
-            // Toussaint (using actual file names)
-            'decks/toussaint_3_chivalry_honor.json',
-            'decks/toussaint_4_dark_secrets.json'
-        ];
-
-        console.log('Starting to load external decks...');
-        
-        for (const deckFile of deckFiles) {
-            try {
-                const deck = await this.loadDeckFile(deckFile);
-                if (deck) {
-                    this.externalDecks.push(deck);
-                    console.log(`✅ Loaded external deck: ${deck.title} (${deck.faction})`);
+            for (const deckFile of deckFiles) {
+                try {
+                    const deck = await this.loadDeckFile(deckFile);
+                    if (deck) {
+                        this.externalDecks.push(deck);
+                        console.log(`✅ Loaded AI deck: ${deck.title} (${deck.faction})`);
+                    }
+                } catch (error) {
+                    console.warn(`❌ Failed to load AI deck ${deckFile}:`, error);
                 }
-            } catch (error) {
-                console.warn(`❌ Failed to load deck ${deckFile}:`, error);
             }
+            
+            console.log(`AI deck loading complete. Loaded ${this.externalDecks.length} out of ${deckFiles.length} attempted decks.`);
+        } catch (error) {
+            console.warn('Error loading AI decks, falling back to default_decks:', error);
+            this.externalDecks = [];
         }
-        
-        console.log(`External deck loading complete. Loaded ${this.externalDecks.length} out of ${deckFiles.length} attempted decks.`);
+    }
+
+    /**
+     * List all AI deck files in decks/aidecks/
+     */
+    async listAIDeckFiles() {
+        if (window.deckAPI) {
+            try {
+                const files = await window.deckAPI.listFiles('decks/aidecks');
+                return files.map(f => f.path);
+            } catch (error) {
+                console.warn('Error listing AI deck files:', error);
+                return [];
+            }
+        } else {
+            // Fallback: try to fetch directory listing or use fetch for each known file
+            // For now, return empty array if deckAPI is not available
+            return [];
+        }
     }
 
     /**
@@ -81,12 +117,30 @@ class DeckLoader {
      */
     async loadDeckFile(filePath) {
         try {
-            const response = await fetch(filePath);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            let deckData;
+            
+            // Try using deckAPI first (Electron)
+            if (window.deckAPI) {
+                try {
+                    const content = await window.deckAPI.readFile(filePath);
+                    deckData = JSON.parse(content);
+                } catch (apiError) {
+                    // Fallback to fetch
+                    const response = await fetch(filePath);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    deckData = await response.json();
+                }
+            } else {
+                // Browser fallback: use fetch
+                const response = await fetch(filePath);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                deckData = await response.json();
             }
             
-            const deckData = await response.json();
             console.log(`📄 Loaded deck data from ${filePath}:`, deckData);
             
             // Validate deck structure

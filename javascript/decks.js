@@ -243,7 +243,7 @@ let default_decks = [
 			["ne_impera_brigade_4", 1],
 			["ne_impera_brigade_5", 1],
 			["ne_diplomat", 1],
-			["ne_treason", 1],
+			["spe_treason", 1],
 			["ne_infiltrator", 1],
 			["ntr_ciri", 1],
 			["ntr_yennefer", 1]
@@ -700,7 +700,7 @@ let default_decks = [
 
 var custom_decks = [];
 
-var premade_deck = custom_decks;
+var premade_deck = default_decks;
 
 var deckWeightConsts = {
 	"spyBase": 20,

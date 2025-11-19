@@ -93,39 +93,158 @@ class ControllerAI {
 				}
 			});
 		}
-		weights.push({
-			name: "Pass",
-			weight: this.weightPass(),
-			action: async () => await player.passRound()
-		});
-		let weightTotal = weights.reduce((a, c) => a + c.weight, 0);
-		if (weightTotal === 0) {
-			for (let i = 0; i < player.hand.cards.length; ++i) {
-				let card = player.hand.cards[i];
-				if (
-					(card.row === "weather" && this.weightWeather(card) > -1) ||
-					card.abilities.includes("avenger") ||
-					card.key === "spe_horn" || card.key === "spe_redania_horn"
-				) {
-					await weights[i].action();
+		// Calculate pass weight
+		const passWeight = this.weightPass();
+		const opponent = player.opponent();
+		
+		// Filter out cards with negative or zero weight (bad plays)
+		const playableWeights = weights.filter(w => w.weight > 0);
+		
+		// NEVER allow passing if starting the first round without playing any cards
+		const isFirstRoundStart = game.roundCount === 1 && player.getAllRowCards().length === 0 && !opponent.passed;
+		if (isFirstRoundStart && player.hand.cards.length > 0) {
+			// Remove pass option completely - must play at least one card
+			passWeight = 0;
+		}
+		
+		// CRITICAL: NEVER allow passing in round 3 (deciding round) unless truly no options
+		const isDecidingRound = game.roundCount === 3;
+		if (isDecidingRound) {
+			// In round 3, only allow pass if we have NO playable cards at all
+			// (decoy with no target, only bad weather, only bad scorch, etc.)
+			if (playableWeights.length > 0) {
+				// We have playable cards - remove pass option completely
+				passWeight = 0;
+			} else {
+				// No playable cards - check if we truly have no valid options
+				const allCardWeights = weights.filter(w => w.card);
+				if (allCardWeights.length > 0) {
+					// We have cards, but they're all unplayable - still try to play the best one
+					// Don't add pass option - force playing something
+					passWeight = 0;
+				}
+				// Only if we have NO cards at all can we pass in round 3
+			}
+		}
+		
+		// If we have playable cards, prioritize them over passing
+		if (playableWeights.length > 0) {
+			// Only add pass option if it's strategically sound (opponent passed and we're winning)
+			// This allows smart passing to conserve cards when we're ahead
+			// BUT never in first round before playing any cards, and NEVER in round 3
+			if (passWeight >= 20 && opponent.passed && player.winning && !isFirstRoundStart && !isDecidingRound) {
+				weights.push({
+					name: "Pass",
+					weight: passWeight,
+					action: async () => await player.passRound()
+				});
+			}
+			
+			// Calculate total weight from playable cards
+			let weightTotal = weights.reduce((a, c) => a + c.weight, 0);
+			
+			// If we have playable cards, use weighted random selection
+			if (weightTotal > 0) {
+				for (var i = 0; i < weights.length; ++i) {
+					if (weights[i].card) console.log("[" + weights[i].card.name + "] Weight: " + weights[i].weight);
+					else console.log("[" + weights[i].name + "] Weight: " + weights[i].weight);
+				}
+				let rand = randomInt(weightTotal);
+				console.log("Chosen weight: " + rand);
+				for (var i = 0; i < weights.length; ++i) {
+					rand -= weights[i].weight;
+					if (rand < 0) break;
+				}
+				console.log(weights[i]);
+				await weights[i].action();
+				return;
+			}
+		}
+		
+		// Fallback: if no playable cards, try to play any card (even with low weight)
+		const allCardWeights = weights.filter(w => w.card);
+		if (allCardWeights.length > 0) {
+			// Sort by weight (best to worst) and play the best available
+			allCardWeights.sort((a, b) => b.weight - a.weight);
+			
+			// Check if the best card is a Decoy - if so, verify it can actually be played
+			const bestCard = allCardWeights[0].card;
+			if (bestCard && (bestCard.key === "spe_decoy" || bestCard.abilities.includes("decoy"))) {
+				// Decoy requires a valid target - check if one exists
+				const hasValidTarget = player.getAllRowCards().some(c => c.isUnit());
+				if (!hasValidTarget) {
+					// No valid target for decoy - must pass
+					console.log("⚠️ AI only has Decoy but no valid targets - passing turn");
+					await player.passRound();
 					return;
 				}
 			}
-			await player.passRound();
-		} else {
-			for (var i = 0; i < weights.length; ++i) {
-				if (weights[i].card) console.log("[" + weights[i].card.name + "] Weight: " + weights[i].weight);
-				else console.log("[" + weights[i].name + "] Weight: " + weights[i].weight);
+			
+			// Check if the best card is clear weather with negative weight
+			// Only play it if it's the only option (all other cards also have negative/zero weight)
+			const isClearWeather = bestCard && (bestCard.key === "spe_clear" || bestCard.ability === "clear");
+			if (isClearWeather && allCardWeights[0].weight < 0) {
+				// Check if there are other non-weather cards available
+				const nonWeatherCards = allCardWeights.filter(w => 
+					w.card && w.card.row !== "weather" && !(w.card.deck && w.card.deck.startsWith("weather"))
+				);
+				if (nonWeatherCards.length > 0) {
+					// Don't play clear weather if there are other options, even if they're bad
+					// Play the best non-weather card instead
+					await nonWeatherCards[0].action();
+					return;
+				}
+				// Only clear weather available - play it even if negative weight
 			}
-			let rand = randomInt(weightTotal);
-			console.log("Chosen weight: " + rand);
-			for (var i = 0; i < weights.length; ++i) {
-				rand -= weights[i].weight;
-				if (rand < 0) break;
-			}
-			console.log(weights[i]);
-			await weights[i].action();
+			
+			// Play the best card even if weight is low/negative (better than passing)
+			await allCardWeights[0].action();
+			return;
 		}
+		
+		// Last resort: only pass if truly no options
+		// BUT NEVER pass if starting the first round without playing any cards
+		// AND NEVER pass in round 3 (deciding round) unless truly no options
+		// Reuse isFirstRoundStart variable declared earlier in function
+		const isDecidingRoundFinal = game.roundCount === 3;
+		
+		if (isFirstRoundStart && player.hand.cards.length > 0) {
+			// Force play the best available card, even if it has negative weight
+			// This ensures we always play at least one card in round 1
+			const allCardWeights = weights.filter(w => w.card);
+			if (allCardWeights.length > 0) {
+				allCardWeights.sort((a, b) => b.weight - a.weight);
+				await allCardWeights[0].action();
+				return;
+			}
+		}
+		
+		// In round 3, force playing ANY card before passing
+		if (isDecidingRoundFinal && player.hand.cards.length > 0) {
+			const allCardWeights = weights.filter(w => w.card);
+			if (allCardWeights.length > 0) {
+				// Sort by weight and play the best available, even if negative
+				allCardWeights.sort((a, b) => b.weight - a.weight);
+				// Only pass if ALL cards are truly unplayable (decoy with no target, etc.)
+				// But even then, try to play the "least bad" option
+				const bestCard = allCardWeights[0];
+				if (bestCard && bestCard.card) {
+					// Check if it's a decoy with no target
+					if ((bestCard.card.key === "spe_decoy" || bestCard.card.abilities.includes("decoy")) && 
+						!player.getAllRowCards().some(c => c.isUnit())) {
+						// Decoy with no target - truly unplayable, must pass
+						console.log("⚠️ Round 3: Only Decoy with no target - must pass");
+						await player.passRound();
+						return;
+					}
+					// Otherwise, play the card even if it has negative weight
+					await bestCard.action();
+					return;
+				}
+			}
+		}
+		
+		await player.passRound();
 	}
 
 	isSelfRowIndex(i) {
@@ -397,8 +516,10 @@ class ControllerAI {
 		}
 		// CRITICAL: Decoy requires a target - cannot be played without swapping
 		if (!targ) {
-			console.log("⚠️ AI cannot play Decoy - no valid target found");
-			return; // Don't play decoy if there's no target
+			console.log("⚠️ AI cannot play Decoy - no valid target found - passing turn");
+			// If decoy can't be played and it's the only option, we must pass
+			await this.player.passRound();
+			return;
 		}
 		if (targ) {
 			for (let i = 0; !row; ++i) {
@@ -521,36 +642,149 @@ class ControllerAI {
 	}
 
 	weightPass() {
-		if (this.player.health === 1) return 0;
 		const opponent = this.player.opponent();
 		let dif = opponent.total - this.player.total;
+		const cardsInHand = this.player.hand.cards.length;
+		const roundNumber = game.roundCount;
+		const cardsOnBoard = this.player.getAllRowCards().length;
 		
-		// If opponent passed and we're behind by 30+, evaluate card conservation
-		if (opponent.passed && dif >= 30) {
-			const cardsInHand = this.player.hand.cards.length;
-			const cardsNeededToWin = Math.ceil(dif / 10); // Rough estimate: need ~10 points per card
-			const cardsRemainingAfterFight = cardsInHand - cardsNeededToWin;
-			const roundsRemaining = 3 - game.roundCount;
-			const cardsPerRoundNeeded = roundsRemaining > 0 ? Math.ceil(cardsRemainingAfterFight / roundsRemaining) : 0;
-			
-			// High weight to pass if continuing would put us in a card-hole
-			if (cardsRemainingAfterFight < 4 * roundsRemaining || cardsPerRoundNeeded < 3) {
-				return 100; // Strong incentive to pass
-			}
-			
-			// Also high weight if we have very few cards and large deficit
-			if (cardsInHand <= 5 && dif >= 40) {
-				return 100;
-			}
-			
-			// Moderate weight for other 30+ deficits when opponent passed
-			return 80;
+		// NEVER pass if starting the first round without playing any cards
+		// This prevents the AI from passing immediately at the start of round 1
+		if (roundNumber === 1 && cardsOnBoard === 0 && !opponent.passed && cardsInHand > 0) {
+			return 0; // Cannot pass - must play at least one card in round 1
 		}
 		
-		// Original logic for other cases
-		if (dif > 30) return 100;
-		if (dif < -30 && opponent.hand.cards.length - this.player.hand.cards.length > 2) return 100;
-		return Math.floor(Math.abs(dif));
+		// CRITICAL: NEVER pass in round 3 (deciding round) unless truly no valid options
+		// Round 3 is the game-deciding round - AI must fight to the end
+		if (roundNumber === 3) {
+			// Check if we have any playable cards (positive weight)
+			const data_max = this.getMaximums();
+			const data_board = this.getBoardData();
+			const hasPlayableCards = this.player.hand.cards.some(card => {
+				const weight = this.weightCard(card, data_max, data_board);
+				// Card is playable if it has positive weight
+				// Exceptions: decoy with no target, weather that hurts us, scorch that kills our units
+				// These are already handled by weightCard returning 0 or negative
+				return weight > 0;
+			});
+			
+			// If we have ANY playable cards in round 3, we MUST play them - never pass
+			if (hasPlayableCards) {
+				return 0; // Cannot pass - must play available cards
+			}
+			
+			// Only allow passing in round 3 if we truly have no valid options:
+			// - Only decoy cards with no targets
+			// - Only weather cards that would hurt us
+			// - Only scorch that would kill our units
+			// - No cards at all
+			// In these cases, we have no choice but to pass
+			if (cardsInHand === 0) {
+				// No cards - must pass
+				return 1000;
+			}
+			
+			// Check if all cards are unplayable (decoy with no target, bad weather, bad scorch)
+			const allCardsUnplayable = this.player.hand.cards.every(card => {
+				const weight = this.weightCard(card, data_max, data_board);
+				return weight <= 0;
+			});
+			
+			if (allCardsUnplayable) {
+				// All cards are unplayable - only then can we pass in round 3
+				return 1000; // Must pass - no valid options
+			}
+			
+			// If we somehow have cards but none are playable, still try to play the best one
+			return 0; // Don't pass - try to play something
+		}
+		
+		// ALWAYS pass if opponent passed and we're winning (round is over)
+		if (opponent.passed && this.player.winning) {
+			return 1000; // Very high weight to pass when we've won
+		}
+		
+		// Check if we only have weather cards that would hurt us
+		const weatherCards = this.player.hand.cards.filter(c => 
+			c.row === "weather" || (c.deck && c.deck.startsWith("weather"))
+		);
+		if (weatherCards.length > 0 && weatherCards.length === cardsInHand) {
+			// Only weather cards in hand - check if they would adversely affect us
+			const data_max = this.getMaximums();
+			const data_board = this.getBoardData();
+			let allWeatherBad = true;
+			for (const weatherCard of weatherCards) {
+				const weight = this.weightCard(weatherCard, data_max, data_board);
+				if (weight > 0) {
+					allWeatherBad = false;
+					break;
+				}
+			}
+			// If all weather cards would hurt us, pass instead
+			if (allWeatherBad) {
+				return 100; // High weight to pass if only bad weather cards
+			}
+		}
+		
+		// More inclined to pass if in deep 20+ point deficit
+		if (dif >= 20 && !opponent.passed) {
+			// Check if we have any good plays (spies, high-value cards)
+			const data_max = this.getMaximums();
+			const data_board = this.getBoardData();
+			const hasGoodPlays = this.player.hand.cards.some(card => {
+				const weight = this.weightCard(card, data_max, data_board);
+				// Spies or high-value plays
+				return (card.abilities && card.abilities.includes("spy")) || weight > 15;
+			});
+			
+			if (!hasGoodPlays) {
+				// No good plays, more inclined to pass at 20+ deficit
+				return 40; // Moderate weight to pass when way behind with no good options
+			}
+		}
+		
+		// NEVER pass if we're losing and have cards - always try to win
+		if (!this.player.winning && cardsInHand > 0) {
+			// Check if we have any playable cards with positive weight
+			const hasPlayableCards = this.player.hand.cards.some(card => {
+				const data_max = this.getMaximums();
+				const data_board = this.getBoardData();
+				const weight = this.weightCard(card, data_max, data_board);
+				return weight > 0;
+			});
+			
+			// If we have playable cards, don't pass - always try to win
+			if (hasPlayableCards) {
+				return 0;
+			}
+		}
+		
+		// Smart passing: Only pass if opponent passed and we're significantly ahead
+		// This conserves cards for future rounds when we're already winning
+		if (opponent.passed && this.player.winning && dif < -15) {
+			// We're ahead by 15+ points, opponent passed - smart to pass and save cards
+			return 50; // Moderate weight to pass and conserve cards
+		}
+		
+		// Strategic passing: If opponent passed, we're slightly ahead, and have few cards
+		// This is smart card conservation for later rounds
+		if (opponent.passed && this.player.winning && dif < 0 && cardsInHand <= 5) {
+			return 30; // Some weight to pass and conserve cards
+		}
+		
+		// Desperate situation: Only pass if opponent passed, we're way behind (60+ points), 
+		// have very few cards (2 or less), and can't possibly catch up
+		if (opponent.passed && dif >= 60 && cardsInHand <= 2) {
+			// Calculate if we could possibly win with remaining cards
+			const avgCardValue = 7; // Rough estimate
+			const potentialPoints = cardsInHand * avgCardValue;
+			if (potentialPoints < dif) {
+				return 20; // Minimal weight - only if truly hopeless
+			}
+		}
+		
+		// Default: don't pass - always try to play cards and win
+		return 0;
 	}
 
 	weightLeader(card, max, data) {
@@ -590,16 +824,33 @@ class ControllerAI {
 
 	weightHornRow(card, row) {
 		if (row.effects.horn) return 0;
-		let base = this.weightRowChange(card, row);
-		// Slightly favor placing horn on rows that already have units
 		const unitCount = row.cards.filter(c => c.isUnit()).length;
+		
+		// Heavily penalize playing horn on empty rows
 		if (unitCount === 0) {
-			// Keep minimal positive weight so horn remains a valid last-resort play
-			base = Math.max(1, Math.floor(base * 0.2));
-		} else {
-			// Small bonus scaled by unit presence, capped to avoid overcommitment
-			base += Math.min(5, unitCount * 2);
+			// Only allow if truly no other options exist (check if all other rows also have no units or already have horn)
+			const allRows = this.player.getAllRows();
+			const rowsWithUnits = allRows.filter(r => r.cards.filter(c => c.isUnit()).length > 0 && !r.effects.horn);
+			const rowsWithoutHorn = allRows.filter(r => !r.effects.horn);
+			
+			// If there are rows with units that don't have horn, heavily penalize this empty row
+			if (rowsWithUnits.length > 0) {
+				return 0; // Don't play horn on empty row if there are rows with units available
+			}
+			
+			// If all rows are empty or have horn, allow minimal weight as last resort
+			if (rowsWithoutHorn.length <= 1) {
+				return 1; // Last resort only
+			}
+			
+			// If there are other empty rows without horn, prefer those (but still low weight)
+			return 1;
 		}
+		
+		// Row has units - calculate normal weight with bonus
+		let base = this.weightRowChange(card, row);
+		// Bonus scaled by unit presence, capped to avoid overcommitment
+		base += Math.min(5, unitCount * 2);
 		return base;
 	}
 
@@ -654,6 +905,53 @@ class ControllerAI {
 		return rows.sort((a, b) => b.score - a.score)[0];
 	}
 
+	bestHornRow(card) {
+		let rows = [];
+		if (card.row === "agile") {
+			rows = [{
+				row: board.getRow(card, "close", card.holder),
+				score: 0 
+			},
+			{
+				row: board.getRow(card, "ranged", card.holder),
+				score: 0
+			}];
+		} else if (card.row === "melee_siege") {
+			rows = [{
+				row: board.getRow(card, "close", card.holder),
+				score: 0 
+			},
+			{
+				row: board.getRow(card, "siege", card.holder),
+				score: 0
+			}];
+		} else if (card.row === "ranged_siege") {
+			rows = [{
+				row: board.getRow(card, "ranged", card.holder),
+				score: 0 
+			},
+			{
+				row: board.getRow(card, "siege", card.holder),
+				score: 0
+			}];
+		} else if (card.row === "any") {
+			rows = [{
+				row: board.getRow(card, "close", card.holder),
+				score: 0 
+			},
+			{
+				row: board.getRow(card, "ranged", card.holder),
+				score: 0
+			},
+			{
+				row: board.getRow(card, "siege", card.holder),
+				score: 0
+			}];
+		}
+		for (var i = 0; i < rows.length; i++) rows[i].score = this.weightHornRow(card, rows[i].row);
+		return rows.sort((a, b) => b.score - a.score)[0];
+	}
+
 	weightRowChangeTrue(card, row) {
 		let dif = [0, 0];
 		this.calcRowPower(row, dif, true);
@@ -666,6 +964,8 @@ class ControllerAI {
 
 	weightWeather(card) {
 		let rows;
+		const isClearWeather = card.key === "spe_clear" || card.ability == "clear";
+		
 		if (card.abilities) {
 			if (card.key === "spe_clear") rows = Object.values(weather.types).filter(t => t.count > 0).flatMap(t => t.rows);
 			else rows = Object.values(weather.types).filter(t => t.count === 0 && t.name === card.abilities[0]).flatMap(t => t.rows);
@@ -673,7 +973,8 @@ class ControllerAI {
 			if (card.ability == "clear") rows = Object.values(weather.types).filter(t => t.count > 0).flatMap(t => t.rows);
 			else rows = Object.values(weather.types).filter(t => t.count === 0 && t.name === card.ability).flatMap(t => t.rows);
 		}
-		if (!rows.length) return 1;
+		if (!rows.length) return isClearWeather ? -50 : 1; // Heavily penalize clear weather if no weather active
+		
 		let dif = [0, 0];
 		rows.forEach(r => {
 			let state = r.effects.weather;
@@ -682,7 +983,22 @@ class ControllerAI {
 			this.calcRowPower(r, dif, false);
 			r.effects.weather = state;
 		});
-		return dif[1] - dif[0];
+		
+		const netValue = dif[1] - dif[0];
+		
+		// For clear weather: only play if we're at a disadvantage (netValue > 0 means we benefit)
+		// OR if there are no other card options (handled in startTurnOriginal)
+		if (isClearWeather) {
+			// Only play clear weather if it significantly helps us (we're losing points due to weather)
+			// Otherwise heavily penalize it
+			if (netValue > 5) {
+				return netValue; // Worth playing if it helps significantly
+			} else {
+				return -30; // Heavily penalize unless we really need it
+			}
+		}
+		
+		return netValue;
 	}
 
 	weightMardroemeRow(card, row) {
@@ -765,14 +1081,23 @@ class ControllerAI {
 			console.log(card);
 		}
 		if (abi.includes("decoy")) {
+			if (game.decoyCancelled) return 0;
+			
+			// CRITICAL: Decoy requires a valid target unit to swap with
+			// Check if there are any units on our side of the board
+			const hasValidTarget = this.player.getAllRowCards().some(c => c.isUnit());
+			if (!hasValidTarget) {
+				return 0; // No valid targets - cannot play decoy
+			}
+			
 			if (card.row.length > 0) {
 				let row_data;
 				if (card.row === "close" || card.row === "agile" || card.row === "any" || card.row === "melee_siege") row_data = this.countCards(board.getRow(card,"close",this.player), row_data);
 				if (card.row === "ranged" || card.row === "agile" || card.row === "any" || card.row === "ranged_siege") row_data = this.countCards(board.getRow(card, "ranged", this.player), row_data);
 				if (card.row === "siege" || card.row === "any" || card.row === "melee_siege" || card.row === "ranged_siege") row_data = this.countCards(board.getRow(card, "siege", this.player), row_data);
 				if (card.row === "siege") row_data = this.countCards(board.getRow(card, "siege", this.player), row_data);
-				return game.decoyCancelled ? 0 : row_data.spy.length ? 50 : row_data.medic.length ? 15 : row_data.scorch.length ? 10 : max.me.length ? card.power : 0;
-			} else return game.decoyCancelled ? 0 : data.spy.length ? 50 : data.medic.length ? 15 : data.scorch.length ? 10 : max.me.length ? 1 : 0;
+				return row_data.spy.length ? 50 : row_data.medic.length ? 15 : row_data.scorch.length ? 10 : max.me.length ? card.power : 0;
+			} else return data.spy.length ? 50 : data.medic.length ? 15 : data.scorch.length ? 10 : max.me.length ? 1 : 0;
 		}
 		if (abi.includes("horn")) {
 			let rows = this.player.getAllRows().filter(r => !r.special.containsCardByKey("spe_horn") && !r.special.containsCardByKey("spe_redania_horn"));
@@ -791,41 +1116,50 @@ class ControllerAI {
 				let power_op = max.op_noshield.length ? max.op_noshield[0].card.power : 0;
 				let power_me = max.me_noshield.length ? max.me_noshield[0].card.power : 0;
 				
+				// CRITICAL: Never scorch if it would kill our own units
 				// If we have the strongest units globally, scorch would kill our own units
 				if (power_me > power_op) {
 					return 0; // Don't scorch if we have the strongest units
 				}
 				
-				// If we tie for strongest power, check if we'd kill our own units
+				// If we tie for strongest power, carefully calculate if it's worth it
 				if (power_me === power_op && power_op > 0) {
-					// Get all our units with max power across all rows
+					// Get all our units with max power across ALL rows (scorch affects all rows)
 					const myAllUnits = this.player.getAllRowCards().filter(c => c.isUnit() && !c.hero);
 					const myMaxPowerUnits = myAllUnits.filter(c => c.power === power_me);
 					const myLoss = myMaxPowerUnits.reduce((sum, c) => sum + c.power, 0);
 					
-					// Get opponent's units with max power
-					const opponentMaxUnits = max.op_noshield.filter(c => c.card.power === power_op);
-					const opponentLoss = opponentMaxUnits.reduce((sum, c) => sum + c.card.power, 0);
+					// Get opponent's units with max power across ALL rows
+					const opponentAllUnits = opponent.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+					const opponentMaxPowerUnits = opponentAllUnits.filter(c => c.power === power_op);
+					const opponentLoss = opponentMaxPowerUnits.reduce((sum, c) => sum + c.power, 0);
 					
-					// Only worth it if we kill more opponent power than our own
-					if (myLoss >= opponentLoss) {
-						return 0; // Would kill more or equal of our own units
+					// Only worth it if we kill significantly more opponent power than our own
+					// Require at least 2:1 ratio to make it worthwhile (smart usage)
+					if (myLoss * 2 >= opponentLoss) {
+						return 0; // Would kill too many of our own units relative to opponent
 					}
-					// Return net value (opponent loss - our loss)
-					return Math.max(0, opponentLoss - myLoss);
+					// Return net value (opponent loss - our loss), but only if positive
+					const netValue = opponentLoss - myLoss;
+					return Math.max(0, netValue);
 				}
 				
 				// We don't have the strongest units, so scorch is safe
-				let total_op = power_op * max.op_noshield.length;
-				
-				// Consider martyr cost if killing opponent's strongest units
+				// Calculate total value of killing opponent's strongest units
+				let total_op = 0;
 				if (max.op_noshield.length > 0) {
-					const strongestOpponent = max.op_noshield[0].card;
-					if (strongestOpponent.abilities.includes("martyr")) {
-						// Adjust value based on martyr cost
-						const martyrAdjustedValue = this.evaluateKillingOpponentUnit(strongestOpponent, card);
-						total_op = martyrAdjustedValue * max.op_noshield.length;
-					}
+					// Get all opponent units with max power across all rows
+					const opponentAllUnits = opponent.getAllRowCards().filter(c => c.isUnit() && !c.hero);
+					const opponentMaxPower = Math.max(...opponentAllUnits.map(c => c.power), 0);
+					const opponentMaxUnits = opponentAllUnits.filter(c => c.power === opponentMaxPower);
+					
+					total_op = opponentMaxUnits.reduce((sum, c) => {
+						// Consider martyr cost if applicable
+						if (c.abilities.includes("martyr")) {
+							return sum + this.evaluateKillingOpponentUnit(c, card);
+						}
+						return sum + c.power;
+					}, 0);
 				}
 				
 				return total_op;
@@ -892,20 +1226,89 @@ class ControllerAI {
 				return max_power;
 			}
 		}
-		if (card.row === "weather" || (card.deck && card.deck.startsWith("weather"))) return Math.max(0, this.weightWeather(card));
+		if (card.row === "weather" || (card.deck && card.deck.startsWith("weather"))) {
+			const weatherWeight = this.weightWeather(card);
+			// For clear weather, allow negative weights to be considered only if no other options
+			// This is handled in startTurnOriginal fallback logic
+			return weatherWeight;
+		}
 		let row = board.getRow(card, (card.row === "agile" || card.row === "any" || card.row === "melee_siege") ? "close" : (card.row === "ranged_siege" ? "ranged" : card.row), this.player);
 		let score = row.calcCardScore(card);
+		
+		// Check for units with horn ability - penalize playing on empty rows
+		if (card.isUnit() && (abi.includes("horn") || abi.includes("redania_horn"))) {
+			const hornUnitCount = row.cards.filter(c => c.isUnit()).length;
+			if (hornUnitCount === 0) {
+				// Check if there are other rows with units available
+				const allRows = this.player.getAllRows();
+				const rowsWithUnits = allRows.filter(r => r.cards.filter(c => c.isUnit()).length > 0);
+				if (rowsWithUnits.length > 0) {
+					// Heavily penalize - only allow if no other options
+					score = Math.max(0, score - 50);
+				}
+			}
+		}
+		
 		switch (abi[abi.length - 1]) {
 			case "bond":
-			case "morale":
-			case "horn":
 				score = (card.row === "agile" || card.row === "any" || card.row === "melee_siege" || card.row === "ranged_siege") ? this.bestAgileRowChange(card).score : this.weightRowChange(card, row);
+				break;
+			case "morale":
+				// Heavily penalize playing morale on empty rows
+				const moraleUnitCount = row.cards.filter(c => c.isUnit()).length;
+				if (moraleUnitCount === 0) {
+					// Check if there are other rows with units available
+					const allRows = this.player.getAllRows();
+					const rowsWithUnits = allRows.filter(r => r.cards.filter(c => c.isUnit()).length > 0);
+					if (rowsWithUnits.length > 0) {
+						score = 0; // Don't play morale on empty row if there are rows with units
+					} else {
+						score = 1; // Last resort only if all rows are empty
+					}
+				} else {
+					score = (card.row === "agile" || card.row === "any" || card.row === "melee_siege" || card.row === "ranged_siege") ? this.bestAgileRowChange(card).score : this.weightRowChange(card, row);
+				}
+				break;
+			case "horn":
+				score = (card.row === "agile" || card.row === "any" || card.row === "melee_siege" || card.row === "ranged_siege") ? this.bestHornRow(card).score : this.weightHornRow(card, row);
 				break;
 			case "medic":
 				score = this.weightMedic(data, score, card.holder);
 				break;
 			case "spy":
-				score = 15 + score;
+				// Boost spy value in strategic situations:
+				// 1. When losing significantly (play spy to get card advantage)
+				// 2. When getting low on cards (need card draw)
+				// 3. To open a round (early in round)
+				const opponent = this.player.opponent();
+				const pointDeficit = opponent.total - this.player.total;
+				const cardsInHand = this.player.hand.cards.length;
+				const cardsInDeck = this.player.deck.cards.length;
+				const roundNumber = game.roundCount;
+				const isEarlyRound = roundNumber === 1 && this.player.getAllRowCards().length < 3;
+				
+				let spyBonus = 15; // Base spy value
+				
+				// Boost if losing significantly (20+ points)
+				if (pointDeficit >= 20) {
+					spyBonus += 25; // Strong incentive to play spy when losing
+				} else if (pointDeficit >= 10) {
+					spyBonus += 15; // Moderate boost when losing
+				}
+				
+				// Boost if getting low on cards (need card advantage)
+				if (cardsInHand <= 3 || cardsInDeck <= 5) {
+					spyBonus += 20; // Strong incentive when low on cards
+				} else if (cardsInHand <= 5) {
+					spyBonus += 10; // Moderate boost when getting low
+				}
+				
+				// Boost to open a round (early in round 1)
+				if (isEarlyRound) {
+					spyBonus += 15; // Good to play spy early to get card advantage
+				}
+				
+				score = spyBonus + score;
 				break;
 			case "muster":
 				let pred = c => c.target === card.target;
@@ -1068,7 +1471,8 @@ class Player {
 		this.reset();
 		this.name = name;
 		document.getElementById("name-" + this.tag).innerHTML = name;
-		var nomeDeck = deck.title ? deck.title : factions[deck.faction].name;
+		// Only use deck title if it exists and is not empty, otherwise use faction name
+		var nomeDeck = (deck.title && deck.title.trim()) ? deck.title : factions[deck.faction].name;
 		if (nomeDeck.indexOf(" - ") > -1) nomeDeck = nomeDeck.replace(" - ", ":<br /><i>") + "</i>";
 		document.getElementById("deck-name-" + this.tag).innerHTML = nomeDeck;
 		document.getElementById("stats-" + this.tag).getElementsByClassName("profile-img")[0].children[0].children[0];
@@ -1188,9 +1592,9 @@ class Player {
 					}
 					
 					// Draw card from opponent's deck (the player who owns the Trade cards)
-					// Check if blockade is preventing this player from drawing
-					if (game.blockadeActive && game.blockadeActive.blockedPlayer === opponent) {
-						// Blockade is active - prevent drawing
+					// Check if embargo is preventing this player from drawing
+					if (game.embargoActive && game.embargoActive.blockedPlayer === opponent) {
+						// Embargo is active - prevent drawing
 						return;
 					}
 					const drawn = opponent.deck.cards[0];
@@ -1783,10 +2187,10 @@ class Deck extends CardContainer {
 	}
 
 	async draw(hand) {
-		// Check if blockade is active and preventing this player from drawing
+		// Check if embargo is active and preventing this player from drawing
 		const player = hand === player_op.hand ? player_op : player_me;
-		if (game.blockadeActive && game.blockadeActive.blockedPlayer === player) {
-			// Blockade is active - prevent drawing
+		if (game.embargoActive && game.embargoActive.blockedPlayer === player) {
+			// Embargo is active - prevent drawing
 			return;
 		}
 		
@@ -2646,7 +3050,7 @@ class Game {
 			me: new Set(),
 			op: new Set()
 		};
-		this.blockadeActive = null;
+		this.embargoActive = null;
 		if (board) {
 			if (board.row) {
 				board.row.forEach(r => {
@@ -3213,6 +3617,22 @@ class Card {
 
 class UI {
 	constructor() {
+		this.userInteracted = false;
+		// Listen for first user interaction to enable audio
+		const enableAudio = () => {
+			if (!this.userInteracted) {
+				this.userInteracted = true;
+				// Try to play music after user interaction
+				if (this.backgroundMusic && this.backgroundMusic.paused) {
+					this.playBackgroundMusic();
+				}
+			}
+		};
+		// Listen for various user interactions
+		document.addEventListener('click', enableAudio, { once: true });
+		document.addEventListener('keydown', enableAudio, { once: true });
+		document.addEventListener('touchstart', enableAudio, { once: true });
+		
 		this.carousels = [];
 		this.notif_elem = document.getElementById("notification-bar");
 		this.preview = document.getElementsByClassName("card-preview")[0];
@@ -3356,7 +3776,10 @@ class UI {
 		// Add success handling
 		this.backgroundMusic.addEventListener('canplaythrough', () => {
 			console.log(`Successfully loaded audio from: ${audioPath}`);
-			this.playBackgroundMusic();
+			// Only try to autoplay if user has interacted
+			if (this.userInteracted) {
+				this.playBackgroundMusic();
+			}
 		});
 		
 		// Initialize music state
@@ -3365,9 +3788,14 @@ class UI {
 		
 		// Try to play with error handling
 		this.backgroundMusic.play().catch(e => {
-			console.error('Could not play background music:', e);
-			// Try next path on play error
-			this.tryLoadAudio(audioPaths, index + 1);
+			// Suppress NotAllowedError (autoplay blocked) - this is expected browser behavior
+			if (e.name !== 'NotAllowedError') {
+				console.error('Could not play background music:', e);
+				// Try next path on play error (only for non-autoplay errors)
+				if (e.name !== 'NotAllowedError') {
+					this.tryLoadAudio(audioPaths, index + 1);
+				}
+			}
 		});
 		
 		this.toggleMusic_elem.classList.remove("fade");
@@ -3386,7 +3814,10 @@ class UI {
 		
 		if (this.backgroundMusic) {
 			this.backgroundMusic.play().catch(e => {
-				console.error('Could not play background music:', e);
+				// Suppress NotAllowedError (autoplay blocked) - this is expected browser behavior
+				if (e.name !== 'NotAllowedError') {
+					console.error('Could not play background music:', e);
+				}
 			});
 		}
 	}
@@ -4303,6 +4734,8 @@ class DeckMaker {
 		el = document.getElementById("add-file"); if (el) el.addEventListener("change", () => this.uploadDeck(), false);
 		el = document.getElementById("save-deck"); if (el) el.addEventListener("click", () => this.saveDeck(), false);
 		el = document.getElementById("load-deck"); if (el) el.addEventListener("click", () => this.loadSavedDeck(), false);
+		el = document.getElementById("clear-deck"); if (el) el.addEventListener("click", () => this.clearDeck(), false);
+		el = document.getElementById("randomize-deck"); if (el) el.addEventListener("click", () => this.randomizeDeck(), false);
 		el = document.getElementById("card-search"); if (el) el.addEventListener("input", () => this.filterCards(), false);
 		document.getElementById("start-game").addEventListener("click", async () => await this.startNewGame(false), false);
 		document.getElementById("start-ai-game").addEventListener("click", async () => await this.startNewGame(true), false);
@@ -4363,7 +4796,15 @@ class DeckMaker {
 
 	setLeader(index) {
 		this.leader = this.leaders.filter(l => l.index == index)[0];
-		getPreviewElem(this.leader_elem.children[1], this.leader.card)
+		if (!this.leader) {
+			console.warn(`Leader with index "${index}" not found. Using first available leader.`);
+			this.leader = this.leaders[0];
+		}
+		if (this.leader && this.leader.card) {
+			getPreviewElem(this.leader_elem.children[1], this.leader.card);
+		} else {
+			console.error('No valid leader found. Leaders array:', this.leaders);
+		}
 	}
 
 	makeBank(faction, deck) {
@@ -4642,6 +5083,187 @@ class DeckMaker {
 		this.stats = {};
 	}
 
+	clearDeck() {
+		// Move all cards from deck back to bank
+		for (let i = 0; i < this.deck.length; i++) {
+			const deckCard = this.deck[i];
+			if (deckCard && deckCard.count > 0) {
+				// Find the corresponding card in bank (same index)
+				const bankCard = this.bank[i];
+				if (bankCard && bankCard.index === deckCard.index) {
+					// Return all copies to bank
+					bankCard.count += deckCard.count;
+					deckCard.count = 0;
+					// Update bank card display
+					if (bankCard.count > 0) {
+						bankCard.elem.getElementsByClassName("card-count")[0].innerHTML = bankCard.count;
+						bankCard.elem.getElementsByClassName("card-count")[0].classList.remove("hide");
+						bankCard.elem.classList.remove("hide");
+					}
+					// Hide deck card element
+					if (deckCard.elem) {
+						deckCard.elem.classList.add("hide");
+						if (deckCard.elem.getElementsByClassName("card-count")[0]) {
+							deckCard.elem.getElementsByClassName("card-count")[0].innerHTML = 0;
+							deckCard.elem.getElementsByClassName("card-count")[0].classList.add("hide");
+						}
+					}
+				}
+			}
+		}
+		
+		// Update stats and UI
+		this.update();
+		
+		// Play sound feedback
+		tocar("card", false);
+	}
+
+	randomizeDeck() {
+		// First clear the current deck
+		this.clearDeck();
+		
+		// Separate available cards into units and specials
+		const availableUnits = [];
+		const availableSpecials = [];
+		
+		for (let i = 0; i < this.bank.length; i++) {
+			const bankCard = this.bank[i];
+			if (bankCard && bankCard.count > 0) {
+				const cardData = card_dict[bankCard.index];
+				if (cardData) {
+					const isSpecial = cardData.deck.startsWith("special") || cardData.deck.startsWith("weather");
+					if (isSpecial) {
+						availableSpecials.push({
+							index: i,
+							bankCard: bankCard,
+							maxCount: bankCard.count
+						});
+					} else {
+						availableUnits.push({
+							index: i,
+							bankCard: bankCard,
+							maxCount: bankCard.count
+						});
+					}
+				}
+			}
+		}
+		
+		// Randomly select 22-25 unit cards
+		const targetUnitCount = 22 + randomInt(4); // 22-25
+		let selectedUnits = [];
+		let unitCount = 0;
+		
+		// Shuffle available units
+		const shuffledUnits = [...availableUnits].sort(() => Math.random() - 0.5);
+		
+		for (const unit of shuffledUnits) {
+			if (unitCount >= targetUnitCount) break;
+			
+			// Randomly decide how many copies to add (1 to maxCount)
+			const copiesToAdd = Math.min(
+				unit.maxCount,
+				1 + randomInt(Math.min(unit.maxCount, targetUnitCount - unitCount))
+			);
+			
+			if (copiesToAdd > 0 && unitCount + copiesToAdd <= targetUnitCount + 3) {
+				selectedUnits.push({
+					index: unit.index,
+					count: copiesToAdd
+				});
+				unitCount += copiesToAdd;
+			}
+		}
+		
+		// If we don't have enough units, try to add more
+		if (unitCount < 22) {
+			for (const unit of shuffledUnits) {
+				if (unitCount >= 25) break;
+				const existing = selectedUnits.find(u => u.index === unit.index);
+				const currentCount = existing ? existing.count : 0;
+				const maxAvailable = unit.maxCount - currentCount;
+				
+				if (maxAvailable > 0) {
+					const needed = Math.min(25 - unitCount, maxAvailable);
+					if (needed > 0) {
+						if (existing) {
+							existing.count += needed;
+						} else {
+							selectedUnits.push({
+								index: unit.index,
+								count: needed
+							});
+						}
+						unitCount += needed;
+					}
+				}
+			}
+		}
+		
+		// Randomly select 0-5 special cards
+		const targetSpecialCount = randomInt(6); // 0-5
+		let selectedSpecials = [];
+		let specialCount = 0;
+		
+		// Shuffle available specials
+		const shuffledSpecials = [...availableSpecials].sort(() => Math.random() - 0.5);
+		
+		for (const special of shuffledSpecials) {
+			if (specialCount >= targetSpecialCount) break;
+			
+			// Randomly decide how many copies to add (1 to maxCount)
+			const copiesToAdd = Math.min(
+				special.maxCount,
+				1 + randomInt(Math.min(special.maxCount, targetSpecialCount - specialCount))
+			);
+			
+			if (copiesToAdd > 0 && specialCount + copiesToAdd <= targetSpecialCount) {
+				selectedSpecials.push({
+					index: special.index,
+					count: copiesToAdd
+				});
+				specialCount += copiesToAdd;
+			}
+		}
+		
+		// Add selected cards to deck
+		const allSelected = [...selectedUnits, ...selectedSpecials];
+		for (const selection of allSelected) {
+			const bankCard = this.bank[selection.index];
+			const deckCard = this.deck[selection.index];
+			
+			if (bankCard && deckCard) {
+				// Move cards from bank to deck
+				const actualCount = Math.min(selection.count, bankCard.count);
+				bankCard.count -= actualCount;
+				deckCard.count += actualCount;
+				
+				// Update bank card display
+				if (bankCard.count > 0) {
+					bankCard.elem.getElementsByClassName("card-count")[0].innerHTML = bankCard.count;
+					bankCard.elem.getElementsByClassName("card-count")[0].classList.remove("hide");
+				} else {
+					bankCard.elem.getElementsByClassName("card-count")[0].classList.add("hide");
+					bankCard.elem.classList.add("hide");
+				}
+				
+				// Update deck card display
+				if (deckCard.count > 0) {
+					deckCard.elem.getElementsByClassName("card-count")[0].innerHTML = deckCard.count;
+					deckCard.elem.getElementsByClassName("card-count")[0].classList.remove("hide");
+					deckCard.elem.classList.remove("hide");
+				}
+			}
+		}
+		
+		// Update stats and UI
+		this.update();
+		
+		// Play sound feedback
+		tocar("card", false);
+	}
+
 	async startNewGame(fullAI = false) {
 		if (fullAI) document.getElementsByTagName("main")[0].classList.add("noclick");
 		game.fullAI = fullAI;
@@ -4758,23 +5380,47 @@ class DeckMaker {
 		
 		container.cards = container.cards.concat(availableDecks.map(d => {
 			let deck = d;
+			const leaderCard = card_dict[deck["leader"]];
+			if (!leaderCard) {
+				console.warn(`Leader "${deck["leader"]}" not found in card_dict for deck "${deck["title"]}"`);
+				return {
+					abilities: [deck["faction"]],
+					name: deck["leader"] || "Unknown Leader",
+					row: "leader",
+					filename: "",
+					desc_name: deck["title"],
+					desc: "<p>" +
+							"<b>Faction ability:</b> " +
+							(factions[deck["faction"]] ? factions[deck["faction"]]["description"] : "Unknown") +
+						"</p>" +
+						"<p>" +
+							"<b>Leader ability:</b> Unknown (leader card not found)" +
+						"</p>" +
+						"<p>" +
+							"<b>Deck description:</b> " +
+							(deck["description"] || "No description"),
+					faction: deck["faction"]
+				};
+			}
+			const leaderAbility = leaderCard["ability"];
+			const abilityDesc = ability_dict[leaderAbility] ? ability_dict[leaderAbility].description : "Unknown ability";
 			return {
 				abilities: [deck["faction"]],
-				name: card_dict[deck["leader"]]["name"],
+				name: leaderCard["name"] || deck["leader"],
 				row: "leader",
-				filename: card_dict[deck["leader"]]["filename"],
+				filename: leaderCard["filename"] || "",
 				desc_name: deck["title"],
 				desc: "<p>" +
 						"<b>Faction ability:</b> " +
-						factions[deck["faction"]]["description"] +
+						(factions[deck["faction"]] ? factions[deck["faction"]]["description"] : "Unknown") +
 					"</p>" +
 					"<p>" +
 						"<b>Leader ability:</b> " +
-						ability_dict[card_dict[deck["leader"]]["ability"]].description + 
+						abilityDesc + 
 					"</p>" +
 					"<p>" +
 						"<b>Deck description:</b> " +
-						deck["description"],
+						(deck["description"] || "No description"),
 				faction: deck["faction"]
 			};
 		}));
@@ -4826,27 +5472,53 @@ class DeckMaker {
 		openFullscreen();
 	}
 
-	// Save current deck to localStorage under "playerdecks"
+	// Save current deck to decks/saveddecks/ directory
 	saveDeck() {
         // Show name input using in-game Popup, support Enter to confirm
         let def = this.me_deck_title || ((factions[this.faction] ? factions[this.faction].name : "Deck") + " Deck");
         let html = "<label for='deck-name-input'>Enter deck name:</label><br>" +
             "<input id='deck-name-input' type='text' value='" + def.replace(/\"/g, '&quot;') + "' style='width:90%; margin-top:.5vw'>";
         const self = this;
-        function doSave() {
+        async function doSave() {
             try {
                 const input = document.getElementById('deck-name-input');
                 const name = (input ? input.value.trim() : def) || def;
-                let saved = [];
-                try { saved = JSON.parse(localStorage.getItem('playerdecks') || '[]'); } catch(e) { saved = []; }
-                // Replace if same title exists
-                const filtered = saved.filter(d => d.title !== name);
                 const json = JSON.parse(self.deckToJSON());
                 json.title = name;
-                filtered.push(json);
-                localStorage.setItem('playerdecks', JSON.stringify(filtered));
-                self.me_deck_title = name;
-                aviso("Saved", "Deck saved as '" + name + "'.");
+                
+                // Create safe filename from title
+                const safeFilename = name.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '_')
+                    .replace(/^_+|_+$/g, '') + '.json';
+                const filePath = `decks/saveddecks/${safeFilename}`;
+                
+                // Save to file if deckAPI is available (Electron), otherwise fallback to localStorage
+                if (window.deckAPI) {
+                    try {
+                        await window.deckAPI.writeFile(filePath, JSON.stringify(json, null, 2));
+                        self.me_deck_title = name;
+                        aviso("Saved", "Deck saved as '" + name + "'.");
+                    } catch (fileError) {
+                        console.error('Error saving to file:', fileError);
+                        // Fallback to localStorage
+                        let saved = [];
+                        try { saved = JSON.parse(localStorage.getItem('playerdecks') || '[]'); } catch(e) { saved = []; }
+                        const filtered = saved.filter(d => d.title !== name);
+                        filtered.push(json);
+                        localStorage.setItem('playerdecks', JSON.stringify(filtered));
+                        self.me_deck_title = name;
+                        aviso("Saved", "Deck saved as '" + name + "' (localStorage fallback).");
+                    }
+                } else {
+                    // Browser fallback: use localStorage
+                    let saved = [];
+                    try { saved = JSON.parse(localStorage.getItem('playerdecks') || '[]'); } catch(e) { saved = []; }
+                    const filtered = saved.filter(d => d.title !== name);
+                    filtered.push(json);
+                    localStorage.setItem('playerdecks', JSON.stringify(filtered));
+                    self.me_deck_title = name;
+                    aviso("Saved", "Deck saved as '" + name + "'.");
+                }
             } catch (e) {
                 console.error(e);
                 aviso("Error", "Could not save deck.");
@@ -4874,10 +5546,33 @@ class DeckMaker {
         }, 0);
 	}
 
-	// Load a deck from localStorage "playerdecks"
-	loadSavedDeck() {
+	// Load a deck from decks/saveddecks/ directory
+	async loadSavedDeck() {
 		let saved = [];
-		try { saved = JSON.parse(localStorage.getItem('playerdecks') || '[]'); } catch(e) { saved = []; }
+		
+		// Try loading from file system first (Electron)
+		if (window.deckAPI) {
+			try {
+				const files = await window.deckAPI.listFiles('decks/saveddecks');
+				for (const file of files) {
+					try {
+						const content = await window.deckAPI.readFile(file.path);
+						const deck = JSON.parse(content);
+						saved.push(deck);
+					} catch (e) {
+						console.warn('Error loading deck file:', file.path, e);
+					}
+				}
+			} catch (e) {
+				console.warn('Error listing saved decks:', e);
+			}
+		}
+		
+		// Fallback to localStorage if no files found or in browser
+		if (saved.length === 0) {
+			try { saved = JSON.parse(localStorage.getItem('playerdecks') || '[]'); } catch(e) { saved = []; }
+		}
+		
 		if (!saved.length) return aviso("No Saved Decks", "You don't have any saved decks yet.");
 		// Build simple modal list (yellow items + delete X per row)
 		function buildListHTML(items) {
@@ -4940,9 +5635,27 @@ class DeckMaker {
 						if (!deck) return;
 						new Popup(
 							"Yes",
-							function(){
+							async function(){
+								const deckToDelete = saved[idx];
 								saved.splice(idx,1);
-								localStorage.setItem('playerdecks', JSON.stringify(saved));
+								
+								// Delete from file system if deckAPI is available
+								if (window.deckAPI && deckToDelete.title) {
+									try {
+										const safeFilename = deckToDelete.title.toLowerCase()
+											.replace(/[^a-z0-9]+/g, '_')
+											.replace(/^_+|_+$/g, '') + '.json';
+										await window.deckAPI.deleteFile(`decks/saveddecks/${safeFilename}`);
+									} catch (e) {
+										console.warn('Error deleting deck file:', e);
+									}
+								}
+								
+								// Also update localStorage as fallback
+								try {
+									localStorage.setItem('playerdecks', JSON.stringify(saved));
+								} catch (e) {}
+								
 								// re-render list in-place
 								let container = document.getElementById('saved-decks-list');
 								if (container) {
@@ -5010,7 +5723,13 @@ class DeckMaker {
 		this.setFaction(deck.faction, true);
 		if (card_dict[deck.leader].row === "leader" && deck.faction === card_dict[deck.leader].deck) {
 			this.leader = this.leaders.filter(c => c.index === deck.leader)[0];
-			getPreviewElem(this.leader_elem.children[1], this.leader.card);
+			if (!this.leader) {
+				console.warn(`Leader "${deck.leader}" not found in leaders array. Using first available leader.`);
+				this.leader = this.leaders[0];
+			}
+			if (this.leader && this.leader.card) {
+				getPreviewElem(this.leader_elem.children[1], this.leader.card);
+			}
 		}
 		this.me_deck_title = deck.title;
 		this.makeBank(deck.faction, cards);

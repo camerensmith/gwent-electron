@@ -1152,7 +1152,20 @@ div.abs {
 }
 
 .deck-options {
-	top:15%
+	top:15%;
+	position:relative
+}
+
+.deck-options:not(:last-child):not(#op-deck-name)::after {
+	content:"";
+	position:absolute;
+	right:-1.5vw;
+	top:50%;
+	transform:translateY(-50%);
+	width:0.1vw;
+	height:60%;
+	background-color:rgba(255,210,77,0.4);
+	border-radius:0.05vw
 }
 
 #select-deck {
@@ -1164,15 +1177,30 @@ div.abs {
 }
 
 #change-faction {
-    left:30%
+    left: 66%;
+    border: 0.15vw solid rgba(255,210,77,0.6);
+    border-radius: 0.3vw;
+    padding: 0.15vw 0.5vw;
+    box-sizing: border-box;
+    line-height: inherit;
+    top: 10%;
 }
 
+
 #save-deck {
-    left:39%
+    left:33%
 }
 
 #load-deck {
+    left:39%
+}
+
+#clear-deck {
     left:46%
+}
+
+#randomize-deck {
+    left:53%
 }
 
 #download-deck {
@@ -1180,11 +1208,11 @@ div.abs {
 }
 
 #select-op-deck {
-	left:62%
+	left:66%
 }
 
 #op-deck-name {
-	left:72%;
+	left:78%;
 	font-style:italic
 }
 

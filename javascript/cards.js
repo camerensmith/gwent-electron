@@ -3095,8 +3095,8 @@ var ext_nr_cards = {
         "name": "Letande Avet",
         "deck": "realms",
         "row": "close",
-        "strength": "5",
-        "ability": "scorch",
+        "strength": "4",
+        "ability": "scorch cintra_slaughter",
         "filename": "letande_lavet",
         "count": "1",
         "quote": "Killing enemies is not the same as slaughtering your countrymen. The Butcher of Cidaris likes the latter. And he's good at it."
@@ -3524,7 +3524,7 @@ var ext_nr_cards = {
         "strength": "",
         "ability": "decree",
         "filename": "realms_decree",
-        "count": "3",
+        "count": "1",
         "quote": "We, Radovid, by divine right - 'King of Redania', 'Prince of Sodden', 'Senior Protector of Brugge', et cetera, et cetera — do hereby decree the following…"
     },
     "nr_peace_treaty": {
@@ -4008,11 +4008,11 @@ var ext_ne_cards = {
         "count": "1",
         "quote": "Men require constant alluring. Mystique and refinement do the job quite well."
     },
-    "ne_treason": {
+    "spe_treason": {
         "name": "Treason",
-        "deck": "nilfgaard",
-        "row": "siege",
-        "strength": "3",
+        "deck": "special nilfgaard",
+        "row": "",
+        "strength": "",
         "ability": "scorch",
         "filename": "treason",
         "count": "1",
@@ -4133,7 +4133,7 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "siege",
         "strength": "8",
-        "ability": "hero avenger",
+        "ability": "avenger",
         "filename": "fergus_emreis",
         "count": "1",
         "target": "ne_dunny",
@@ -4689,13 +4689,13 @@ var ext_mo_cards = {
         "count": "1",
         "quote": "Thoug many have seen manticores, very few have lived to tell their tale."
     },
-    "mo_manticore_venom": {
-        "name": "Manticore Venom",
+    "mo_slug": {
+        "name": "Slug",
         "deck": "monsters",
         "row": "siege",
         "strength": "3",
         "ability": "scorch_c",
-        "filename": "manticore_venom",
+        "filename": "slug",
         "count": "1",
         "quote": "Kills quicker than you can recite the Emperor of Nilfgaard's title in full."
     },
@@ -4780,11 +4780,11 @@ var ext_mo_cards = {
         "quote": "Those seduced by her charms find themselves willing to pay any price."
     },
     "mo_moonlight": {
-        "name": "Moonlight",
+        "name": "Moonlight Terror",
         "deck": "monsters",
-        "row": "agile",
+        "row": "any",
         "strength": "2",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "moonlight",
         "count": "1",
         "quote": "When the moon is full, nightmares crawl out of the dark nooks and crannies of the world."
@@ -5184,7 +5184,7 @@ var ext_st_cards = {
         "deck": "scoiatael",
         "row": "ranged",
         "strength": "5",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "dol_blathanna_trapper",
         "count": "1",
         "quote": "They track like hounds, run like deer and kill like heartless demons."
@@ -5368,7 +5368,7 @@ var ext_st_cards = {
         "deck": "scoiatael",
         "row": "close",
         "strength": "7",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "elven_swordmaster",
         "count": "1",
         "quote": "Combat is a dance, and you must never allow your opponent to lead."
@@ -7374,7 +7374,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "siege",
         "strength": "5",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "archespore",
         "count": "1",
         "quote": "Folklore claims they sprout from soil watered with the blood of the dying."
@@ -7656,7 +7656,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "ranged",
         "strength": "1",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "wicked_witch",
         "count": "1",
         "quote": "A bit of butter, a bit of spice, and you'll make a tasty morsel."
@@ -7899,7 +7899,7 @@ var ext_lr_cards = {
         "deck": "lyria_rivia",
         "row": "ranged_siege",
         "strength": "5",
-        "ability": "scorch_r",
+        "ability": "",
         "filename": "mounted_archers",
         "count": "1",
         "quote": "Keep up, or keep out of the way."
@@ -8005,7 +8005,7 @@ var ext_lr_cards = {
         "quote": "There's no armor that can't be pierced."
     },
     "lr_eavesdrop": {
-        "name": "Eavesdrop",
+        "name": "Maiden",
         "deck": "lyria_rivia",
         "row": "ranged",
         "strength": "10",
@@ -8159,8 +8159,8 @@ var ext_lr_cards = {
         "name": "Pyrokineticist",
         "deck": "lyria_rivia",
         "row": "ranged",
-        "strength": "4",
-        "ability": "scorch",
+        "strength": "2",
+        "ability": "scorch_r",
         "filename": "pyrokinesis",
         "count": "1",
         "quote": "I really hope that's boot leather I smell burning..."
@@ -8169,8 +8169,8 @@ var ext_lr_cards = {
         "name": "Carroballista",
         "deck": "lyria_rivia",
         "row": "siege",
-        "strength": "8",
-        "ability": "",
+        "strength": "5",
+        "ability": "scorch_s",
         "filename": "carroballista",
         "count": "1",
         "quote": "This ballista's on the wagon."
@@ -8904,7 +8904,7 @@ var ext_sy_cards = {
         "name": "Rico Meiersdorf",
         "deck": "syndicate",
         "row": "agile",
-        "strength": "7",
+        "strength": "8",
         "ability": "spy",
         "filename": "rico_meiersdorf",
         "count": "1",
@@ -9019,8 +9019,8 @@ var ext_sy_cards = {
         "name": "Hammond",
         "deck": "syndicate",
         "row": "close",
-        "strength": "7",
-        "ability": "",
+        "strength": "3",
+        "ability": "embargo",
         "filename": "hammond",
         "count": "1",
         "quote": "Once mistaken for a whale calf and nearly harpooned. He's avoided swimming ever since."
@@ -9058,9 +9058,9 @@ var ext_sy_cards = {
     "sy_bincy_blumerholdt": {
         "name": "Bincy Blumerholdt",
         "deck": "syndicate",
-        "row": "close",
-        "strength": "9",
-        "ability": "spy",
+        "row": "agile",
+        "strength": "4",
+        "ability": "",
         "filename": "bincy_blumerholdt",
         "count": "1",
         "quote": "In all Novigrad, she has the hairiest feet and the stickiest hands."
@@ -9207,16 +9207,6 @@ var ext_sy_cards = {
         "count": "1",
         "quote": "Halt! Who goes there?! Firesworn or heretic?"
     },
-    "sy_passiflora_peaches": {
-        "name": "Passiflora Peaches",
-        "deck": "syndicate",
-        "row": "close",
-        "strength": "9",
-        "ability": "spy",
-        "filename": "passiflora_peaches",
-        "count": "1",
-        "quote": "They'll mess with your head, break your heart and empty your purse."
-    },
     "sy_lieutenant_herst": {
         "name": "Lieutenant von Herst",
         "deck": "syndicate",
@@ -9353,7 +9343,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "siege",
         "strength": "8",
-        "ability": "hero",
+        "ability": "hero embargo",
         "filename": "king_of_beggars",
         "count": "1",
         "quote": "Every beggar in Novigrad knows who really rules."
@@ -9713,8 +9703,8 @@ var ext_ze_cards = {
         "name": "Viper",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "4",
-        "ability": "scorch_c",
+        "strength": "7",
+        "ability": "",
         "filename": "viper",
         "count": "1",
         "quote": "'Had to flee me home, some damn viper had made it its den.'"

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, shell, dialog } = require('electron');
+const { app, BrowserWindow, Menu, shell, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -284,4 +284,81 @@ app.on('web-contents-created', (event, contents) => {
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
   dialog.showErrorBox('Error', 'An unexpected error occurred. Please restart the application.');
+});
+
+// IPC Handlers for deck file operations
+ipcMain.handle('deck:read-file', async (event, filePath) => {
+  try {
+    // Only allow reading from decks directories
+    const normalizedPath = path.normalize(filePath);
+    if (!normalizedPath.includes('decks')) {
+      throw new Error('Access denied: Can only read from decks directory');
+    }
+    const fullPath = path.join(__dirname, normalizedPath);
+    return fs.readFileSync(fullPath, 'utf8');
+  } catch (error) {
+    console.error('Error reading deck file:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('deck:write-file', async (event, filePath, content) => {
+  try {
+    // Only allow writing to decks/saveddecks directory
+    const normalizedPath = path.normalize(filePath);
+    if (!normalizedPath.includes('decks' + path.sep + 'saveddecks')) {
+      throw new Error('Access denied: Can only write to decks/saveddecks directory');
+    }
+    const fullPath = path.join(__dirname, normalizedPath);
+    // Ensure directory exists
+    const dir = path.dirname(fullPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(fullPath, content, 'utf8');
+    return { success: true };
+  } catch (error) {
+    console.error('Error writing deck file:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('deck:list-files', async (event, dirPath) => {
+  try {
+    // Only allow listing decks directories
+    const normalizedPath = path.normalize(dirPath);
+    if (!normalizedPath.includes('decks')) {
+      throw new Error('Access denied: Can only list decks directories');
+    }
+    const fullPath = path.join(__dirname, normalizedPath);
+    if (!fs.existsSync(fullPath)) {
+      return [];
+    }
+    const files = fs.readdirSync(fullPath);
+    return files.filter(f => f.endsWith('.json')).map(f => ({
+      name: f,
+      path: path.join(normalizedPath, f)
+    }));
+  } catch (error) {
+    console.error('Error listing deck files:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('deck:delete-file', async (event, filePath) => {
+  try {
+    // Only allow deleting from decks/saveddecks directory
+    const normalizedPath = path.normalize(filePath);
+    if (!normalizedPath.includes('decks' + path.sep + 'saveddecks')) {
+      throw new Error('Access denied: Can only delete from decks/saveddecks directory');
+    }
+    const fullPath = path.join(__dirname, normalizedPath);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    }
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting deck file:', error);
+    throw error;
+  }
 });

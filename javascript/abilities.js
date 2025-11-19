@@ -2706,34 +2706,34 @@ var ability_dict = {
 			return baseValue + expectedBonus;
 		}
 	},
-	blockade: {
-		name: "Blockade",
-		description: "Prevents the opponent from drawing from their deck on their next turn only. The effect does not stack - only one unit can trigger blockade.",
+	embargo: {
+		name: "Embargo",
+		description: "Prevents the opponent from drawing from their deck on their next turn only. The effect does not stack - only one unit can trigger embargo.",
 		placed: async (card) => {
 			if (card.isLocked()) return;
 			
 			const player = card.holder;
 			const opponent = player.opponent();
 			
-			// Only one blockade can be active at a time - remove any existing blockade
-			if (game.blockadeActive) {
-				// Remove existing blockade animation
-				if (game.blockadeActive.deckAnim && game.blockadeActive.deckAnim.parentNode) {
-					game.blockadeActive.deckAnim.parentNode.removeChild(game.blockadeActive.deckAnim);
+			// Only one embargo can be active at a time - remove any existing embargo
+			if (game.embargoActive) {
+				// Remove existing embargo animation
+				if (game.embargoActive.deckAnim && game.embargoActive.deckAnim.parentNode) {
+					game.embargoActive.deckAnim.parentNode.removeChild(game.embargoActive.deckAnim);
 				}
 				// Remove existing turn hooks
-				if (game.blockadeActive.turnStartHook) {
-					const index = game.turnStart.indexOf(game.blockadeActive.turnStartHook);
+				if (game.embargoActive.turnStartHook) {
+					const index = game.turnStart.indexOf(game.embargoActive.turnStartHook);
 					if (index > -1) game.turnStart.splice(index, 1);
 				}
-				if (game.blockadeActive.turnEndHook) {
-					const index = game.turnEnd.indexOf(game.blockadeActive.turnEndHook);
+				if (game.embargoActive.turnEndHook) {
+					const index = game.turnEnd.indexOf(game.embargoActive.turnEndHook);
 					if (index > -1) game.turnEnd.splice(index, 1);
 				}
 			}
 			
 			// Play animation over the unit first
-			await card.animate("blockade");
+			await card.animate("embargo");
 			
 			// Then play animation over opponent's deck and keep it static
 			const deckElem = opponent.deck.elem;
@@ -2744,7 +2744,7 @@ var ability_dict = {
 				deckAnim.style.left = "0";
 				deckAnim.style.width = "100%";
 				deckAnim.style.height = "100%";
-				deckAnim.style.backgroundImage = iconURL("anim_blockade");
+				deckAnim.style.backgroundImage = iconURL("anim_embargo");
 				deckAnim.style.backgroundSize = "cover";
 				deckAnim.style.backgroundPosition = "center";
 				deckAnim.style.pointerEvents = "none";
@@ -2753,8 +2753,8 @@ var ability_dict = {
 				deckElem.style.position = "relative";
 				deckElem.appendChild(deckAnim);
 				
-				// Store blockade state
-				game.blockadeActive = {
+				// Store embargo state
+				game.embargoActive = {
 					blockedPlayer: opponent,
 					deckAnim: deckAnim,
 					deckElem: deckElem,
@@ -2762,47 +2762,47 @@ var ability_dict = {
 					turnEndHook: null
 				};
 				
-				// Set up turnStart hook to ensure blockade is active during opponent's turn
+				// Set up turnStart hook to ensure embargo is active during opponent's turn
 				const turnStartHook = async () => {
 					// Check if it's the blocked player's turn starting
-					if (game.currPlayer === opponent && game.blockadeActive && game.blockadeActive.blockedPlayer === opponent) {
+					if (game.currPlayer === opponent && game.embargoActive && game.embargoActive.blockedPlayer === opponent) {
 						// Ensure animation is visible
-						if (game.blockadeActive.deckAnim) {
-							game.blockadeActive.deckAnim.style.opacity = "1";
+						if (game.embargoActive.deckAnim) {
+							game.embargoActive.deckAnim.style.opacity = "1";
 						}
 					}
 					return false; // Don't remove hook
 				};
 				
-				// Set up turnEnd hook to remove blockade when opponent's turn ends
+				// Set up turnEnd hook to remove embargo when opponent's turn ends
 				// turnEnd runs before currPlayer switches, so check if current player is the blocked player
 				const turnEndHook = async () => {
 					// Check if it's the blocked player's turn ending (before switch)
-					if (game.currPlayer === opponent && game.blockadeActive && game.blockadeActive.blockedPlayer === opponent) {
+					if (game.currPlayer === opponent && game.embargoActive && game.embargoActive.blockedPlayer === opponent) {
 						// Remove animation
-						if (game.blockadeActive.deckAnim && game.blockadeActive.deckElem) {
-							fadeOut(game.blockadeActive.deckAnim, 300);
+						if (game.embargoActive.deckAnim && game.embargoActive.deckElem) {
+							fadeOut(game.embargoActive.deckAnim, 300);
 							await sleep(300);
-							if (game.blockadeActive.deckAnim.parentNode === game.blockadeActive.deckElem) {
-								game.blockadeActive.deckElem.removeChild(game.blockadeActive.deckAnim);
+							if (game.embargoActive.deckAnim.parentNode === game.embargoActive.deckElem) {
+								game.embargoActive.deckElem.removeChild(game.embargoActive.deckAnim);
 							}
 						}
-						// Clear blockade state
-						game.blockadeActive = null;
+						// Clear embargo state
+						game.embargoActive = null;
 						return true; // Remove this hook
 					}
 					return false;
 				};
 				
-				game.blockadeActive.turnStartHook = turnStartHook;
-				game.blockadeActive.turnEndHook = turnEndHook;
+				game.embargoActive.turnStartHook = turnStartHook;
+				game.embargoActive.turnEndHook = turnEndHook;
 				
 				game.turnStart.push(turnStartHook);
 				game.turnEnd.push(turnEndHook);
 			}
 		},
 		weight: (card, ai, max) => {
-			// Blockade is valuable for disrupting opponent's card draw
+			// Embargo is valuable for disrupting opponent's card draw
 			// More valuable if opponent has few cards in hand or relies on drawing
 			const opponent = ai.player.opponent();
 			const handSize = opponent.hand.cards.length;

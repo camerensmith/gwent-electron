@@ -65,6 +65,14 @@ contextBridge.exposeInMainWorld('nodeAPI', {
   env: process.env.NODE_ENV || 'production'
 });
 
+// Expose deck file operations
+contextBridge.exposeInMainWorld('deckAPI', {
+  readFile: (filePath) => ipcRenderer.invoke('deck:read-file', filePath),
+  writeFile: (filePath, content) => ipcRenderer.invoke('deck:write-file', filePath, content),
+  listFiles: (dirPath) => ipcRenderer.invoke('deck:list-files', dirPath),
+  deleteFile: (filePath) => ipcRenderer.invoke('deck:delete-file', filePath)
+});
+
 // Add resource path resolution for audio files
 
 // Expose a safe console API
