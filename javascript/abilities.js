@@ -25,6 +25,10 @@ var ability_dict = {
 		name: "Sandstorm",
 		description: "Reduces the Strength of all Close Combat and Ranged Combat Units to 1 (non-Hero units only). "
 	},
+	nightfall: {
+		name: "Nightfall",
+		description: "Affects all rows. When applied, triggers Hunger transformations on units with the Hunger ability. "
+	},
 	hero: {
 		name: "Hero",
 		description: "Not affected by any Special Cards or abilities. "
@@ -131,7 +135,14 @@ var ability_dict = {
 		description: "Find any cards with the same name in your deck and play them instantly. ",
 		placed: async (card) => {
 			if (card.isLocked()) return;
-			let pred = c => c.target === card.target;
+			// If the card is not a hero, exclude hero cards from muster (prevents troops from mustering heroes)
+			// If the card is a hero, include all cards with matching target
+			let pred = c => {
+				if (c.target !== card.target) return false;
+				// If the triggering card is not a hero, exclude hero cards
+				if (!card.hero && c.hero) return false;
+				return true;
+			};
 			let units = card.holder.hand.getCards(pred).map(x => [card.holder.hand, x])
 				.concat(card.holder.deck.getCards(pred).map(x => [card.holder.deck, x]));
 			if (units.length === 0) return;
@@ -309,6 +320,15 @@ var ability_dict = {
 				avengerTarget = "sk_crowmother";
 			}
 			return Number(card_dict[avengerTarget]["strength"]);
+		}
+	},
+	hunger: {
+		name: "Hunger",
+		description: "When Nightfall weather is applied to this card's row, transform this card into its target card. The Hunger card is discarded and the target card is played in its place.",
+		weight: (card) => {
+			if (!card.target || !card_dict[card.target]) return 1;
+			// Weight based on the target card's strength, similar to avenger
+			return Number(card_dict[card.target]["strength"]);
 		}
 	},
 	cintra_slaughter: {
@@ -1086,12 +1106,12 @@ var ability_dict = {
 	toussaint_wine: {
 		name: "Toussaint Wine",
 		description: "Placed on Melee or Ranged row, boosts all units of the selected row by two. Limited to one per row.",
-		placed: async card => await card.animate("morale")
+		placed: async card => await card.animate("wine")
 	},
 	wine: {
 		name: "Toussaint Wine",
 		description: "Placed on Melee or Ranged row, boosts all units of the selected row by two. Limited to one per row.",
-		placed: async card => await card.animate("morale")
+		placed: async card => await card.animate("wine")
 	},
 	anna_henrietta_ladyship: {
 		description: "Restore a unit from your discard pile and play it immediatly.",
@@ -1387,25 +1407,25 @@ var ability_dict = {
 			else return 15;
 		}
 	},
-	whorshipper: {
-		name: "Whorshipper",
-		description: "Boost by 1 all whorshipped units on your side of the board.",
+	worshipper: {
+		name: "Worshipper",
+		description: "Boost by 1 all worshipped units on your side of the board.",
 		placed: async card => {
 			if (card.isLocked()) return;
-			card.holder.effects["whorshippers"]++;
+			card.holder.effects["worshippers"]++;
 		},
 		removed: async card => {
 			if (card.isLocked()) return;
-			card.holder.effects["whorshippers"]--;
+			card.holder.effects["worshippers"]--;
 		},
 		weight: (card) => {
-			let wcards = card.holder.getAllRowCards().filter(c => c.abilities.includes("whorshipped"));
+			let wcards = card.holder.getAllRowCards().filter(c => c.abilities.includes("worshipped"));
 			return wcards.length * game.whorshipBoost;
 		}
 	},
-	whorshipped: {
-		name: "Whorshipped",
-		description: "Boosted by 1 by all whorshippers present on your side of the board.",
+	worshipped: {
+		name: "Worshipped",
+		description: "Boosted by 1 by all worshippers present on your side of the board.",
 	},
 	inspire: {
 		name: "Inspire",
@@ -1596,11 +1616,13 @@ var ability_dict = {
 	},
 	emissary: {
 		name: "Emissary",
-		description: "Place on your opponent's battlefield. Draw 3 cards from the top of your opponent's deck, keep 1 in your hand, discard 1, and shuffle the last one back.",
+		description: "Place on your opponent's battlefield. Draw 3 cards from the top of your opponent's deck, place 1 in your deck, then another is randomly discarded, and the last one is inserted back into your opponent's deck. Both your deck and your opponent's deck are shuffled.",
 		placed: async (card) => {
 			if (card.isLocked()) return;
 			await card.animate("emissary");
 			const opponent = card.holder.opponent();
+			const player = card.holder;
+			
 			// Draw up to 3 cards from opponent's deck
 			const drawnCards = [];
 			for (let i = 0; i < 3 && opponent.deck.cards.length > 0; i++) {
@@ -1608,19 +1630,22 @@ var ability_dict = {
 				opponent.deck.removeCard(drawnCard);
 				drawnCards.push(drawnCard);
 			}
+			
 			if (drawnCards.length === 0) {
 				// Place on opponent's side (like spy)
 				card.holder = opponent;
 				return;
 			}
+			
 			// Create a temporary container to manage the drawn cards
 			const tempContainer = new CardContainer();
 			drawnCards.forEach(c => {
 				c.currentLocation = tempContainer;
 				tempContainer.cards.push(c);
 			});
+			
 			if (card.holder.controller instanceof ControllerAI) {
-				// AI: Keep the best card, discard the worst, shuffle the remaining card
+				// AI: Choose the best card to add to own deck, randomly discard one, shuffle the last back
 				const sortedCards = [...drawnCards].sort((a, b) => {
 					const weightA = card.holder.controller.weightCard(a, card.holder.controller.getMaximums(), card.holder.controller.getBoardData());
 					const weightB = card.holder.controller.weightCard(b, card.holder.controller.getMaximums(), card.holder.controller.getBoardData());
@@ -1629,44 +1654,67 @@ var ability_dict = {
 				const keepCard = sortedCards[0];
 				if (keepCard && tempContainer.cards.includes(keepCard)) {
 					tempContainer.removeCard(keepCard);
-					card.holder.hand.addCard(keepCard);
+					// Add to player's deck
+					player.deck.addCard(keepCard);
 				}
-				const discardCard = sortedCards.length > 1 ? sortedCards[sortedCards.length - 1] : null;
-				if (discardCard && tempContainer.cards.includes(discardCard)) {
+				// Randomly discard one of the remaining cards
+				if (tempContainer.cards.length > 0) {
+					const randomIndex = Math.floor(Math.random() * tempContainer.cards.length);
+					const discardCard = tempContainer.cards[randomIndex];
 					tempContainer.removeCard(discardCard);
 					await board.toGrave(discardCard, tempContainer);
 				}
+				// Insert the last one back into opponent's deck
 				if (tempContainer.cards.length > 0) {
 					const shuffleCard = tempContainer.cards[0];
 					tempContainer.removeCard(shuffleCard);
-					await board.toDeck(shuffleCard, tempContainer);
+					opponent.deck.addCard(shuffleCard);
 				}
 			} else {
-				// Player: Let them choose which to keep, then which to discard
+				// Player: Let them choose which card to add to their deck
 				card.holder.endTurnAfterAbilityUse = false;
 				await ui.queueCarousel(tempContainer, 1, async (container, index) => {
 					const selectedCard = container.cards[index];
 					container.removeCard(selectedCard);
-					card.holder.hand.addCard(selectedCard);
-				}, () => true, false, true, "Choose a card to keep");
-				if (tempContainer.cards.length === 1) {
-					const discardCard = tempContainer.cards[0];
+					// Add to player's deck
+					player.deck.addCard(selectedCard);
+				}, () => true, false, true, "Choose a card to add to your deck");
+				
+				// Randomly discard one of the remaining cards
+				if (tempContainer.cards.length > 0) {
+					const randomIndex = Math.floor(Math.random() * tempContainer.cards.length);
+					const discardCard = tempContainer.cards[randomIndex];
 					tempContainer.removeCard(discardCard);
 					await board.toGrave(discardCard, tempContainer);
-				} else if (tempContainer.cards.length === 2) {
-					await ui.queueCarousel(tempContainer, 1, async (container, index) => {
-						const discardCard = container.cards[index];
-						container.removeCard(discardCard);
-						await board.toGrave(discardCard, container);
-					}, () => true, false, true, "Choose a card to discard (remaining card will be shuffled)");
-					if (tempContainer.cards.length === 1) {
-						const shuffleCard = tempContainer.cards[0];
-						tempContainer.removeCard(shuffleCard);
-						await board.toDeck(shuffleCard, tempContainer);
-					}
 				}
+				
+				// Insert the last one back into opponent's deck
+				if (tempContainer.cards.length > 0) {
+					const shuffleCard = tempContainer.cards[0];
+					tempContainer.removeCard(shuffleCard);
+					opponent.deck.addCard(shuffleCard);
+				}
+				
 				card.holder.endTurnAfterAbilityUse = true;
 			}
+			
+			// Shuffle both decks by shuffling their card arrays
+			// Shuffle player's deck
+			if (player.deck.cards.length > 1) {
+				for (let i = player.deck.cards.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					[player.deck.cards[i], player.deck.cards[j]] = [player.deck.cards[j], player.deck.cards[i]];
+				}
+			}
+			
+			// Shuffle opponent's deck
+			if (opponent.deck.cards.length > 1) {
+				for (let i = opponent.deck.cards.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					[opponent.deck.cards[i], opponent.deck.cards[j]] = [opponent.deck.cards[j], opponent.deck.cards[i]];
+				}
+			}
+			
 			// Place on opponent's side (like spy)
 			card.holder = opponent;
 		},
@@ -2445,51 +2493,48 @@ var ability_dict = {
 	},
 	conspiracy: {
 		name: "Conspiracy",
-		description: "When this unit enters play, shuffle special cards in your discard pile back into your deck, and shuffle your deck.",
+		description: "When this unit enters play, add a single special card from your graveyard into your deck, and discard 2 cards from your opponent's deck into their discard pile.",
 		placed: async (card) => {
 			if (card.isLocked()) return;
 			const player = card.holder;
-			
-			// Find all special cards in the discard pile
-			const specialCardsInGrave = player.grave.cards.filter(c => c.isSpecial());
-			
-			if (specialCardsInGrave.length === 0) {
-				// No special cards to shuffle back, but still shuffle the deck
-				await card.animate("conspiracy", false, false);
-				// Shuffle deck
-				for (let i = player.deck.cards.length - 1; i > 0; i--) {
-					const j = Math.floor(Math.random() * (i + 1));
-					[player.deck.cards[i], player.deck.cards[j]] = [player.deck.cards[j], player.deck.cards[i]];
-				}
-				return;
-			}
+			const opponent = player.opponent();
 			
 			await card.animate("conspiracy", false, false);
 			
-			// Move all special cards from grave to deck
-			for (const specialCard of specialCardsInGrave) {
-				await board.toDeck(specialCard, player.grave);
+			// Find special cards in the discard pile
+			const specialCardsInGrave = player.grave.cards.filter(c => c.isSpecial());
+			
+			// Add a single special card from graveyard to deck (if available)
+			if (specialCardsInGrave.length > 0) {
+				// For AI: choose randomly, for player: could show carousel but for simplicity, choose first/random
+				const selectedCard = specialCardsInGrave[Math.floor(Math.random() * specialCardsInGrave.length)];
+				await board.toDeck(selectedCard, player.grave);
 			}
 			
-			// Shuffle the deck
-			for (let i = player.deck.cards.length - 1; i > 0; i--) {
-				const j = Math.floor(Math.random() * (i + 1));
-				[player.deck.cards[i], player.deck.cards[j]] = [player.deck.cards[j], player.deck.cards[i]];
+			// Discard 2 cards from opponent's deck into their discard pile
+			for (let i = 0; i < 2 && opponent.deck.cards.length > 0; i++) {
+				const cardToDiscard = opponent.deck.cards[0]; // Take from top of deck
+				opponent.deck.removeCard(cardToDiscard);
+				await board.toGrave(cardToDiscard, opponent.deck);
 			}
 		},
 		weight: (card, ai, max) => {
 			const player = ai.player;
+			const opponent = player.opponent();
 			const specialCardsInGrave = player.grave.cards.filter(c => c.isSpecial());
 			
-			// Value based on number of special cards in grave
-			// Each special card returned is worth some value
-			const returnValue = specialCardsInGrave.length * 3;
+			// Value from recovering a special card (if available)
+			const recoveryValue = specialCardsInGrave.length > 0 ? 5 : 0;
 			
-			// Also consider if we're low on cards in deck
-			const deckSize = player.deck.cards.length;
-			const deckBonus = deckSize < 10 ? 5 : (deckSize < 20 ? 2 : 0);
+			// Value from discarding opponent's cards (disruption)
+			// Each card discarded from opponent's deck is valuable
+			const opponentDeckSize = opponent.deck.cards.length;
+			const discardValue = Math.min(opponentDeckSize, 2) * 4; // Up to 2 cards, each worth 4 points
 			
-			return Math.min(card.power + returnValue + deckBonus, 25);
+			// Bonus if opponent has few cards left in deck (more valuable to discard)
+			const deckPressureBonus = opponentDeckSize < 5 ? 5 : (opponentDeckSize < 10 ? 2 : 0);
+			
+			return Math.min(card.power + recoveryValue + discardValue + deckPressureBonus, 25);
 		}
 	},
 	skellige_tactics: {
@@ -2603,6 +2648,177 @@ var ability_dict = {
 			const totalValue = card.power + consolidationValue + Math.min(bestRowValue / 10, 5);
 			
 			return Math.min(totalValue, 30);
+		}
+	},
+	veteran: {
+		name: "Veteran",
+		description: "Gains +1, +2, and +3 additional strength for up to 3 turns on the board. The bonus increments at the start of your next turn (+1 on turn 1, +2 on turn 2 for a total of +3, +3 on turn 3 for a total of +6).",
+		placed: (card) => {
+			// Initialize veteran turn counter
+			card.veteranTurns = 0;
+			card.veteranBonus = 0;
+			
+			// Add hook to game.turnStart to increment veteran bonus
+			const veteranHook = async () => {
+				// Check if card is still on the board
+				const isOnBoard = card.currentLocation instanceof Row;
+				if (!isOnBoard) {
+					return true; // Remove hook if card is no longer on board
+				}
+				
+				// turnStart runs before currPlayer switches, so check if opponent is the card owner
+				// This means it's the card owner's turn starting
+				const isOwnerTurnStarting = game.currPlayer && game.currPlayer.opponent() === card.holder;
+				
+				// Only trigger for the card owner's turn and if card is on board
+				if (isOwnerTurnStarting && card.veteranTurns < 3) {
+					card.veteranTurns++;
+					
+					// Calculate cumulative bonus: turn 1 = +1, turn 2 = +3, turn 3 = +6
+					// Using triangular number formula: n * (n + 1) / 2
+					card.veteranBonus = card.veteranTurns * (card.veteranTurns + 1) / 2;
+					
+					// Update the card's power
+					card.currentLocation.updateScore();
+					
+					// Remove hook after 3 turns
+					if (card.veteranTurns >= 3) {
+						return true; // Signal to remove this hook
+					}
+					return false; // Don't remove the hook yet
+				}
+				
+				return false;
+			};
+			
+			game.turnStart.push(veteranHook);
+		},
+		weight: (card, ai, max) => {
+			// Base value of the card
+			let baseValue = Number(card_dict[card.key]["strength"]);
+			
+			// Veteran can gain up to +6 strength over 3 turns
+			// Average expected value: if card stays 1 turn = +1, 2 turns = +3, 3 turns = +6
+			// Conservative estimate: assume it gets at least +3 (2 turns) in most games
+			// More valuable in longer rounds where it can reach full potential
+			const expectedBonus = 3; // Conservative estimate
+			
+			return baseValue + expectedBonus;
+		}
+	},
+	blockade: {
+		name: "Blockade",
+		description: "Prevents the opponent from drawing from their deck on their next turn only. The effect does not stack - only one unit can trigger blockade.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			
+			const player = card.holder;
+			const opponent = player.opponent();
+			
+			// Only one blockade can be active at a time - remove any existing blockade
+			if (game.blockadeActive) {
+				// Remove existing blockade animation
+				if (game.blockadeActive.deckAnim && game.blockadeActive.deckAnim.parentNode) {
+					game.blockadeActive.deckAnim.parentNode.removeChild(game.blockadeActive.deckAnim);
+				}
+				// Remove existing turn hooks
+				if (game.blockadeActive.turnStartHook) {
+					const index = game.turnStart.indexOf(game.blockadeActive.turnStartHook);
+					if (index > -1) game.turnStart.splice(index, 1);
+				}
+				if (game.blockadeActive.turnEndHook) {
+					const index = game.turnEnd.indexOf(game.blockadeActive.turnEndHook);
+					if (index > -1) game.turnEnd.splice(index, 1);
+				}
+			}
+			
+			// Play animation over the unit first
+			await card.animate("blockade");
+			
+			// Then play animation over opponent's deck and keep it static
+			const deckElem = opponent.deck.elem;
+			if (deckElem) {
+				const deckAnim = document.createElement("div");
+				deckAnim.style.position = "absolute";
+				deckAnim.style.top = "0";
+				deckAnim.style.left = "0";
+				deckAnim.style.width = "100%";
+				deckAnim.style.height = "100%";
+				deckAnim.style.backgroundImage = iconURL("anim_blockade");
+				deckAnim.style.backgroundSize = "cover";
+				deckAnim.style.backgroundPosition = "center";
+				deckAnim.style.pointerEvents = "none";
+				deckAnim.style.zIndex = "1000";
+				deckAnim.style.opacity = "1"; // Start visible (static animation)
+				deckElem.style.position = "relative";
+				deckElem.appendChild(deckAnim);
+				
+				// Store blockade state
+				game.blockadeActive = {
+					blockedPlayer: opponent,
+					deckAnim: deckAnim,
+					deckElem: deckElem,
+					turnStartHook: null,
+					turnEndHook: null
+				};
+				
+				// Set up turnStart hook to ensure blockade is active during opponent's turn
+				const turnStartHook = async () => {
+					// Check if it's the blocked player's turn starting
+					if (game.currPlayer === opponent && game.blockadeActive && game.blockadeActive.blockedPlayer === opponent) {
+						// Ensure animation is visible
+						if (game.blockadeActive.deckAnim) {
+							game.blockadeActive.deckAnim.style.opacity = "1";
+						}
+					}
+					return false; // Don't remove hook
+				};
+				
+				// Set up turnEnd hook to remove blockade when opponent's turn ends
+				// turnEnd runs before currPlayer switches, so check if current player is the blocked player
+				const turnEndHook = async () => {
+					// Check if it's the blocked player's turn ending (before switch)
+					if (game.currPlayer === opponent && game.blockadeActive && game.blockadeActive.blockedPlayer === opponent) {
+						// Remove animation
+						if (game.blockadeActive.deckAnim && game.blockadeActive.deckElem) {
+							fadeOut(game.blockadeActive.deckAnim, 300);
+							await sleep(300);
+							if (game.blockadeActive.deckAnim.parentNode === game.blockadeActive.deckElem) {
+								game.blockadeActive.deckElem.removeChild(game.blockadeActive.deckAnim);
+							}
+						}
+						// Clear blockade state
+						game.blockadeActive = null;
+						return true; // Remove this hook
+					}
+					return false;
+				};
+				
+				game.blockadeActive.turnStartHook = turnStartHook;
+				game.blockadeActive.turnEndHook = turnEndHook;
+				
+				game.turnStart.push(turnStartHook);
+				game.turnEnd.push(turnEndHook);
+			}
+		},
+		weight: (card, ai, max) => {
+			// Blockade is valuable for disrupting opponent's card draw
+			// More valuable if opponent has few cards in hand or relies on drawing
+			const opponent = ai.player.opponent();
+			const handSize = opponent.hand.cards.length;
+			const deckSize = opponent.deck.cards.length;
+			
+			// Base value
+			let value = card.power;
+			
+			// More valuable if opponent has few cards (they need to draw)
+			if (handSize <= 3) value += 5;
+			else if (handSize <= 5) value += 3;
+			
+			// More valuable if opponent has many cards in deck (more potential draws to block)
+			if (deckSize > 15) value += 2;
+			
+			return Math.min(value, 20);
 		}
 	},
 };

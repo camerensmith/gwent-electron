@@ -58,7 +58,8 @@ class PredictiveAI {
     analyzeOpponentStrategy(opponent, round) {
         const handSize = opponent.hand.cards.length;
         const powerDifference = opponent.total - this.player.total;
-        const wonPreviousRound = !this.player.winning;
+        // In round 2+, if player.health === 1, player lost round 1, so opponent won round 1
+        const wonPreviousRound = round >= 2 && this.player.health === 1;
         
         if (round === 1) {
             if (handSize > this.player.hand.cards.length + 2) {

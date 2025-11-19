@@ -80,15 +80,23 @@ var factions = {
 		factionAbility: async player => {
 			await ui.notification("witcher_universe", 1200);
 		},
-		factionAbilityInit: player => game.roundStart.push(async () => {
-			player.updateFactionAbilityUses(1);
-			return false;
-		}),
-		description: "Can skip a turn once every round.",
+		description: "Can skip a turn once per game.",
 		activeAbility: true,
 		abilityUses: 1,
 		weight: (player) => {
-			return 20;
+			// More valuable since it's once per game - use strategically
+			// Higher weight in critical situations (behind, need to pass, etc.)
+			const powerDiff = player.opponent().total - player.total;
+			const handSize = player.hand.cards.length;
+			
+			// Very valuable when significantly behind
+			if (powerDiff > 20) return 40;
+			// Valuable when behind and low on cards
+			if (powerDiff > 10 && handSize < 5) return 35;
+			// Valuable when opponent passed and we're slightly behind
+			if (player.opponent().passed && powerDiff > 0 && powerDiff < 10) return 30;
+			// Standard value
+			return 25;
 		}
 	},
 	toussaint: {
@@ -117,7 +125,7 @@ var factions = {
 		},
 		activeAbility: true,
 		abilityUses: 1,
-		description: "Apply a Morale Boost effect in the selected row (boost all units by 1 in this turn).",
+		description: "Once per game, apply a Morale Boost effect in the selected row (boost all units by 1 in this turn).",
 		weight: (player) => {
 			let units = player.getAllRowCards().concat(player.hand.cards).filter(c => c.isUnit()).filter(c => !c.abilities.includes("spy"));
 			let rowStats = {
@@ -147,32 +155,25 @@ var factions = {
 		name: "Zerrikania",
 		factionAbility: player => game.roundStart.push(async () => {
 			if (game.roundCount > 1 && !(game.roundHistory[game.roundCount - 2].winner === player)) {
-				if (player.grave.findCards(c => c.isUnit()) <= 0) return;
+				// Find all worshipper cards in the graveyard
+				let worshippers = player.grave.findCards(c => c.isUnit() && c.abilities.includes("worshipper"));
+				if (worshippers.length <= 0) return;
+				
 				let grave = player.grave;
-				let respawns = [];
-				if (player.controller instanceof ControllerAI) {
-					respawns.push({
-						card: player.controller.medic(player.leader, grave)
-					});
-				} else {
-					await ui.queueCarousel(player.grave, 1, (c, i) => respawns.push({
-						card: c.cards[i]
-					}), c => c.isUnit(), true);
-				}
-				await Promise.all(respawns.map(async wrapper => {
-					let res = wrapper.card;
-					grave.removeCard(res);
-					grave.addCard(res);
-					await res.animate("medic");
-					await res.autoplay(grave);
-				}));
+				// Randomly select a worshipper
+				let selectedWorshipper = worshippers[Math.floor(Math.random() * worshippers.length)];
+				
+				grave.removeCard(selectedWorshipper);
+				grave.addCard(selectedWorshipper);
+				await selectedWorshipper.animate("medic");
+				await selectedWorshipper.autoplay(grave);
 				await ui.notification("zerrikania", 1200);
 			}
 			return false;
 		}),
 		activeAbility: false,
 		abilityUses: 0,
-		description: "Restore a unit card of your choice whenever you lose a round."
+		description: "Restore a random worshipper from your discard pile onto the field whenever you lose a round."
 	},
 	ofir: {
 		name: "Ofir",

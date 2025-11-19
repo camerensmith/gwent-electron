@@ -60,6 +60,16 @@ var default_cards = {
         "count": "2",
         "quote": "The sun' shinin', Dromle! The sun's shinin'! Maybe there's hope left after all..."
     },
+    "spe_nightfall": {
+        "name": "Nightfall",
+        "deck": "weather toussaint",
+        "row": "",
+        "strength": "",
+        "ability": "nightfall",
+        "filename": "nightfall",
+        "count": "3",
+        "quote": "When darkness falls, the true nature of monsters is revealed."
+    },
     "spe_horn": {
         "name": "Commander's Horn",
         "deck": "special",
@@ -441,8 +451,8 @@ var default_cards = {
         "name": "Philippa Eilhart",
         "deck": "realms",
         "row": "ranged",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "9",
+        "ability": "",
         "filename": "philippa",
         "count": "1",
         "quote": "Soon the power of kings will wither, and the Lodge shall seize its rightful place."
@@ -453,7 +463,7 @@ var default_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "1",
-        "ability": "bond",
+        "ability": "muster",
         "filename": "poor_infantry_1",
         "count": "1",
         "target": "nr_poor_infantry",
@@ -465,7 +475,7 @@ var default_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "1",
-        "ability": "bond",
+        "ability": "muster",
         "filename": "poor_infantry_2",
         "count": "1",
         "target": "nr_poor_infantry",
@@ -477,7 +487,7 @@ var default_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "1",
-        "ability": "bond",
+        "ability": "muster",
         "filename": "poor_infantry_3",
         "count": "1",
         "target": "nr_poor_infantry",
@@ -508,7 +518,7 @@ var default_cards = {
         "deck": "realms",
         "row": "siege",
         "strength": "6",
-        "ability": "fortify",
+        "ability": "",
         "filename": "siege_tower",
         "count": "1",
         "quote": "I love the clamor of siege towers in the morning. Sounds like victory."
@@ -547,7 +557,7 @@ var default_cards = {
         "name": "Thaler",
         "deck": "realms",
         "row": "siege",
-        "strength": "1",
+        "strength": "10",
         "ability": "spy",
         "filename": "thaler",
         "count": "1",
@@ -567,7 +577,7 @@ var default_cards = {
         "name": "Vernon Roche",
         "deck": "realms",
         "row": "close",
-        "strength": "12",
+        "strength": "8",
         "ability": "hero",
         "filename": "vernon",
         "count": "1",
@@ -683,6 +693,16 @@ var default_cards = {
         "count": "1",
         "quote": "A fireball? Of course. Whatever Your Imperial Majesty whishes."
     },
+    "ne_urcheon": {
+        "name": "Urcheon of Erlenwald",
+        "deck": "nilfgaard",
+        "row": "siege",
+        "strength": "7",
+        "ability": "spy",
+        "filename": "urcheon",
+        "count": "1",
+        "quote": "This is how I look, which you well knew, Calanthe."
+    },
     "ne_assire": {
         "name": "Assire var Anahid",
         "deck": "nilfgaard",
@@ -697,7 +717,7 @@ var default_cards = {
         "name": "Black Infantry Archer",
         "deck": "nilfgaard",
         "row": "ranged",
-        "strength": "10",
+        "strength": "2",
         "ability": "",
         "filename": "black_archer",
         "count": "1",
@@ -707,7 +727,7 @@ var default_cards = {
         "name": "Black Infantry Archer",
         "deck": "nilfgaard",
         "row": "ranged",
-        "strength": "10",
+        "strength": "2",
         "ability": "",
         "filename": "black_archer_1",
         "count": "1",
@@ -717,7 +737,7 @@ var default_cards = {
         "name": "Cahir Mawr Dyffryn aep Ceallach",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "6",
+        "strength": "8",
         "ability": "",
         "filename": "cahir",
         "count": "1",
@@ -738,7 +758,7 @@ var default_cards = {
         "deck": "nilfgaard",
         "row": "ranged",
         "strength": "1",
-        "ability": "medic",
+        "ability": "",
         "filename": "archer_support",
         "count": "1",
         "quote": "Double or nothing, aim for his cock"
@@ -748,7 +768,7 @@ var default_cards = {
         "deck": "nilfgaard",
         "row": "ranged",
         "strength": "1",
-        "ability": "medic",
+        "ability": "",
         "filename": "archer_support_1",
         "count": "1",
         "quote": "Double or nothing, aim for his cock"
@@ -762,16 +782,6 @@ var default_cards = {
         "filename": "fringilla",
         "count": "1",
         "quote": "Magic is the highest good. It transcends all borders and divisions."
-    },
-    "ne_heavy_zerri": {
-        "name": "Heavy Zerrikanian Fire Scorpion",
-        "deck": "nilfgaard",
-        "row": "siege",
-        "strength": "10",
-        "ability": "",
-        "filename": "heavy_zerri",
-        "count": "1",
-        "quote": "Not the best for taking cities, but great for razing them to the ground."
     },
     "ne_impera_brigade_1": {
         "name": "Impera Brigade Guard",
@@ -821,22 +831,12 @@ var default_cards = {
         "target": "ne_impera_brigade",
         "quote": "The Impera Brigade never surrenders. Ever."
     },
-    "ne_letho": {
-        "name": "Letho of Gulet",
-        "deck": "nilfgaard",
-        "row": "close",
-        "strength": "9",
-        "ability": "hero",
-        "filename": "letho",
-        "count": "1",
-        "quote": "Witchers never die in the beds."
-    },
     "ne_menno": {
         "name": "Menno Coehoorn",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "10",
-        "ability": "hero medic",
+        "strength": "8",
+        "ability": "hero",
         "filename": "menno",
         "count": "1",
         "quote": "I'll take an attentive reconnaissance unit over a fine cavalry brigade any day."
@@ -845,8 +845,8 @@ var default_cards = {
         "name": "Morteisen",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "3",
-        "ability": "",
+        "strength": "5",
+        "ability": "hero horn",
         "filename": "morteisen",
         "count": "1",
         "quote": "No Nordling pikemen or dwarven spearbearers can hope to best trained cavalary."
@@ -855,8 +855,8 @@ var default_cards = {
         "name": "Morvran Voorhis",
         "deck": "nilfgaard",
         "row": "siege",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "8",
+        "ability": "hero morale",
         "filename": "moorvran",
         "count": "1",
         "quote": "Summer sun reflecting in the quiet waters of Alba - that's Nilfgaard to me."
@@ -941,8 +941,8 @@ var default_cards = {
         "name": "Shilard Fitz-Oesterlen",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "7",
-        "ability": "spy",
+        "strength": "6",
+        "ability": "spy bribe",
         "filename": "shilard",
         "count": "1",
         "quote": "Warfare is mere sound and fury - diplomacy is what truly shapes history."
@@ -972,7 +972,7 @@ var default_cards = {
         "deck": "nilfgaard",
         "row": "close",
         "strength": "9",
-        "ability": "spy",
+        "ability": "conspiracy",
         "filename": "stefan",
         "count": "1",
         "quote": "My mark scards the face of our future empress. That is my proudest achievement."
@@ -982,7 +982,7 @@ var default_cards = {
         "deck": "nilfgaard",
         "row": "ranged",
         "strength": "2",
-        "ability": "",
+        "ability": "conspiracy",
         "filename": "sweers",
         "count": "1",
         "quote": "And hands off the girl! Whatever we may be, we're not savages."
@@ -1032,7 +1032,7 @@ var default_cards = {
         "id": 1,
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "5",
+        "strength": "3",
         "ability": "bond",
         "filename": "young_emissary_1",
         "count": "1",
@@ -1044,7 +1044,7 @@ var default_cards = {
         "id": 2,
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "5",
+        "strength": "3",
         "ability": "bond",
         "filename": "young_emissary_2",
         "count": "1",
@@ -1053,7 +1053,7 @@ var default_cards = {
     },
     "ne_zerri": {
         "name": "Zerrikanian Fire Scorpion",
-        "deck": "nilfgaard",
+        "deck": "zerrikania",
         "row": "siege",
         "strength": "5",
         "ability": "",
@@ -1712,7 +1712,7 @@ var default_cards = {
         "name": "Figgis Merluzzo",
         "id": 1,
         "deck": "scoiatael",
-        "row": "agile",
+        "row": "any",
         "strength": "3",
         "ability": "hero",
         "filename": "figgis",
@@ -1901,7 +1901,7 @@ var default_cards = {
         "name": "Isengrim Faoiltiarna",
         "deck": "scoiatael",
         "row": "agile",
-        "strength": "10",
+        "strength": "4",
         "ability": "hero morale",
         "filename": "isengrim",
         "count": "1",
@@ -1987,7 +1987,8 @@ var default_cards = {
         "deck": "scoiatael",
         "row": "agile",
         "strength": "10",
-        "ability": "hero",
+        "ability": "avenger",
+        "target": "sc_saesenthessis_dragon",
         "filename": "saskia",
         "count": "1",
         "quote": "Beautiful, pure, fierce - the perfect icon for a rebellion."
@@ -2052,6 +2053,27 @@ var default_cards = {
         "count": "1",
         "target": "sk_vildkaarl",
         "quote": "Kill, crush, cleave!"
+    },
+    "sk_sha": {
+        "name": "Sha",
+        "deck": "skellige",
+        "row": "siege",
+        "strength": "3",
+        "ability": "avenger",
+        "filename": "sha",
+        "count": "1",
+        "target": "sk_kraken",
+        "quote": "A noblewoman from beyond the seas."
+    },
+    "sk_kraken": {
+        "name": "Kraken",
+        "deck": "skellige",
+        "row": "ranged",
+        "strength": "8",
+        "ability": "",
+        "filename": "kraken",
+        "count": "1",
+        "quote": "'A kra-kraken?' 'Yes, a kraken' the witcher repeated."
     },
     "sk_birna": {
         "name": "Birna Bran",
@@ -2572,8 +2594,8 @@ var ext_nr_cards = {
         "name": "Tridam Infantry",
         "deck": "realms",
         "row": "close",
-        "strength": "2",
-        "ability": "guard",
+        "strength": "3",
+        "ability": "veteran",
         "filename": "tridam_infantry",
         "count": "2",
         "quote": "Soldiers loyal to the old baron of Tridam left the city with Falibor..."
@@ -2582,8 +2604,8 @@ var ext_nr_cards = {
         "name": "Vandergrift",
         "deck": "realms",
         "row": "ranged",
-        "strength": "9",
-        "ability": "hero",
+        "strength": "7",
+        "ability": "hero scorch",
         "filename": "vandergrift",
         "count": "1",
         "quote": "What has that witch done?!"
@@ -2602,7 +2624,7 @@ var ext_nr_cards = {
         "name": "Reinforcements",
         "deck": "realms",
         "row": "ranged",
-        "strength": "7",
+        "strength": "6",
         "ability": "fortify",
         "filename": "reinforcements",
         "count": "2",
@@ -2632,17 +2654,17 @@ var ext_nr_cards = {
         "name": "Henselt",
         "deck": "realms",
         "row": "siege",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "9",
+        "ability": "",
         "filename": "henselt",
         "count": "1",
         "quote": "King Henselt did not look like a thief, but, with all due respect, that's really what he was."
     },
     "nr_kaedweni_reinforcement": {
-        "name": "Kaedweni Reinforcement",
+        "name": "Kaedweni Reinforcements",
         "deck": "realms",
-        "row": "ranged",
-        "strength": "3",
+        "row": "any",
+        "strength": "2",
         "ability": "medic",
         "filename": "kaedweni_reinforcement",
         "count": "1",
@@ -2700,8 +2722,8 @@ var ext_nr_cards = {
         "name": "Ban Ard Tutor",
         "deck": "realms",
         "row": "ranged",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "5",
+        "ability": "",
         "filename": "ban_ard_tutor",
         "count": "1",
         "quote": "Ban Ard deserved a mention, for it is famous for the school of young adepts of the magical arts."
@@ -2710,7 +2732,7 @@ var ext_nr_cards = {
         "name": "Demavend",
         "deck": "realms",
         "row": "siege",
-        "strength": "10",
+        "strength": "9",
         "ability": "hero",
         "filename": "demavend",
         "count": "1",
@@ -2721,7 +2743,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "siege",
         "strength": "7",
-        "ability": "guard",
+        "ability": "veteran",
         "filename": "kaedweni_knight",
         "count": "1",
         "quote": "Not every man in the Kaedweni army supports his king's politics..."
@@ -2760,7 +2782,7 @@ var ext_nr_cards = {
         "name": "Seltkirk of Gulet",
         "deck": "realms",
         "row": "close",
-        "strength": "10",
+        "strength": "12",
         "ability": "hero",
         "filename": "seltkirk",
         "count": "1",
@@ -2837,7 +2859,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "7",
-        "ability": "",
+        "ability": "cintra_slaughter",
         "filename": "vissegerd",
         "count": "1",
         "quote": "I will raise Cintra from the ashes no matter how great the cost."
@@ -2935,7 +2957,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "7",
-        "ability": "cintra_slaughter",
+        "ability": "veteran cintra_slaughter",
         "filename": "cintrian_knight",
         "count": "2",
         "quote": "For whom does the bell toll?"
@@ -2954,49 +2976,28 @@ var ext_nr_cards = {
         "name": "Pavetta",
         "deck": "realms",
         "row": "ranged",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "4",
+        "ability": "",
         "filename": "pavetta",
         "count": "1",
         "quote": "They said the queen was prone to outbursts but I did not expect that..."
     },
     "nr_kistrin_verden": {
         "name": "Kistrin of Verden",
-        "deck": "realms",
+        "deck": "agile",
         "row": "ranged",
-        "strength": "6",
-        "ability": "guard",
+        "strength": "7",
+        "ability": "",
         "filename": "kistrin_verden",
         "count": "1",
         "quote": "Oh dammit. Kistrin? Prince Kistrin? The son of King Ervyll of Verden?"
-    },
-    "nr_sha": {
-        "name": "Sha",
-        "deck": "realms",
-        "row": "siege",
-        "strength": "3",
-        "ability": "avenger",
-        "filename": "sha",
-        "count": "1",
-        "target": "nr_kraken",
-        "quote": "A noblewoman from beyond the seas."
-    },
-    "nr_kraken": {
-        "name": "Kraken",
-        "deck": "realms",
-        "row": "ranged",
-        "strength": "11",
-        "ability": "hero scorch",
-        "filename": "kraken",
-        "count": "1",
-        "quote": "'A kra-kraken?' 'Yes, a kraken' the witcher repeated."
     },
     "nr_egmund": {
         "name": "Egmund",
         "deck": "realms",
         "row": "close",
-        "strength": "7",
-        "ability": "scorch_c",
+        "strength": "11",
+        "ability": "",
         "filename": "egmund",
         "count": "1",
         "quote": "Since father has never appreciated nor trusted Egmund, it was but a simple decision to betray him."
@@ -3036,21 +3037,11 @@ var ext_nr_cards = {
         "name": "Windhalm of Attre",
         "deck": "realms",
         "row": "close",
-        "strength": "6",
-        "ability": "",
+        "strength": "2",
+        "ability": "cintra_slaughter martyr",
         "filename": "windhalm",
         "count": "1",
         "quote": "Off with his head! But slowly, drag it out, put on a show for all to see."
-    },
-    "nr_prince_anseis": {
-        "name": "Prince Anseis",
-        "deck": "realms",
-        "row": "close",
-        "strength": "10",
-        "ability": "hero",
-        "filename": "prince_anseis",
-        "count": "1",
-        "quote": "Come forth, coward, and your very own doom confront!"
     },
     "nr_nastrog_levecque": {
         "name": "Nastrog Division: Levecque",
@@ -3101,10 +3092,10 @@ var ext_nr_cards = {
         "quote": "There aren't any witnesses. But we know what happened."
     },
     "nr_letande_lavet": {
-        "name": "Letande Lavet",
+        "name": "Letande Avet",
         "deck": "realms",
         "row": "close",
-        "strength": "7",
+        "strength": "5",
         "ability": "scorch",
         "filename": "letande_lavet",
         "count": "1",
@@ -3158,7 +3149,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "1",
-        "ability": "bond",
+        "ability": "muster",
         "filename": "poor_infantry_4",
         "count": "1",
         "target": "nr_poor_infantry",
@@ -3170,7 +3161,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "1",
-        "ability": "bond",
+        "ability": "muster",
         "filename": "poor_infantry_5",
         "count": "1",
         "target": "nr_poor_infantry",
@@ -3182,7 +3173,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "1",
-        "ability": "bond",
+        "ability": "muster",
         "filename": "poor_infantry_6",
         "count": "1",
         "target": "nr_poor_infantry",
@@ -3203,7 +3194,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "ranged",
         "strength": "10",
-        "ability": "spy",
+        "ability": "spy cintra_slaughter",
         "filename": "cintrian_envoy",
         "count": "1",
         "quote": "She thought service in the diplomatic corps would mean a quiet life behind a desk. She and her blistered feet were sorely mistaken."
@@ -3223,7 +3214,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "ranged",
         "strength": "6",
-        "ability": "spy",
+        "ability": "cintra_slaughter",
         "filename": "dorregaray",
         "count": "1",
         "quote": "Like the witchers, Dorregaray is a monster aficionado, though he's developed his own classification system."
@@ -3247,26 +3238,6 @@ var ext_nr_cards = {
         "filename": "mousesack",
         "count": "1",
         "quote": "Only the ignorant dismiss the importance of myths."
-    },
-    "nr_isbel_hagge": {
-        "name": "Isbel of Hagge",
-        "deck": "realms",
-        "row": "ranged",
-        "strength": "5",
-        "ability": "",
-        "filename": "isbel_hagge",
-        "count": "1",
-        "quote": "So much anger and suggering, for what?"
-    },
-    "nr_lyrian_arbalest": {
-        "name": "Lyrian Arbalest",
-        "deck": "realms",
-        "row": "ranged",
-        "strength": "6",
-        "ability": "",
-        "filename": "lyrian_arbalest",
-        "count": "1",
-        "quote": "Arbalist at your command. Armour won't save them! One bolt's all I need..."
     },
     "nr_northern_wind": {
         "name": "Bomb",
@@ -3328,8 +3299,8 @@ var ext_nr_cards = {
         "name": "Ethain of Cidaris",
         "deck": "realms",
         "row": "siege",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "3",
+        "ability": "hero morale",
         "filename": "ethain_cidaris",
         "count": "1",
         "quote": "Balads aren't just lively music and rhymes, but a way of spreading news, they are chronicle of humankind."
@@ -3338,8 +3309,8 @@ var ext_nr_cards = {
         "name": "Henry var Attre",
         "deck": "realms",
         "row": "siege",
-        "strength": "8",
-        "ability": "spy",
+        "strength": "9",
+        "ability": "emissary",
         "filename": "henry_attre",
         "count": "1",
         "quote": "Edna and Rosa, I must attend to their needs, their well being."
@@ -3359,27 +3330,17 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "siege",
         "strength": "5",
-        "ability": "",
+        "ability": "morale",
         "filename": "king_belohun",
         "count": "1",
         "quote": "The king, quite rightly, didn't trust anyone. He also didn't believe anobody capable of outsmarting him. This proved a fatal assumption."
-    },
-    "nr_urcheon": {
-        "name": "Urcheon of Erlenwald",
-        "deck": "realms",
-        "row": "siege",
-        "strength": "6",
-        "ability": "spy",
-        "filename": "urcheon",
-        "count": "1",
-        "quote": "This is how I look, which you well knew, Calanthe."
     },
     "nr_reinforced_tower": {
         "name": "Reinforced Tower",
         "deck": "realms",
         "row": "siege",
         "strength": "7",
-        "ability": "",
+        "ability": "fortify",
         "filename": "reinforced_tower",
         "count": "1",
         "quote": "The latest rage in assaults on walled cities."
@@ -3387,9 +3348,9 @@ var ext_nr_cards = {
     "nr_battering_ram": {
         "name": "Battering Ram",
         "deck": "realms",
-        "row": "siege",
+        "row": "close",
         "strength": "6",
-        "ability": "",
+        "ability": "fortify",
         "filename": "battering_ram",
         "count": "1",
         "quote": "The hulking siege engine rolled to the front, within few bashes the gates crashed open."
@@ -3428,7 +3389,7 @@ var ext_nr_cards = {
         "name": "Donimir of Troy",
         "deck": "realms",
         "row": "close",
-        "strength": "10",
+        "strength": "11",
         "ability": "hero",
         "filename": "donimir_troy",
         "count": "1",
@@ -3488,7 +3449,7 @@ var ext_nr_cards = {
         "name": "Eyck of Denesle",
         "deck": "realms",
         "row": "close",
-        "strength": "11",
+        "strength": "10",
         "ability": "hero",
         "filename": "eyck_denesle",
         "count": "1",
@@ -3508,8 +3469,8 @@ var ext_nr_cards = {
         "name": "Voymir",
         "deck": "realms",
         "row": "close",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "6",
+        "ability": "veteran",
         "filename": "voymir",
         "count": "1",
         "quote": "Quietly, on tiptoes, no noise, no fuss. Through the back alleys. In Loxia and the port keep your mouth shut! Go!"
@@ -3543,7 +3504,7 @@ var ext_nr_cards = {
         "strength": "",
         "ability": "redania_horn",
         "filename": "realms_horn",
-        "count": "2",
+        "count": "1",
         "quote": "When the horn sounds, mercy ends and duty begins."
     },
     "spe_redania_purge": {
@@ -3552,7 +3513,7 @@ var ext_nr_cards = {
         "row": "",
         "strength": "",
         "ability": "redania_purge",
-        "filename": "realms_purge",
+        "filename": "redania_purge",
         "count": "3",
         "quote": "I can't bloody breathe! Won't they burn the wretches someplace else?"
     },
@@ -3621,7 +3582,7 @@ var ext_nr_cards = {
         "name": "Ewald Borsodi",
         "deck": "realms",
         "row": "any",
-        "strength": "7",
+        "strength": "5",
         "ability": "hero",
         "filename": "ewald",
         "count": "1",
@@ -3637,9 +3598,9 @@ var ext_nr_cards = {
         "count": "1",
         "quote": "Not all battles are fought with swords. Some are won with compassion."
     },
-    "nr_gaunter": {
+    "mo_gaunter": {
         "name": "Gaunter O'Dimm",
-        "deck": "realms",
+        "deck": "monsters",
         "row": "any",
         "strength": "5",
         "ability": "hero",
@@ -3652,21 +3613,21 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "4",
-        "ability": "hero immortal",
+        "ability": "immortal",
         "filename": "olgierd",
         "count": "1",
         "quote": "At least you now know how I don't easily lose my head."
     },
-    "nr_gaunter_odimm_darkness": {
+    "mo_gaunter_odimm_darkness": {
         "name": "Gaunter O'Dimm - Darkness",
         "id": 2,
-        "deck": "realms",
+        "deck": "monsters",
         "row": "ranged",
-        "strength": "4",
+        "strength": "3",
         "ability": "muster",
         "filename": "gaunter_odimm_darkness",
-        "count": "3",
-        "target": "nr_gaunter",
+        "count": "2",
+        "target": "mo_gaunter",
         "quote": "Fear not the shadows, but the light."
     },
 
@@ -3686,8 +3647,8 @@ var ext_nr_cards = {
         "name": "Redanian Elite",
         "deck": "realms",
         "row": "close",
-        "strength": "8",
-        "ability": "",
+        "strength": "7",
+        "ability": "veteran",
         "filename": "elite",
         "count": "1",
         "quote": "They stand unflinching before fire or foe."
@@ -3739,7 +3700,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "agile",
         "strength": "7",
-        "ability": "fortify",
+        "ability": "veteran",
         "filename": "temerian_knight",
         "count": "1",
         "quote": "No matter the odds, we fight."
@@ -3748,8 +3709,8 @@ var ext_nr_cards = {
         "name": "Priscilla",
         "deck": "realms",
         "row": "ranged",
-        "strength": "2",
-        "ability": "morale",
+        "strength": "0",
+        "ability": "morale horn",
         "filename": "priscilla",
         "count": "1",
         "quote": "Picture Dandelion in a dress, and you have the general idea."
@@ -3778,9 +3739,10 @@ var ext_nr_cards = {
         "name": "Redanian Foot Soldier",
         "deck": "realms",
         "row": "close",
-        "strength": "1",
-        "ability": "",
+        "strength": "2",
+        "ability": "bond",
         "filename": "soldier1",
+        "target": "nr_redanian_foot_soldier",
         "count": "1",
         "quote": "I've bled for Redania! I've killed for Redania... Dammit, I've even raped for Redania!"
     },
@@ -3788,9 +3750,10 @@ var ext_nr_cards = {
         "name": "Redanian Foot Soldier",
         "deck": "realms",
         "row": "close",
-        "strength": "1",
-        "ability": "",
+        "strength": "2",
+        "ability": "bond",
         "filename": "soldier2",
+        "target": "nr_redanian_foot_soldier",
         "count": "1",
         "quote": "I've bled for Redania! I've killed for Redania... Dammit, I've even raped for Redania!"
     }
@@ -3801,8 +3764,8 @@ var ext_ne_cards = {
         "name": "Vicovaro Medic",
         "deck": "nilfgaard",
         "row": "ranged",
-        "strength": "1",
-        "ability": "hero medic",
+        "strength": "2",
+        "ability": "medic",
         "filename": "vicovaro_medic",
         "count": "1",
         "quote": "Both war and plague always take men by surprise."
@@ -3811,8 +3774,8 @@ var ext_ne_cards = {
         "name": "Alba Pikeman",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "5",
-        "ability": "hero",
+        "strength": "3",
+        "ability": "",
         "filename": "alba_pikeman_1",
         "count": "1",
         "quote": "Pledge your allegiance to our Emperor Emhyr van Emreis... or die."
@@ -3822,7 +3785,7 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "close",
         "strength": "5",
-        "ability": "hero",
+        "ability": "morale",
         "filename": "alba_spearman",
         "count": "1",
         "quote": "Death and glory!"
@@ -3842,13 +3805,13 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "close",
         "strength": "8",
-        "ability": "hero",
+        "ability": "",
         "filename": "imperial_golem",
         "count": "1",
         "quote": "The most powerful of Nilfgaard's mages have mastered the oart of creating golems."
     },
     "ne_daerlan_soldier": {
-        "name": "Daerlan Foot Soldier",
+        "name": "Daerlan Foot Soldiers",
         "deck": "nilfgaard",
         "row": "close",
         "strength": "6",
@@ -3857,16 +3820,7 @@ var ext_ne_cards = {
         "count": "1",
         "quote": "Learned a lot at Braibant Military Academy. How to scrub potatoes, for instance."
     },
-    "ne_hefty_helge": {
-        "name": "Hefty Helge",
-        "deck": "nilfgaard",
-        "row": "siege",
-        "strength": "7",
-        "ability": "",
-        "filename": "hefty_helge",
-        "count": "1",
-        "quote": "Not the best for taking cities, but great for razing them to the ground."
-    },
+
     "ne_slave_infantry_1": {
         "name": "Slave Infantry",
         "id": 1,
@@ -3896,17 +3850,17 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "close",
         "strength": "5",
-        "ability": "",
+        "ability": "adaptive",
         "filename": "magne_division",
-        "count": "1",
+        "count": "2",
         "quote": "A garrison in this blasted waste is like a chastity belt on a grave hag."
     },
     "ne_emissary": {
-        "name": "Emissary",
+        "name": "Nilfgaardian Emissary",
         "deck": "nilfgaard",
         "row": "siege",
-        "strength": "10",
-        "ability": "spy",
+        "strength": "6",
+        "ability": "emissary",
         "filename": "emissary",
         "count": "1",
         "quote": "But there's no justice in it! One does not kill the messenger!"
@@ -3936,7 +3890,7 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "close",
         "strength": "10",
-        "ability": "hero",
+        "ability": "",
         "filename": "guardian",
         "count": "1",
         "quote": "Stone fists to stop intruders armed with swords. Ironclad logic to stop those armed with lies."
@@ -3955,8 +3909,8 @@ var ext_ne_cards = {
         "name": "Nilfgaardian Knight",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "5",
+        "ability": "",
         "filename": "knight",
         "count": "1",
         "quote": "Sons of noble houses, born in the City of the Golden Towers, form the elite backbone of the Imperial Army."
@@ -3997,21 +3951,21 @@ var ext_ne_cards = {
         "name": "Jan Calveit",
         "deck": "nilfgaard",
         "row": "ranged",
-        "strength": "8",
-        "ability": "hero",
+        "strength": "3",
+        "ability": "hero conspiracy",
         "filename": "jan_calveit",
         "count": "1",
         "quote": "To prepare for the future, it’s best to first know it."
     },
-    "ne_bribery": {
-        "name": "Bribery",
+    "ne_diplomat": {
+        "name": "Diplomat",
         "deck": "nilfgaard",
-        "row": "agile",
-        "strength": "10",
-        "ability": "spy",
-        "filename": "bribery",
+        "row": "ranged",
+        "strength": "7",
+        "ability": "spy bribe",
+        "filename": "diplomat", 
         "count": "1",
-        "quote": "In truth, the Nilfgaardian floren rules the world."
+        "quote": "Diplomacy is the art of saying 'nice doggie' while reaching for the dog's throat."
     },
     "ne_rot_tosser": {
         "name": "Rot Tosser",
@@ -4023,16 +3977,6 @@ var ext_ne_cards = {
         "count": "1",
         "target": "ne_epidemic",
         "quote": "Let historians debate whether spreading plague in a besieged city is ethical."
-    },
-    "ne_epidemic": {
-        "name": "Epidemic",
-        "deck": "nilfgaard",
-        "row": "siege",
-        "strength": "7",
-        "ability": "",
-        "filename": "epidemic",
-        "count": "1",
-        "quote": "Epidemics respect no persons, no borders."
     },
     "ne_joachim_de_wett": {
         "name": "Joachim de Wett",
@@ -4048,8 +3992,8 @@ var ext_ne_cards = {
         "name": "Ardal aep Dahy",
         "deck": "nilfgaard",
         "row": "ranged",
-        "strength": "9",
-        "ability": "hero",
+        "strength": "4",
+        "ability": "hero bribe",
         "filename": "ardal_aep_dahy",
         "count": "1",
         "quote": "In my home, in the civilized world, a general commands his forces. He does not rush and thrash about like some rabid hound."
@@ -4058,8 +4002,8 @@ var ext_ne_cards = {
         "name": "Cantarella",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "10",
-        "ability": "hero spy",
+        "strength": "3",
+        "ability": "hero spy morale",
         "filename": "cantarella",
         "count": "1",
         "quote": "Men require constant alluring. Mystique and refinement do the job quite well."
@@ -4079,7 +4023,7 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "close",
         "strength": "10",
-        "ability": "hero",
+        "ability": "conspiracy",
         "filename": "usurper",
         "count": "1",
         "quote": "Why should something as trivial as birth decide who rules over us?"
@@ -4088,8 +4032,8 @@ var ext_ne_cards = {
         "name": "Infiltrator",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "8",
-        "ability": "hero",
+        "strength": "5",
+        "ability": "scorch spy",
         "filename": "infiltrator",
         "count": "1",
         "quote": "You can run, but you'll never hide."
@@ -4107,9 +4051,9 @@ var ext_ne_cards = {
     "ne_master_disguise": {
         "name": "Master of Disguise",
         "deck": "nilfgaard",
-        "row": "ranged",
-        "strength": "7",
-        "ability": "hero spy",
+        "row": "any",
+        "strength": "1",
+        "ability": "spy morale",
         "filename": "master_disguise",
         "count": "1",
         "quote": "O Great Sun which dost in Heavens fly, save us from the lice which do so stubbornly infest our bloomers. "
@@ -4129,7 +4073,7 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "ranged",
         "strength": "6",
-        "ability": "",
+        "ability": "clairvoyance",
         "filename": "imperial_diviner",
         "count": "1",
         "quote": "All these signs can mean but one thing. The starts contend you shall be victorious today."
@@ -4168,7 +4112,7 @@ var ext_ne_cards = {
         "name": "Combat Engineer",
         "deck": "nilfgaard",
         "row": "siege",
-        "strength": "3",
+        "strength": "1",
         "ability": "morale",
         "filename": "combat_engineer",
         "count": "1",
@@ -4220,7 +4164,7 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "ranged",
         "strength": "5",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "ard_feainn_crossbowman",
         "count": "1",
         "quote": "Many thought that mounted crossbowmen wouldn't work. Until they saw them in action."
@@ -4262,7 +4206,7 @@ var ext_ne_cards = {
         "name": "Ramon Tyrconnel",
         "deck": "nilfgaard",
         "row": "ranged",
-        "strength": "8",
+        "strength": "7",
         "ability": "hero muster",
         "filename": "ramon_tyrconnel",
         "count": "1",
@@ -4273,7 +4217,7 @@ var ext_ne_cards = {
         "name": "Ffion var Gaernel",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "10",
+        "strength": "8",
         "ability": "hero",
         "filename": "ffion_gaernel",
         "count": "1",
@@ -4292,9 +4236,9 @@ var ext_ne_cards = {
     "ne_traheaern_vdyffir": {
         "name": "Traheaern var Vdyffir",
         "deck": "nilfgaard",
-        "row": "close",
-        "strength": "8",
-        "ability": "spy",
+        "row": "siege",
+        "strength": "7",
+        "ability": "spy bribe",
         "filename": "traheaern_vdyffir",
         "count": "1",
         "quote": "The man leading the Nilfgaardians was clad in rich robes. He exuded pride... and the scent of musk."
@@ -4334,10 +4278,11 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "close",
         "strength": "4",
-        "ability": "",
+        "ability": "muster",
+        "target": "ne_slave_infantry",
         "filename": "slave_driver",
         "count": "1",
-        "quote": ""
+        "quote": "A buncha sorry sacks don't realize how good they got it in the empire."
     },
     "ne_vicovaro_novice": {
         "name": "Vicovaro Novice",
@@ -4354,10 +4299,10 @@ var ext_ne_cards = {
         "deck": "nilfgaard",
         "row": "ranged",
         "strength": "6",
-        "ability": "",
+        "ability": "scorch_r",
         "filename": "vicovaro_bounty_hunter",
         "count": "1",
-        "quote": ""
+        "quote": "No need to ask why I'm here. I'm here because I want to be."
     }
 };
 
@@ -4631,14 +4576,25 @@ var ext_mo_cards = {
         "quote": ""
     },
     "mo_allgood": {
-        "name": "Allgood",
+        "name": "Allgod",
         "deck": "monsters",
         "row": "agile",
         "strength": "4",
         "ability": "medic",
-        "filename": "allgood",
+        "filename": "allgod",
         "count": "1",
         "quote": "Your faith fattens me better than any feast."
+    },
+    "mo_infestation": {
+        "name": "Infestation",
+        "deck": "monsters",
+        "row": "siege",
+        "strength": "1",
+        "ability": "muster bond",
+        "target": "mo_infestation",
+        "filename": "allgod",
+        "count": "3",
+        "quote": "What do you see? One, maybe two... wait..."
     },
     "mo_ethereal": {
         "name": "Ethereal",
@@ -5099,8 +5055,8 @@ var ext_st_cards = {
         "name": "Brouver Hoog",
         "deck": "scoiatael",
         "row": "agile",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "5",
+        "ability": "hero guard",
         "filename": "brouver_hoog",
         "count": "1",
         "quote": "That doddery dolt? Ye cannae even tell if he's alive or stuffed!"
@@ -5145,7 +5101,7 @@ var ext_st_cards = {
         "name": "Aglais",
         "deck": "scoiatael",
         "row": "agile",
-        "strength": "8",
+        "strength": "7",
         "ability": "hero medic",
         "filename": "aglais",
         "count": "1",
@@ -5257,7 +5213,7 @@ var ext_st_cards = {
         "name": "Ithlinne Aegli aep Aevenien",
         "deck": "scoiatael",
         "row": "agile",
-        "strength": "10",
+        "strength": "5",
         "ability": "hero",
         "filename": "ithlinne",
         "count": "1",
@@ -5341,8 +5297,8 @@ var ext_st_cards = {
         "name": "Farseer",
         "deck": "scoiatael",
         "row": "ranged",
-        "strength": "9",
-        "ability": "hero",
+        "strength": "6",
+        "ability": "clairvoyance",
         "filename": "farseer",
         "count": "1",
         "quote": "Her words might seem unintelligible at times, but they always contain hidden meanings and tremendous wisdom."
@@ -5484,7 +5440,7 @@ var ext_sk_cards = {
         "name": "Avallach'h",
         "deck": "scoiatael",
         "row": "close",
-        "strength": "0",
+        "strength": "4",
         "ability": "hero spy",
         "filename": "mysterious_elf",
         "count": "1",
@@ -5694,7 +5650,7 @@ var ext_sk_cards = {
         "deck": "skellige",
         "row": "close",
         "strength": "10",
-        "ability": "hero",
+        "ability": "",
         "filename": "troll_errant",
         "count": "1",
         "quote": "Champion of Champions!"
@@ -5947,60 +5903,6 @@ var ext_wu_cards = {
         "filename": "bomb_heaver",
         "count": "1",
         "quote": "Watch your heads!"
-    },
-    "wu_gascon_light_cavalry": {
-        "name": "Gascon's Light Cavalry",
-        "deck": "witcher_universe",
-        "row": "close",
-        "strength": "5",
-        "ability": "muster",
-        "filename": "gascon_light_cavalry",
-        "count": "1",
-        "target": "wu_gascon_troops",
-        "quote": "The chase is on!"
-    },
-    "wu_gascon_slinger": {
-        "name": "Gascon's Slingers",
-        "deck": "witcher_universe",
-        "row": "ranged",
-        "strength": "4",
-        "ability": "muster",
-        "filename": "gascon_slinger",
-        "count": "1",
-        "target": "wu_gascon_troops",
-        "quote": "Bigger they are, easier they are to target."
-    },
-    "wu_gascon_infiltrator": {
-        "name": "Gascon's Infiltrator",
-        "deck": "witcher_universe",
-        "row": "ranged",
-        "strength": "4",
-        "ability": "muster",
-        "filename": "gascon_infiltrator",
-        "count": "1",
-        "target": "wu_gascon_troops",
-        "quote": "We got a job to do."
-    },
-    "wu_gascon": {
-        "name": "Gascon",
-        "deck": "witcher_universe",
-        "row": "siege",
-        "strength": "7",
-        "ability": "hero muster",
-        "filename": "gascon",
-        "count": "1",
-        "target": "wu_gascon_troops",
-        "quote": "Th' Strays of Spalla – 'tis you who lead them? 'Tis you they call the Duke of Dogs?"
-    },
-    "wu_dorregaray": {
-        "name": "Dorregaray of Vole",
-        "deck": "witcher_universe",
-        "row": "ranged",
-        "strength": "10",
-        "ability": "hero",
-        "filename": "dorregaray",
-        "count": "1",
-        "quote": "Dorregaray is a monster aficionado, though he's developed his own classification system."
     },
     "wu_ortolan": {
         "name": "Grandmaster Ortolan",
@@ -6666,28 +6568,6 @@ var ext_wu_cards = {
         "count": "1",
         "quote": "You damned tricksters! Nothing but swindlers!"
     },
-    "wu_tea_vea_1": {
-        "name": "Tea & Vea",
-        "deck": "witcher_universe",
-        "row": "close",
-        "strength": "5",
-        "ability": "muster",
-        "filename": "tea_vea_1",
-        "count": "1",
-        "target" :"wu_tea_vea",
-        "quote": "Her sabre, drawn faster than they eye could see, cut through the air."
-    },
-    "wu_tea_vea_2": {
-        "name": "Tea & Vea",
-        "deck": "witcher_universe",
-        "row": "close",
-        "strength": "5",
-        "ability": "muster",
-        "filename": "tea_vea_2",
-        "count": "1",
-        "target": "wu_tea_vea",
-        "quote": "Her sabre, drawn faster than they eye could see, cut through the air."
-    },
     "wu_iola": {
         "name": "Iola",
         "deck": "witcher_universe",
@@ -6828,6 +6708,16 @@ var ext_wu_cards = {
         "filename": "fugas",
         "count": "1",
         "quote": "Heh, givin' me orders? You? A human?"
+    },
+    "to_jonathan": {
+        "name": "Jonathan",
+        "deck": "witcher_universe",
+        "row": "siege",
+        "strength": "11",
+        "ability": "hero",
+        "filename": "jonathan",
+        "count": "1",
+        "quote": "Jonathan, Jonathan, what a prick."
     },
     "wu_barnabas": {
         "name": "Barnabas Beckenbauer",
@@ -7072,8 +6962,30 @@ var ext_to_cards = {
         "strength": "2",
         "ability": "wine",
         "filename": "bard",
-        "count": "3",
+        "target": "vampire",
+        "count": "1",
         "quote": "The bard's song roars as the wine flows."
+    },
+        "to_juggler": {
+        "name": "Juggler",
+        "deck": "toussaint",
+        "row": "siege",
+        "strength": "4",
+        "ability": "wine",
+        "filename": "juggler",
+        "count": "1",
+        "quote": "Watch the balls, folks! The juggler's got tricks up 'er sleeve!"
+    },
+
+        "to_vampire1": {
+        "name": "Vampiress",
+        "deck": "toussaint",
+        "row": "siege",
+        "strength": "5",
+        "ability": "spy",
+        "filename": "vampire1",
+        "count": "1",
+        "quote": "A vile, bloodthirsty, man-eating hag. Kind of like my mother-in-law."
     },
     "to_panther_1": {
         "name": "Panthers",
@@ -7151,7 +7063,7 @@ var ext_to_cards = {
         "name": "Damien de la Tour",
         "deck": "toussaint",
         "row": "close",
-        "strength": "10",
+        "strength": "8",
         "ability": "hero",
         "filename": "damien_tour",
         "count": "1",
@@ -7191,8 +7103,8 @@ var ext_to_cards = {
         "name": "Guillaume de Launfal",
         "deck": "toussaint",
         "row": "close",
-        "strength": "3",
-        "ability": "morale",
+        "strength": "4",
+        "ability": "wine",
         "filename": "guillaume",
         "count": "1",
         "quote": "Guillaume was the very model of a knight-errant - the placard boy for Toussaint."
@@ -7200,25 +7112,15 @@ var ext_to_cards = {
     "to_artorius_vigo": {
         "name": "Artorius Vigo",
         "deck": "toussaint",
-        "row": "ranged",
-        "strength": "10",
+        "row": "ranged_siege",
+        "strength": "1",
         "ability": "hero medic",
         "filename": "artorius_vigo",
         "count": "1",
         "quote": "It is said he created an illusion so realistic that he began to believe it himself..."
     },
-    "to_fringilla_vigo": {
-        "name": "Fringilla Vigo",
-        "deck": "toussaint",
-        "row": "ranged",
-        "strength": "10",
-        "ability": "hero",
-        "filename": "fringilla_vigo",
-        "count": "1",
-        "quote": "Magic is the highest good. It transcends all borders and divisions."
-    },
     "to_beauclair_cavalry_1": {
-        "name": "Fringilla Vigo",
+        "name": "Beauclair Cavalry",
         "id": 1,
         "deck": "toussaint",
         "row": "close",
@@ -7230,7 +7132,7 @@ var ext_to_cards = {
         "quote": "I swear upon the heron you will pay with your own blood."
     },
     "to_beauclair_cavalry_2": {
-        "name": "Fringilla Vigo",
+        "name": "Beauclair Cavalry",
         "id": 2,
         "deck": "toussaint",
         "row": "close",
@@ -7270,7 +7172,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "ranged",
         "strength": "2",
-        "ability": "avenger",
+        "ability": "hunger",
         "filename": "vivienne",
         "count": "1",
         "target": "to_vivienne_oriole",
@@ -7281,7 +7183,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "ranged",
         "strength": "6",
-        "ability": "",
+        "ability": "hero",
         "filename": "vivienne_oriole",
         "count": "1",
         "quote": "Who'd not like to live free as a bird? Well, just ask Vivienne de Tabris."
@@ -7299,7 +7201,7 @@ var ext_to_cards = {
     "to_fisher_king": {
         "name": "Fisher King",
         "deck": "toussaint",
-        "row": "ranged",
+        "row": "siege",
         "strength": "4",
         "ability": "",
         "filename": "fisher_king",
@@ -7436,6 +7338,17 @@ var ext_to_cards = {
         "count": "1",
         "quote": "Its other name is scolopendromorph. Rarely used, as it's hard to say without spitting all over oneself."
     },
+        "to_mysteriousfigure": {
+        "name": "Mysterious Figure",
+        "deck": "toussaint",
+        "row": "agile",
+        "strength": "3",
+        "ability": "hunger",
+        "filename": "mysteriousfigure",
+        "target": "to_unseen_elder",
+        "count": "1",
+        "quote": "A mysterious figure, often seen in the shadows, watching over the city."
+    },
     "to_unseen_elder": {
         "name": "Unseen Elder",
         "deck": "toussaint",
@@ -7471,44 +7384,76 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "close",
         "strength": "8",
-        "ability": "hero avenger",
+        "ability": "hunger",
         "filename": "dettlaff",
         "count": "1",
-        "target": "to_dettlaff_ghastly_beast",
+        "target": "to_vampire",
         "quote": "He did not love like a man, but like an animal. Madly, deeply, unconditionally. Wildly."
     },
-    "to_dettlaff_ghastly_beast": {
-        "name": "Dettlaff: Ghastly Beast",
+    "to_vampire": {
+        "name": "Vampire",
         "deck": "toussaint",
         "row": "close",
         "strength": "8",
         "ability": "scorch_r",
-        "filename": "dettlaff_ghastly_beast",
+        "filename": "vampire",
         "count": "1",
-        "quote": "The gentleman suddenly turned into a ghastly beast and... tore those men to shreds."
+        "quote": "...suddenly turned into a ghastly beast and... tore those men to shreds."
+    },
+    "to_corvo": {
+        "name": "Corvo Bianco",
+        "deck": "toussaint",
+        "row": "melee_siege",
+        "strength": "7",
+        "ability": "hunger",
+        "filename": "corvo",
+        "target": "to_bruxa_corvo_bianco",
+        "count": "1",
+        "quote": "Welcome to my study, folks."
     },
     "to_bruxa_corvo_bianco": {
         "name": "Bruxa of Corvo Bianco",
         "deck": "toussaint",
-        "row": "agile",
-        "strength": "5",
-        "ability": "",
+        "row": "melee_siege",
+        "strength": "2",
+        "ability": "scorch",
         "filename": "bruxa_corvo_bianco",
         "count": "1",
-        "quote": "The vampiress lunged in a blur, unleashing an inhuman shriek."
+        "quote": "It lunged in a blur, unleashing an inhuman shriek."
     },
     "to_orianna": {
-        "name": "Orianna",
+        "name": "Orianna: Bruxa",
         "deck": "toussaint",
         "row": "ranged",
-        "strength": "9",
+        "strength": "8",
         "ability": "hero",
         "filename": "orianna",
         "count": "1",
         "quote": "Lady Orianna's been a blessin' for us... She 'elps the beggarly, supports the arts – why, she even runs a home for them poor orphans!"
     },
+        "to_oriannahuman": {
+        "name": "Orianna",
+        "deck": "toussaint",
+        "row": "ranged",
+        "strength": "5",
+        "ability": "hunger",
+        "filename": "oriannahuman",
+        "target": "to_orianna",
+        "count": "1",
+        "quote": "Normal human-made wine for normal humans. Tastes just as bad as the stuff they make for monsters."
+    },
+    "to_hubert": {
+        "name": "Hubert Rejk",
+        "deck": "toussaint",
+        "row": "close",
+        "strength": "5",
+        "ability": "hero hunger",
+        "filename": "hubert",
+        "count": "1",
+        "quote": "I'm not a monster. I'm a man."
+    },
     "to_lacerate": {
-        "name": "Lacerate",
+        "name": "Hubert Rejk: Katakan",
         "deck": "toussaint",
         "row": "close",
         "strength": "9",
@@ -7571,7 +7516,7 @@ var ext_to_cards = {
         "name": "Benoit",
         "deck": "toussaint",
         "row": "close",
-        "strength": "2",
+        "strength": "3",
         "ability": "medic",
         "filename": "benoit",
         "count": "1",
@@ -7581,7 +7526,7 @@ var ext_to_cards = {
         "name": "Roderick of Dun Tynne",
         "deck": "toussaint",
         "row": "close",
-        "strength": "9",
+        "strength": "7",
         "ability": "spy",
         "filename": "roderick",
         "count": "1",
@@ -7590,12 +7535,11 @@ var ext_to_cards = {
     "to_vampire_invasion": {
         "name": "Vampire Invasion",
         "deck": "toussaint",
-        "row": "close",
+        "row": "ranged",
         "strength": "4",
-        "ability": "avenger",
+        "ability": "scorch",
         "filename": "vampire_invasion",
         "count": "1",
-        "target" : "to_lacerate",
         "quote": "Drinking the blood of the Continent since the Conjunction."
     },
     "to_ducal_guard_1": {
@@ -7626,7 +7570,7 @@ var ext_to_cards = {
         "name": "Bootblack",
         "deck": "toussaint",
         "row": "agile",
-        "strength": "9",
+        "strength": "10",
         "ability": "spy",
         "filename": "bootblack",
         "count": "1",
@@ -7635,9 +7579,9 @@ var ext_to_cards = {
     "to_menagerie_keeper": {
         "name": "Menagerie Keeper",
         "deck": "toussaint",
-        "row": "agile",
+        "row": "any",
         "strength": "2",
-        "ability": "scorch",
+        "ability": "",
         "filename": "menagerie_keeper",
         "count": "1",
         "quote": "If there's one thing Nilfgaardians love more than blood-soaked arena battles, it's blood-soaked arena battles with exotic beasts."
@@ -7646,7 +7590,7 @@ var ext_to_cards = {
         "name": "Barnabas Basil-Foulty",
         "deck": "toussaint",
         "row": "ranged",
-        "strength": "1",
+        "strength": "2",
         "ability": "medic",
         "filename": "barnabas",
         "count": "1",
@@ -7680,7 +7624,7 @@ var ext_to_cards = {
         "name": "Field Medic",
         "deck": "toussaint",
         "row": "ranged",
-        "strength": "2",
+        "strength": "0",
         "ability": "bond",
         "filename": "field_medic",
         "count": "1",
@@ -7691,8 +7635,9 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "ranged",
         "strength": "8",
-        "ability": "spy",
+        "ability": "hunger morale",
         "filename": "seditious_aristocrats",
+        "target": "to_vampire_infestation",
         "count": "1",
         "quote": "They love expensive wine, horse riding, and good old backstabbing."
     },
@@ -7720,7 +7665,7 @@ var ext_to_cards = {
         "name": "Alchemist",
         "deck": "toussaint",
         "row": "siege",
-        "strength": "3",
+        "strength": "1",
         "ability": "scorch",
         "filename": "alchemist",
         "count": "1",
@@ -7731,8 +7676,9 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "siege",
         "strength": "7",
-        "ability": "spy",
+        "ability": "spy hunger",
         "filename": "duchess_informant",
+        "target": "vampire1",
         "count": "1",
         "quote": "Anna Henrietta wakes every morn to the tune of her songbirds."
     }
@@ -7794,14 +7740,14 @@ var ext_lr_cards = {
         "name": "Prince Anséis",
         "deck": "lyria_rivia",
         "row": "close",
-        "strength": "10",
+        "strength": "8",
         "ability": "hero",
         "filename": "prince_anseis",
         "count": "1",
         "quote": "Your presence at this tourney is an affront to my honor!"
     },
     "lr_royal_guard": {
-        "name": "Royal Guard",
+        "name": "Lyrian Royal Guard",
         "deck": "lyria_rivia",
         "row": "close",
         "strength": "9",
@@ -7822,11 +7768,11 @@ var ext_lr_cards = {
         "quote": "Best not laugh at their silly-arse hats. Believe me."
     },
     "lr_knighthood": {
-        "name": "Knighthood",
+        "name": "Meve's Chosen",
         "deck": "lyria_rivia",
         "row": "close",
         "strength": "10",
-        "ability": "",
+        "ability": "guard",
         "filename": "knighthood",
         "count": "1",
         "quote": "Kneel an everyman, arise a knight."
@@ -7838,14 +7784,14 @@ var ext_lr_cards = {
         "strength": "2",
         "ability": "scorch_s",
         "filename": "grenadiers",
-        "count": "3",
+        "count": "2",
         "quote": "For Lyria!"
     },
     "lr_reynard_odo": {
         "name": "Reynard Odo",
         "deck": "lyria_rivia",
-        "row": "close",
-        "strength": "10",
+        "row": "ranged",
+        "strength": "6",
         "ability": "hero morale",
         "filename": "reynard_odo",
         "count": "1",
@@ -7877,11 +7823,45 @@ var ext_lr_cards = {
         "name": "Gascon",
         "deck": "lyria_rivia",
         "row": "ranged",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "5",
+        "ability": "hero muster",
         "filename": "gascon",
+        "target": "lr_gascon_troops",
         "count": "1",
         "quote": "I'm doing what I used to do and they're paying me for it!"
+    },
+    "lr_gascon_light_cavalry": {
+        "name": "Gascon's Light Cavalry",
+        "deck": "lyria_rivia",
+        "row": "close",
+        "strength": "5",
+        "ability": "muster",
+        "filename": "gascon_light_cavalry",
+        "count": "1",
+        "target": "lr_gascon_troops",
+        "quote": "The chase is on!"
+    },
+    "lr_gascon_slinger": {
+        "name": "Gascon's Slingers",
+        "deck": "lyria_rivia",
+        "row": "ranged",
+        "strength": "4",
+        "ability": "muster",
+        "filename": "gascon_slinger",
+        "count": "1",
+        "target": "lr_gascon_troops",
+        "quote": "Bigger they are, easier they are to target."
+    },
+    "lr_gascon_infiltrator": {
+        "name": "Gascon's Infiltrator",
+        "deck": "   ",
+        "row": "ranged",
+        "strength": "4",
+        "ability": "muster",
+        "filename": "gascon_infiltrator",
+        "count": "1",
+        "target": "lr_gascon_troops",
+        "quote": "We got a job to do."
     },
     "lr_pikeman": {
         "name": "Rivian Pikeman",
@@ -7904,21 +7884,11 @@ var ext_lr_cards = {
         "target": "lr_light_cavalry",
         "quote": "Stay calm, everyone. And be alert."
     },
-    "lr_rayla": {
-        "name": "Rayla",
-        "deck": "lyria_rivia",
-        "row": "close",
-        "strength": "10",
-        "ability": "hero",
-        "filename": "rayla",
-        "count": "1",
-        "quote": "Exceptions are a clear road to human blood spilt. All Scoia'tael must die."
-    },
     "lr_wagon": {
         "name": "Wagon",
         "deck": "lyria_rivia",
         "row": "ranged_siege",
-        "strength": "1",
+        "strength": "6",
         "ability": "medic",
         "filename": "wagon",
         "count": "1",
@@ -7928,7 +7898,7 @@ var ext_lr_cards = {
         "name": "Rivian Mounted Archer",
         "deck": "lyria_rivia",
         "row": "ranged_siege",
-        "strength": "1",
+        "strength": "5",
         "ability": "scorch_r",
         "filename": "mounted_archers",
         "count": "1",
@@ -7953,6 +7923,16 @@ var ext_lr_cards = {
         "filename": "isbel_hagge",
         "count": "1",
         "quote": "I promised I would never again use magic to harm others."
+    },
+    "lr_prince_anseis": {
+        "name": "Prince Anseis",
+        "deck": "lyria_rivia",
+        "row": "close",
+        "strength": "7",
+        "ability": "hero morale",
+        "filename": "prince_anseis",
+        "count": "1",
+        "quote": "Come forth, coward, and your very own doom confront!"
     },
     "lr_hajduk": {
         "name": "Lyrian Hajduk",
@@ -8015,11 +7995,11 @@ var ext_lr_cards = {
         "quote": "I've made my choice. Time you made yours."
     },
     "lr_piercing_missile": {
-        "name": "Piercing Missile",
+        "name": "Piercing Missile Battery",
         "deck": "lyria_rivia",
         "row": "ranged",
         "strength": "3",
-        "ability": "scorch_c",
+        "ability": "scorch_s",
         "filename": "piercing_missile",
         "count": "1",
         "quote": "There's no armor that can't be pierced."
@@ -8028,7 +8008,7 @@ var ext_lr_cards = {
         "name": "Eavesdrop",
         "deck": "lyria_rivia",
         "row": "ranged",
-        "strength": "6",
+        "strength": "10",
         "ability": "spy",
         "filename": "eavesdrop",
         "count": "1",
@@ -8068,7 +8048,7 @@ var ext_lr_cards = {
     "lr_forager": {
         "name": "Forager",
         "deck": "lyria_rivia",
-        "row": "ranged",
+        "row": "siege",
         "strength": "5",
         "ability": "",
         "filename": "forager",
@@ -8080,7 +8060,7 @@ var ext_lr_cards = {
         "deck": "lyria_rivia",
         "row": "ranged",
         "strength": "4",
-        "ability": "scorch",
+        "ability": "scorch_c",
         "filename": "sapper",
         "count": "2",
         "quote": "First Nilfgaardian who tried to slip 'cross our line was a right sneaky bastard."
@@ -8089,7 +8069,7 @@ var ext_lr_cards = {
         "name": "Prince Villem",
         "deck": "lyria_rivia",
         "row": "siege",
-        "strength": "8",
+        "strength": "9",
         "ability": "hero",
         "filename": "villem",
         "count": "1",
@@ -8099,7 +8079,7 @@ var ext_lr_cards = {
         "name": "Scout",
         "deck": "lyria_rivia",
         "row": "siege",
-        "strength": "2",
+        "strength": "10",
         "ability": "spy",
         "filename": "scout",
         "count": "1",
@@ -8126,7 +8106,7 @@ var ext_lr_cards = {
         "quote": "Our emblem? A black eagle. Fate of our foes? Pure misery."
     },
     "lr_scytheman_1": {
-        "name": "Lyrian Scytheman",
+        "name": "Lyrian Peasant",
         "deck": "lyria_rivia",
         "row": "close",
         "strength": "3",
@@ -8136,7 +8116,7 @@ var ext_lr_cards = {
         "quote": "Our folk they feed, and our foes they bleed."
     },
     "lr_scytheman_2": {
-        "name": "Lyrian Scytheman",
+        "name": "Lyrian Peasant",
         "deck": "lyria_rivia",
         "row": "ranged",
         "strength": "3",
@@ -8146,7 +8126,7 @@ var ext_lr_cards = {
         "quote": "Our folk they feed, and our foes they bleed."
     },
     "lr_scytheman_3": {
-        "name": "Lyrian Scytheman",
+        "name": "Lyrian Peasant",
         "deck": "lyria_rivia",
         "row": "siege",
         "strength": "3",
@@ -8159,7 +8139,7 @@ var ext_lr_cards = {
         "name": "Count Caldwell",
         "deck": "lyria_rivia",
         "row": "ranged",
-        "strength": "9",
+        "strength": "6",
         "ability": "hero spy",
         "filename": "caldwell",
         "count": "1",
@@ -8179,8 +8159,8 @@ var ext_lr_cards = {
         "name": "Pyrokineticist",
         "deck": "lyria_rivia",
         "row": "ranged",
-        "strength": "5",
-        "ability": "scorch_c",
+        "strength": "4",
+        "ability": "scorch",
         "filename": "pyrokinesis",
         "count": "1",
         "quote": "I really hope that's boot leather I smell burning..."
@@ -8189,7 +8169,7 @@ var ext_lr_cards = {
         "name": "Carroballista",
         "deck": "lyria_rivia",
         "row": "siege",
-        "strength": "10",
+        "strength": "8",
         "ability": "",
         "filename": "carroballista",
         "count": "1",
@@ -8209,7 +8189,7 @@ var ext_lr_cards = {
         "name": "Spearwall",
         "deck": "lyria_rivia",
         "row": "close",
-        "strength": "2",
+        "strength": "1",
         "ability": "morale guard",
         "filename": "spearwall",
         "count": "1",
@@ -8219,8 +8199,8 @@ var ext_lr_cards = {
         "name": "Siege",
         "deck": "lyria_rivia",
         "row": "siege",
-        "strength": "6",
-        "ability": "scorch",
+        "strength": "12",
+        "ability": "",
         "filename": "siege",
         "count": "1",
         "quote": "There's no fortress that can't be taken. There are just fortresses not worth taking."
@@ -8240,7 +8220,7 @@ var ext_lr_cards = {
         "deck": "lyria_rivia",
         "row": "close",
         "strength": "4",
-        "ability": "morale",
+        "ability": "shield_c",
         "filename": "blacksmith",
         "count": "1",
         "quote": "Somethin' from nothin'... my speciality."
@@ -8259,8 +8239,8 @@ var ext_lr_cards = {
         "name": "Queen Meve",
         "deck": "lyria_rivia",
         "row": "close",
-        "strength": "10",
-        "ability": "hero morale",
+        "strength": "13",
+        "ability": "hero",
         "filename": "queen_meve",
         "count": "1",
         "quote": "It's war you want? Then war you shall have! For Lyria and Rivia! For the North!"
@@ -8312,8 +8292,8 @@ var ext_sy_cards = {
         "name": "Doadric Leumaerts",
         "deck": "syndicate",
         "row": "siege",
-        "strength": "7",
-        "ability": "conspiracy hero",
+        "strength": "5",
+        "ability": "hero spy",
         "filename": "doadrick",
         "count": "1",
         "quote": "A bird in the hand is worth two in the bush. Or so they say."
@@ -8383,7 +8363,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "8",
-        "ability": "hero",
+        "ability": "",
         "filename": "bare_knuckle_brawler",
         "count": "1",
         "quote": "Is tha' all that's left of 'im? Think I'm goin' tae boak..."
@@ -8401,7 +8381,7 @@ var ext_sy_cards = {
     "sy_witch_hunter": {
         "name": "Witch Hunter",
         "deck": "syndicate",
-        "row": "close",
+        "row": "melee_siege",
         "strength": "2",
         "ability": "witch_hunt",
         "filename": "witch_hunter",
@@ -8443,7 +8423,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "10",
-        "ability": "hero",
+        "ability": "guard",
         "filename": "greater_brothers",
         "count": "1",
         "quote": "A battering ram? No need, we'll handle it another way."
@@ -8524,22 +8504,12 @@ var ext_sy_cards = {
         "count": "1",
         "quote": "Fire cleanses."
     },
-    "sy_imke": {
-        "name": "Imke",
-        "deck": "syndicate",
-        "row": "ranged",
-        "strength": "5",
-        "ability": "spy",
-        "filename": "imke",
-        "count": "1",
-        "quote": "No sooner had she caught Gudrun's attention than sought to exploit it."
-    },
     "sy_professor": {
         "name": "Professor",
         "deck": "syndicate",
         "row": "ranged",
         "strength": "8",
-        "ability": "hero",
+        "ability": "hero execute",
         "filename": "professor",
         "count": "1",
         "quote": "I fear our conventicle may end disastrously for you."
@@ -8618,23 +8588,11 @@ var ext_sy_cards = {
         "name": "Fisstech Trafficker",
         "deck": "syndicate",
         "row": "ranged",
-        "strength": "2",
-        "ability": "avenger",
+        "strength": "5",
+        "ability": "spy horn",
         "filename": "fisstech_trafficker",
         "count": "1",
-        "target": "sy_fisstech",
         "quote": "Addictive? Why, not at all! I've quit several times before!"
-    },
-    "sy_fisstech": {
-        "name": "Fisstech",
-        "deck": "syndicate",
-        "row": "siege",
-        "strength": "8",
-        "ability": "spy",
-        "filename": "fisstech",
-        "count": "1",
-        "target": "sy_fisstech",
-        "quote": "Large pupils, chattering teeth, a mad cackle... Aye, that's fisstech for ye."
     },
     "sy_savolla": {
         "name": "Savolla",
@@ -8796,7 +8754,7 @@ var ext_sy_cards = {
         "name": "Dudu Biberveldt",
         "deck": "syndicate",
         "row": "ranged",
-        "strength": "1",
+        "strength": "9",
         "ability": "spy",
         "filename": "dudu_biberveldt",
         "count": "1",
@@ -8846,7 +8804,7 @@ var ext_sy_cards = {
         "name": "Igor the Hook",
         "deck": "syndicate",
         "row": "siege",
-        "strength": "10",
+        "strength": "9",
         "ability": "hero",
         "filename": "igor_hook",
         "count": "1",
@@ -8867,7 +8825,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "5",
-        "ability": "conspiracy",
+        "ability": "",
         "filename": "sausage_maker",
         "count": "1",
         "quote": "Body disposal and sausage makin', that's what I do."
@@ -9021,8 +8979,8 @@ var ext_sy_cards = {
         "name": "Sewer Raider",
         "deck": "syndicate",
         "row": "ranged",
-        "strength": "8",
-        "ability": "spy",
+        "strength": "2",
+        "ability": "scorch_c",
         "filename": "sewer_raider",
         "count": "1",
         "quote": "Built for movin' shite, but it moves coin just as well."
@@ -9032,7 +8990,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "siege",
         "strength": "2",
-        "ability": "execute",
+        "ability": "hero execute",
         "filename": "inquisitor_helveed",
         "count": "1",
         "quote": "When mercy fails, fire prevails."
@@ -9098,10 +9056,10 @@ var ext_sy_cards = {
         "quote": "Inseparable. Invincible. Irresponsible."
     },
     "sy_bincy_blumerholdt": {
-        "name": "Bincy_Blumerholdt",
+        "name": "Bincy Blumerholdt",
         "deck": "syndicate",
         "row": "close",
-        "strength": "7",
+        "strength": "9",
         "ability": "spy",
         "filename": "bincy_blumerholdt",
         "count": "1",
@@ -9112,10 +9070,10 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "5",
-        "ability": "",
+        "ability": "scorch",
         "filename": "bounty_hunter",
         "count": "1",
-        "quote": ""
+        "quote": "Price? Price is what you pay. Value is what you get."
     },
     "sy_freak_show_1": {
         "name": "Freak Show",
@@ -9204,10 +9162,9 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "3",
-        "ability": "avenger",
+        "ability": "",
         "filename": "beggar",
         "count": "1",
-        "target": "sy_beggar",
         "quote": "Say what you will about his technique, I think he captured your good side."
     },
     "sy_payroll_specialist": {
@@ -9219,16 +9176,6 @@ var ext_sy_cards = {
         "filename": "payroll_specialist",
         "count": "1",
         "quote": "Guards in Novigrad work for very little money, yet live like kings. Just another paradox of the Free City..."
-    },
-    "sy_arena_endrega": {
-        "name": "Arena Endrega",
-        "deck": "syndicate",
-        "row": "close",
-        "strength": "6",
-        "ability": "",
-        "filename": "arena_endrega",
-        "count": "1",
-        "quote": "Strong as an ox, dumb as a box."
     },
     "sy_arena_ghoul": {
         "name": "Arena Ghoul",
@@ -9273,9 +9220,9 @@ var ext_sy_cards = {
     "sy_lieutenant_herst": {
         "name": "Lieutenant von Herst",
         "deck": "syndicate",
-        "row": "close",
+        "row": "agile",
         "strength": "5",
-        "ability": "conspiracy",
+        "ability": "",
         "filename": "lieutenant_herst",
         "count": "1",
         "quote": "The fall of the Order wasn’t so hard for him like for the others."
@@ -9466,11 +9413,11 @@ var ext_ze_cards = {
         "quote": "Fierce deity of fire and warm sky, it is believed to be the polar opposite of Baal-Zebuth."
     },
     "ze_villentretenmerth": {
-        "name": "Villentretenmerth",
+        "name": "Villentretenmerth: Unleashed",
         "deck": "zerrikania",
         "row": "close",
         "strength": "9",
-        "ability": "whorshipped",
+        "ability": "hero worshipped",
         "filename": "villentretenmerth",
         "count": "1",
         "quote": "Also calls himself Borkh Three Jackdaws... he's not the best at names."
@@ -9479,8 +9426,8 @@ var ext_ze_cards = {
         "name": "Myrgtabrakke",
         "deck": "zerrikania",
         "row": "any",
-        "strength": "8",
-        "ability": "whorshipped medic",
+        "strength": "6",
+        "ability": "hero worshipped",
         "filename": "myrgtabrakke",
         "count": "1",
         "quote": "Never get between a mother dragon and her young."
@@ -9490,7 +9437,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "close",
         "strength": "10",
-        "ability": "hero",
+        "ability": "",
         "filename": "merineaevelth",
         "count": "1",
         "quote": "Queen of Zerrikania and founder of the Faithel."
@@ -9499,14 +9446,24 @@ var ext_ze_cards = {
         "name": "Saulrenith",
         "deck": "zerrikania",
         "row": "ranged",
-        "strength": "8",
+        "strength": "2",
         "ability": "hero medic",
         "filename": "saulrenith",
         "count": "1",
         "quote": "Impulsive and violent - not the mixture of traits one would trifle with."
     },
+    "ze_dracoturtle": {
+        "name": "Dracoturtle",
+        "deck": "zerrikania",
+        "row": "close",
+        "strength": "8",
+        "ability": "",
+        "filename": "dracoturtle",
+        "count": "1",
+        "quote": "The dragon's shell is as hard as steel, and its scales are as sharp as knives."
+    },
     "ze_drone": {
-        "name": "Kikimore Drone",
+        "name": "Kikimora Hive",
         "deck": "zerrikania",
         "row": "agile",
         "strength": "2",
@@ -9520,7 +9477,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "close",
         "strength": "5",
-        "ability": "muster whorshipper",
+        "ability": "muster worshipper",
         "filename": "tea_vea_1",
         "count": "1",
         "target": "wu_tea_vea",
@@ -9531,7 +9488,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "close",
         "strength": "5",
-        "ability": "muster whorshipper",
+        "ability": "muster worshipper",
         "filename": "tea_vea_2",
         "count": "1",
         "target": "wu_tea_vea",
@@ -9541,8 +9498,8 @@ var ext_ze_cards = {
         "name": "Faithel",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "4",
-        "ability": "whorshipper",
+        "strength": "1",
+        "ability": "worshipper",
         "filename": "faithel_1",
         "count": "1",
         "quote": "Their goal is to find a dragon, honour it and swear their allegiance."
@@ -9551,8 +9508,8 @@ var ext_ze_cards = {
         "name": "Faithel",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "4",
-        "ability": "whorshipper",
+        "strength": "1",
+        "ability": "worshipper",
         "filename": "faithel_2",
         "count": "1",
         "quote": "Their goal is to find a dragon, honour it and swear their allegiance."
@@ -9561,8 +9518,8 @@ var ext_ze_cards = {
         "name": "Faithel",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "4",
-        "ability": "whorshipper",
+        "strength": "1",
+        "ability": "worshipper",
         "filename": "faithel_3",
         "count": "1",
         "quote": "Their goal is to find a dragon, honour it and swear their allegiance."
@@ -9570,7 +9527,7 @@ var ext_ze_cards = {
     "ze_myrgot": {
         "name": "Myrgot",
         "deck": "zerrikania",
-        "row": "close",
+        "row": "ranged_siege",
         "strength": "6",
         "ability": "",
         "filename": "myrgot",
@@ -9582,7 +9539,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "any",
         "strength": "11",
-        "ability": "hero",
+        "ability": "hero worshipped",
         "filename": "lilit_niya",
         "count": "1",
         "quote": "The Black Sun was to announce the imminent return of Lilit, still honoured in the East under the name of Niya, and the extermination of the human race."
@@ -9590,9 +9547,9 @@ var ext_ze_cards = {
     "ze_ocvist": {
         "name": "Ocvist",
         "deck": "zerrikania",
-        "row": "ranged",
+        "row": "agile",
         "strength": "7",
-        "ability": "whorshipped",
+        "ability": "hero worshipped",
         "filename": "ocvist",
         "count": "1",
         "quote": "The Master of Quartz Mountain, the Destroyer, Trajan's Slayer. In his free time, he likes long walks and candlelight dinners."
@@ -9601,8 +9558,8 @@ var ext_ze_cards = {
         "name": "Keltullis",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "6",
-        "ability": "whorshipped scorch_c",
+        "strength": "4",
+        "ability": "hero worshipped scorch_c",
         "filename": "keltullis",
         "count": "1",
         "quote": "They fought 'er for near a century and they realized she weren't goin' nowheres, so... they cut a deal.She dinnae bother 'em, they give 'er what she needs."
@@ -9610,9 +9567,9 @@ var ext_ze_cards = {
     "ze_ostreverg": {
         "name": "Ostreverg",
         "deck": "zerrikania",
-        "row": "siege",
+        "row": "melee_siege",
         "strength": "7",
-        "ability": "whorshipped",
+        "ability": "hero worshipped",
         "filename": "ostreverg",
         "count": "1",
         "quote": "A long time ago the dragon Ostreverg ravaged and plundered the sacred Temple of Freya on the Skellige Islands."
@@ -9622,7 +9579,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "ranged",
         "strength": "8",
-        "ability": "whorshipped",
+        "ability": "hero worshipped",
         "filename": "germinus",
         "count": "1",
         "quote": "The dragon valued its treasures above all else, unleashing its wrath on anything threatening it."
@@ -9641,7 +9598,7 @@ var ext_ze_cards = {
         "name": "Bart",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "4",
+        "strength": "2",
         "ability": "morale",
         "filename": "bart",
         "count": "1",
@@ -9651,7 +9608,7 @@ var ext_ze_cards = {
         "name": "Venomous Basilisk",
         "deck": "zerrikania",
         "row": "ranged",
-        "strength": "6",
+        "strength": "1",
         "ability": "scorch_c",
         "filename": "venomous_basilisk",
         "count": "1",
@@ -9661,8 +9618,8 @@ var ext_ze_cards = {
         "name": "Giant Spotted Spider",
         "deck": "zerrikania",
         "row": "ranged",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "7",
+        "ability": "",
         "filename": "giant_spotted_spider",
         "count": "1",
         "quote": "Every beast roaming the forest is its prey, even elephants."
@@ -9675,7 +9632,7 @@ var ext_ze_cards = {
         "ability": "",
         "filename": "emetouka",
         "count": "1",
-        "quote": "Their horn have immense value, mostly because many died trying to hunt them."
+        "quote": "Their horns have immense value, mostly because many died trying to hunt them."
     },
     "ze_leopard_1": {
         "name": "Leopard",
@@ -9703,7 +9660,7 @@ var ext_ze_cards = {
         "name": "Tiger",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "5",
+        "strength": "3",
         "ability": "bond",
         "filename": "tiger_1",
         "count": "1",
@@ -9714,7 +9671,7 @@ var ext_ze_cards = {
         "name": "Tiger",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "5",
+        "strength": "3",
         "ability": "bond",
         "filename": "tiger_2",
         "count": "1",
@@ -9724,8 +9681,8 @@ var ext_ze_cards = {
     "ze_jackals": {
         "name": "Jackals",
         "deck": "zerrikania",
-        "row": "ranged",
-        "strength": "3",
+        "row": "agile",
+        "strength": "2",
         "ability": "muster",
         "filename": "jackals",
         "count": "3",
@@ -9735,8 +9692,8 @@ var ext_ze_cards = {
     "ze_boa": {
         "name": "Boa",
         "deck": "zerrikania",
-        "row": "close",
-        "strength": "4",
+        "row": "ranged",
+        "strength": "3",
         "ability": "",
         "filename": "boa",
         "count": "1",
@@ -9745,8 +9702,8 @@ var ext_ze_cards = {
     "ze_python": {
         "name": "Python",
         "deck": "zerrikania",
-        "row": "close",
-        "strength": "4",
+        "row": "ranged_siege",
+        "strength": "3",
         "ability": "",
         "filename": "python",
         "count": "1",
@@ -9757,27 +9714,27 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "close",
         "strength": "4",
-        "ability": "",
+        "ability": "scorch_c",
         "filename": "viper",
         "count": "1",
         "quote": "'Had to flee me home, some damn viper had made it its den.'"
     },
     "ze_hyenas": {
-        "name": "Hyenas",
+        "name": "Hyena Pack",
         "deck": "zerrikania",
-        "row": "close",
-        "strength": "5",
+        "row": "any",
+        "strength": "3",
         "ability": "",
         "filename": "hyenas",
         "count": "1",
-        "quote": "'Those ploughin' wretches always hunt in packs. They killed all my hens and I couldn't do nothin'.'"
+        "quote": "'doze ploughin' wretches always hunt in packs. They killed all my hens and I couldn't do nothin'.'"
     },
     "ze_collective_trance": {
         "name": "Collective Trance",
         "deck": "zerrikania",
         "row": "siege",
-        "strength": "4",
-        "ability": "medic",
+        "strength": "1",
+        "ability": "inspire",
         "filename": "collective_trance",
         "count": "1",
         "quote": "Zerrikanians have this old tradition to join together, share a strong psychedelic decoction and escape the harsh reality."
@@ -9842,7 +9799,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "ranged",
         "strength": "3",
-        "ability": "scorch",
+        "ability": "scorch_c",
         "filename": "bomb_maker_1",
         "count": "1",
         "quote": "Business of Zerrikanian bombs is... booming."
@@ -9852,7 +9809,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "ranged",
         "strength": "3",
-        "ability": "scorch",
+        "ability": "scorch_c",
         "filename": "bomb_maker_2",
         "count": "1",
         "quote": "Business of Zerrikanian bombs is... booming."
@@ -9881,7 +9838,7 @@ var ext_ze_cards = {
         "name": "Free Warrior",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "5",
+        "strength": "4",
         "ability": "inspire",
         "filename": "free_warrior_2",
         "count": "1",
@@ -9891,7 +9848,7 @@ var ext_ze_cards = {
         "name": "Free Warrior",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "8",
+        "strength": "4",
         "ability": "inspire",
         "filename": "free_warrior_3",
         "count": "1",
@@ -9911,7 +9868,7 @@ var ext_ze_cards = {
         "name": "Free Warrior",
         "deck": "zerrikania",
         "row": "ranged",
-        "strength": "7",
+        "strength": "4",
         "ability": "inspire",
         "filename": "free_warrior_5",
         "count": "1",
@@ -9921,17 +9878,17 @@ var ext_ze_cards = {
         "name": "First Faithel Kia",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "9",
-        "ability": "hero whorshipper",
+        "strength": "3",
+        "ability": "hero worshipper",
         "filename": "first_faithel_kia",
         "count": "1",
         "quote": "Once a close friend of Merineaevelth, she was the first tasked to find and protect the devine dragons of the world."
     },
     "ze_apucunpture_healer": {
-        "name": "Apucunpture Healer",
+        "name": "Acupuncture Healer",
         "deck": "zerrikania",
         "row": "siege",
-        "strength": "6",
+        "strength": "0",
         "ability": "medic",
         "filename": "apucunpture_healer",
         "count": "1",
@@ -9941,7 +9898,7 @@ var ext_ze_cards = {
         "name": "Canyon Herbalist",
         "deck": "zerrikania",
         "row": "ranged",
-        "strength": "5",
+        "strength": "2",
         "ability": "morale",
         "filename": "canyon_herbalist",
         "count": "1",
@@ -9951,8 +9908,8 @@ var ext_ze_cards = {
         "name": "High Priestess Nia",
         "deck": "zerrikania",
         "row": "ranged",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "3",
+        "ability": "hero worshipper",
         "filename": "high_priestess_nia",
         "count": "1",
         "quote": "Battles have been fought in her name. Each bloodier than the last."
@@ -9961,8 +9918,8 @@ var ext_ze_cards = {
         "name": "Dragon Priestess Lua",
         "deck": "zerrikania",
         "row": "siege",
-        "strength": "8",
-        "ability": "hero whorshipper",
+        "strength": "3",
+        "ability": "hero worshipper",
         "filename": "dragon_priestess_lua",
         "count": "1",
         "quote": "Mastering the arcana of dragon magic is no small feat."
@@ -9971,7 +9928,7 @@ var ext_ze_cards = {
         "name": "Rainforest Pathfinder",
         "deck": "zerrikania",
         "row": "ranged",
-        "strength": "8",
+        "strength": "9",
         "ability": "spy",
         "filename": "rainforest_pathfinder",
         "count": "1",
@@ -10004,7 +9961,7 @@ var ext_ze_cards = {
     "ze_war_elephant": {
         "name": "War Elephant",
         "deck": "zerrikania",
-        "row": "close",
+        "row": "agile",
         "strength": "9",
         "ability": "",
         "filename": "war_elephant",
@@ -10015,8 +9972,8 @@ var ext_ze_cards = {
         "name": "Behemoth",
         "deck": "zerrikania",
         "row": "close",
-        "strength": "10",
-        "ability": "hero",
+        "strength": "13",
+        "ability": "",
         "filename": "behemoth",
         "count": "1",
         "quote": "A beast so huge its turd piles were big enough to provide housing for whole families. If it wasn't for the stench that is."
@@ -10044,9 +10001,9 @@ var ext_ze_cards = {
     "ze_yellow_witch_korath": {
         "name": "Yellow Witch Korath",
         "deck": "zerrikania",
-        "row": "ranged",
-        "strength": "10",
-        "ability": "hero scorch",
+        "row": "melee_siege",
+        "strength": "2",
+        "ability": "",
         "filename": "yellow_witch_korath",
         "count": "1",
         "quote": "A man once forgot her full title is mistakenly called her a 'sand witch'. Now is lacquered skull decorates her staff."
@@ -10056,20 +10013,40 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "close",
         "strength": "11",
-        "ability": "hero",
+        "ability": "",
         "filename": "sandworm",
         "count": "1",
         "quote": "Despite its massive size, many sense it coming only too late."
     },
-    "ze_endrega": {
+    "ze_giantscorpion": {
         "name": "Giant Scorpion",
         "deck": "zerrikania",
         "row": "close",
         "strength": "4",
         "ability": "",
-        "filename": "endrega",
-        "count": "3",
+        "filename": "giantscorpion",
+        "count": "2",
         "quote": "The nest! Take out the nest, or the bastards'll just keep coming!"
+    },
+    "ze_arena_endrega": {
+        "name": "Captive Endrega",
+        "deck": "zerrikania",
+        "row": "close",
+        "strength": "3",
+        "ability": "",
+        "filename": "arena_endrega",
+        "count": "2",
+        "quote": "Strong as an ox, dumb as a box."
+    },
+    "ze_ravashkur": {
+        "name": "Ravashkur",
+        "deck": "zerrikania",
+        "row": "ranged",
+        "strength": "5",
+        "ability": "hero worshipped scorch_r",
+        "filename": "ravashkur",
+        "count": "1",
+        "quote": "The Ravashkur is a legendary creature of the Zerrikanian jungle. It is said to be a mix of snake and spider, and is known for its venomous bite."
     },
     "spe_giant_spider_web": {
         "name": "Giant Spider Webs",
@@ -10078,7 +10055,7 @@ var ext_ze_cards = {
         "strength": "",
         "ability": "frost",
         "filename": "giant_spider_web",
-        "count": "3",
+        "count": "1",
         "quote": "Zerrikania hosts spiders so large they can trap elephants in their webs."
     },
     "spe_tse_tse_flies": {
@@ -10088,7 +10065,7 @@ var ext_ze_cards = {
         "strength": "",
         "ability": "fog",
         "filename": "tse_tse_flies",
-        "count": "3",
+        "count": "1",
         "quote": "The flies are especially repulsive, laying their eggs in the human body, the resulting larvae maturing within the host's head."
     },
     "spe_dragon_wrath": {
@@ -10098,7 +10075,7 @@ var ext_ze_cards = {
         "strength": "",
         "ability": "rain",
         "filename": "dragon_wrath",
-        "count": "3",
+        "count": "1",
         "quote": "Blackened skies from wisps of smoke, the greenery's vanished in a fiery stroke."
     },
 };
@@ -10245,7 +10222,7 @@ var ext_ofir_cards = {
         "strength": "4",
         "ability": "trade",
         "filename": "merchant",
-        "count": "3",
+        "count": "4",
         "quote": "Every coin tells a story, and I'm its author."
     },
     "ofir_rabble": {
@@ -10276,7 +10253,7 @@ var ext_ofir_cards = {
         "ability": "",
         "filename": "raider",
         "count": "2",
-        "quote": "They strike from the dunes — and vanish like mirages."
+        "quote": "They strike from the dunes and vanish like mirages."
     },
     "ofir_runestone": {
         "name": "Runestone",
@@ -10285,6 +10262,7 @@ var ext_ofir_cards = {
         "strength": "0",
         "ability": "morale",
         "filename": "runestone",
+        "target": "ofir_runestone",
         "count": "2",
         "quote": "Shiny."
     },
@@ -10325,13 +10303,13 @@ var ext_ofir_cards = {
         "strength": "6",
         "ability": "",
         "filename": "scribe",
-        "count": "2",
+        "count": "3",
         "quote": "The scrolls are written in blood, and the blood is written in sand."
     },
     "ofir_saer_quan": {
         "name": "Saer Quan",
         "deck": "ofir",
-        "row": "siege",
+        "row": "melee_siege",
         "strength": "7",
         "ability": "hero",
         "filename": "saer_quan",
@@ -10382,7 +10360,7 @@ var ext_ofir_cards = {
         "name": "Saul de Navarette",
         "deck": "ofir",
         "row": "siege",
-        "strength": "8",
+        "strength": "6",
         "ability": "hero",
         "filename": "saul",
         "count": "1",
@@ -10392,10 +10370,11 @@ var ext_ofir_cards = {
         "name": "Runewright",
         "deck": "ofir",
         "row": "close",
-        "strength": "4",
-        "ability": "",
+        "strength": "3",
+        "ability": "muster",
         "filename": "runewright",
-        "count": "3",
+        "target": "ofir_runestone",
+        "count": "2",
         "quote": "He’ll sell you power, but the price isn’t always gold."
     },
     "ofir_dulla": {
@@ -10403,7 +10382,7 @@ var ext_ofir_cards = {
         "deck": "ofir",
         "row": "agile",
         "strength": "5",
-        "ability": "hero bribe",
+        "ability": "hero",
         "filename": "dulla",
         "count": "1",
         "quote": "My wares are priceless. Luckily for you, I accept contracts as payment."
@@ -10423,7 +10402,7 @@ var ext_ofir_cards = {
         "deck": "ofir",
         "row": "ranged",
         "strength": "3",
-        "ability": "bribe",
+        "ability": "morale",
         "filename": "courtesan",
         "count": "2",
         "quote": "Loose women, loose lips, loose coin."

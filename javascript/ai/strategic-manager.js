@@ -59,7 +59,9 @@ class StrategicManager {
      * Second round strategy - adapt based on first round outcome
      */
     getRound2Strategy(state, cardsInHand, opponentCards) {
-        if (state.wonRound1) {
+        // In round 2, health === 2 means we won round 1, health === 1 means we lost round 1
+        const wonRound1 = this.player.health === 2;
+        if (wonRound1) {
             return {
                 type: 'CONTROL',
                 priority: 'MAINTAIN_LEAD',
@@ -117,6 +119,12 @@ class StrategicManager {
         }
 
         // Strategic passing based on game state
+        // NEVER pass in round 2 if we lost round 1 - we need to win this round!
+        const round = game.roundCount;
+        if (round === 2 && this.player.health === 1) {
+            return false; // Lost round 1, must fight for round 2
+        }
+
         if (strategy.type === 'DEFENSIVE' && state.opponentAdvantage > 20) {
             return true;
         }

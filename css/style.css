@@ -1001,6 +1001,10 @@ div.abs {
 	background-image:url("../images/icons/overlay_rain.png")
 }
 
+.nightfall {
+	background-image:url("../images/icons/overlay_nightfall.png")
+}
+
 #hand-row {
 	top:8%;
 	height:91%;
@@ -1202,6 +1206,34 @@ div.abs {
 #card-bank-title {
 	top:7.45%;
 	left:8.5%
+}
+
+#card-search {
+	position:absolute;
+	top:5%;
+	left:5%;
+	width:25%;
+	height:3%;
+	padding:0.5% 1%;
+	font-size:1vw;
+	color:#000;
+	background-color:rgba(255, 255, 255, 0.9);
+	border:0.1vw solid #959595;
+	border-radius:0.3vw;
+	box-shadow:0 0 0.5vw rgba(0, 0, 0, 0.3);
+	z-index:10;
+	outline:none;
+	transition:border-color 0.3s, box-shadow 0.3s;
+}
+
+#card-search:focus {
+	border-color:goldenrod;
+	box-shadow:0 0 0.5vw goldenrod;
+	background-color:#fff;
+}
+
+#card-search::placeholder {
+	color:#959595;
 }
 
 #card-deck-title {

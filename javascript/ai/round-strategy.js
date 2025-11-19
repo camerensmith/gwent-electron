@@ -49,7 +49,8 @@ class RoundStrategy {
      * Second round strategy - adapt based on first round outcome
      */
     getRound2Strategy() {
-        const wonRound1 = this.player.winning;
+        // In round 2, health === 2 means we won round 1, health === 1 means we lost round 1
+        const wonRound1 = this.player.health === 2;
         const cardAdvantage = this.player.hand.cards.length - this.player.opponent().hand.cards.length;
         
         if (wonRound1) {
@@ -190,7 +191,9 @@ class RoundStrategy {
             return cardAdvantage > 1;
         } else if (roundNumber === 2) {
             // Second round: commit if we lost first round or have significant advantage
-            if (!this.player.winning) return true;
+            // In round 2, health === 1 means we lost round 1
+            const lostRound1 = this.player.health === 1;
+            if (lostRound1) return true; // Must commit if we lost round 1
             const powerAdvantage = this.player.total - this.player.opponent().total;
             return powerAdvantage > 20;
         } else {
@@ -271,8 +274,10 @@ class RoundStrategy {
                 return true;
             }
         } else if (roundNumber === 2) {
-            // Second round: pass if we won first round and have control
-            if (strategy.name === 'MAINTAIN_LEAD' && powerDifference < -15) {
+            // Second round: only pass if we won first round and have control
+            // NEVER pass if we lost round 1 - we need to win this round!
+            const wonRound1 = this.player.health === 2;
+            if (wonRound1 && strategy.name === 'MAINTAIN_LEAD' && powerDifference < -15) {
                 return true;
             }
         } else if (roundNumber === 3) {

@@ -395,6 +395,11 @@ class ControllerAI {
 				row = pair.r;
 			}
 		}
+		// CRITICAL: Decoy requires a target - cannot be played without swapping
+		if (!targ) {
+			console.log("⚠️ AI cannot play Decoy - no valid target found");
+			return; // Don't play decoy if there's no target
+		}
 		if (targ) {
 			for (let i = 0; !row; ++i) {
 				if (board.row[i].cards.indexOf(targ) !== -1) {
@@ -404,13 +409,7 @@ class ControllerAI {
 			}
 			targ.decoyTarget = true;
 			setTimeout(() => board.toHand(targ, row), 1000);
-		} else row = ["close", "agile", "any"].includes(card.row) ?
-			board.getRow(card, "close", this.player)
-		:
-			card.row === "ranged" ?
-				board.getRow(card, "ranged", this.player)
-			:
-				board.getRow(card, "siege", this.player);
+		}
 		await this.player.playCardToRow(card, row);
 	}
 
@@ -866,7 +865,7 @@ class ControllerAI {
 				}
 				return card.power;
 			}
-			if (abi.includes("toussaint_wine")) {
+			if (abi.includes("toussaint_wine") || abi.includes("wine")) {
 				let units = card.holder.getAllRowCards().concat(card.holder.hand.cards).filter(c => c.isUnit()).filter(c => !c.abilities.includes("spy"));
 				let rowStats = { "close": 0, "ranged": 0, "siege": 0, "agile": 0 };
 				units.forEach(c => {
@@ -927,7 +926,8 @@ class ControllerAI {
 				break;
 			case "avenger":
 			case "avenger_kambi":
-			case "whorshipper":
+			case "worshipper":
+			case "hunger":
 				return score + ability_dict[abi.at(-1)].weight(card);
 		}
 		// Apply defensive considerations (playing around opponent abilities)
@@ -1098,7 +1098,7 @@ class Player {
 		this.factionAbilityUses = 0;
 		this.effects = {
 			"witchers": {},
-			"whorshippers": 0,
+			"worshippers": 0,
 			"inspire": 0
 		};
 		let factionAbility = factions[this.deck.faction];
@@ -1117,7 +1117,7 @@ class Player {
 	roundStartReset() {
 		this.effects = {
 			"witchers": {},
-			"whorshippers": 0,
+			"worshippers": 0,
 			"inspire": 0
 		};
 	}
@@ -1132,7 +1132,7 @@ class Player {
 		document.getElementById("score-total-" + this.tag).children[0].innerHTML = this.total;
 		board.updateLeader();
 		
-		// Trade ability: When opponent's total reaches 12, 24, or 36, they draw 1 card
+		// Trade ability: When opponent's total reaches 12, 24, or 36, the player with Trade cards draws 1 card from their deck
 		const opponent = this.opponent();
 		const thresholds = [12, 24, 36];
 		if (!game.tradeThresholdsTriggered) {
@@ -1147,20 +1147,55 @@ class Player {
 		const triggeredThresholds = game.tradeThresholdsTriggered[this.tag];
 		if (thresholds.includes(this.total) && !triggeredThresholds.has(this.total)) {
 			triggeredThresholds.add(this.total);
+			// Find Trade cards on the opponent's field (the player who owns the Trade cards)
 			const tradeCards = opponent.getAllRowCards().filter(c => c.isUnit() && c.abilities.includes("trade"));
-			if (tradeCards.length > 0) {
+			if (tradeCards.length > 0 && opponent.deck.cards.length > 0) {
 				const tradeCard = tradeCards[0];
 				(async () => {
-					try {
-						await tradeCard.animate("trade");
-					} catch (err) {
-						console.error("Trade animation failed:", err);
+					// Play anim_trade over the deck
+					const deckElem = opponent.deck.elem;
+					let deckAnim = null;
+					
+					if (deckElem) {
+						// Create animation overlay on deck
+						deckAnim = document.createElement("div");
+						deckAnim.style.position = "absolute";
+						deckAnim.style.top = "0";
+						deckAnim.style.left = "0";
+						deckAnim.style.width = "100%";
+						deckAnim.style.height = "100%";
+						deckAnim.style.backgroundImage = iconURL("anim_trade");
+						deckAnim.style.backgroundSize = "cover";
+						deckAnim.style.backgroundPosition = "center";
+						deckAnim.style.pointerEvents = "none";
+						deckAnim.style.zIndex = "1000";
+						deckAnim.style.opacity = "0";
+						deckElem.style.position = "relative";
+						deckElem.appendChild(deckAnim);
 					}
-					if (opponent.deck.cards.length > 0) {
-						const drawn = opponent.deck.cards[0];
-						opponent.deck.removeCard(drawn);
-						opponent.hand.addCard(drawn);
+					
+					// Play animation over deck
+					if (deckAnim) {
+						await sleep(50);
+						fadeIn(deckAnim, 300);
+						await sleep(300);
+						await sleep(1000);
+						fadeOut(deckAnim, 300);
+						await sleep(300);
+						if (deckElem && deckAnim.parentNode === deckElem) {
+							deckElem.removeChild(deckAnim);
+						}
 					}
+					
+					// Draw card from opponent's deck (the player who owns the Trade cards)
+					// Check if blockade is preventing this player from drawing
+					if (game.blockadeActive && game.blockadeActive.blockedPlayer === opponent) {
+						// Blockade is active - prevent drawing
+						return;
+					}
+					const drawn = opponent.deck.cards[0];
+					opponent.deck.removeCard(drawn);
+					opponent.hand.addCard(drawn);
 				})();
 			}
 		}
@@ -1266,7 +1301,26 @@ class Player {
 	}
 
 	canPlay() {
-		return this.hand.cards.length > 0 || this.leaderAvailable || this.factionAbilityUses > 0;
+		// Check if we have any playable cards
+		if (this.hand.cards.length === 0 && !this.leaderAvailable && this.factionAbilityUses === 0) {
+			return false;
+		}
+		
+		// Special check: Decoy cards require a valid target to swap with
+		// If the only card in hand is a Decoy with no valid targets, we can't play
+		const decoyCards = this.hand.cards.filter(c => 
+			c.key === "spe_decoy" || c.abilities.includes("decoy")
+		);
+		
+		if (decoyCards.length > 0 && this.hand.cards.length === decoyCards.length && !this.leaderAvailable && this.factionAbilityUses === 0) {
+			// Only decoy cards in hand - check if there are any valid targets
+			const hasValidTarget = this.getAllRowCards().some(c => c.isUnit());
+			if (!hasValidTarget) {
+				return false; // No valid targets for decoy
+			}
+		}
+		
+		return true;
 	}
 
 	async activateLeader() {
@@ -1729,6 +1783,13 @@ class Deck extends CardContainer {
 	}
 
 	async draw(hand) {
+		// Check if blockade is active and preventing this player from drawing
+		const player = hand === player_op.hand ? player_op : player_me;
+		if (game.blockadeActive && game.blockadeActive.blockedPlayer === player) {
+			// Blockade is active - prevent drawing
+			return;
+		}
+		
 		tocar("game_buy", false);
 		if (hand === player_op.hand) hand.addCard(this.removeCard(0));
 		else await board.toHand(this.cards[0], this);
@@ -1811,6 +1872,7 @@ class Row extends CardContainer {
 		this.total = 0;
 		this.effects = {
 			weather: false,
+			nightfall: false,
 			bond: {},
 			morale: 0,
 			horn: 0,
@@ -1999,11 +2061,32 @@ class Row extends CardContainer {
 			if (!card.isLocked()) {
 				switch (x) {
 					case "morale":
+						if (activate) {
+							Promise.all(this.cards.filter(c => c.isUnit()).map(c => c.animate("morale")));
+						}
+						this.effects.morale += activate ? 1 : -1;
+						break;
 					case "horn":
+					case "redania_horn":
+						if (activate) {
+							// Animate all units in the row with horn animation
+							Promise.all(this.cards.filter(c => c.isUnit()).map(c => c.animate("horn")));
+						}
+						this.effects.horn += activate ? 1 : -1;
+						break;
 					case "mardroeme":
 					case "lock":
-					case "toussaint_wine":
 						this.effects[x] += activate ? 1 : -1;
+						break;
+					case "toussaint_wine":
+					case "wine":
+						// Both "wine" and "toussaint_wine" apply the same effect
+						const effectName = x === "wine" ? "toussaint_wine" : x;
+						if (activate) {
+							// Animate all units in the row with wine animation
+							Promise.all(this.cards.filter(c => c.isUnit()).map(c => c.animate("wine")));
+						}
+						this.effects[effectName] += activate ? 1 : -1;
 						break;
 					case "shield":
 					case "shield_c":
@@ -2024,17 +2107,105 @@ class Row extends CardContainer {
 	}
 
 	addOverlay(overlay) {
-		var som = overlay == "fog" || overlay == "rain" || overlay == "storm" ? overlay : overlay == "frost" ? "cold" : "";
+		var som = overlay == "fog" || overlay == "rain" || overlay == "storm" ? overlay : overlay == "frost" ? "cold" : overlay == "nightfall" ? "nightfall" : "";
 		if (som != "") tocar(som, false);
-		this.effects.weather = true;
+		
+		// Nightfall is visual only and doesn't affect power
+		if (overlay === "nightfall") {
+			this.effects.nightfall = true;
+			this.triggerHungerTransformations();
+		} else {
+			// Regular weather affects power
+			this.effects.weather = true;
+		}
+		
 		this.elem_parent.getElementsByClassName("row-weather")[0].classList.add(overlay);
 		this.updateScore();
 	}
 
 	removeOverlay(overlay) {
-		this.effects.weather = false;
+		if (overlay === "nightfall") {
+			this.effects.nightfall = false;
+		} else {
+			this.effects.weather = false;
+		}
 		this.elem_parent.getElementsByClassName("row-weather")[0].classList.remove(overlay);
 		this.updateScore();
+	}
+
+	async triggerHungerTransformations() {
+		// Find all cards with hunger ability in this row
+		const hungerCards = this.cards.filter(c => c.isUnit() && c.abilities.includes("hunger") && !c.isLocked() && c.target);
+		
+		// Transform each hunger card
+		for (const hungerCard of hungerCards) {
+			const hungerTarget = hungerCard.target;
+			if (!hungerTarget || !card_dict[hungerTarget]) continue;
+			
+			// Get the row where the hunger card is located
+			const currentRow = hungerCard.currentLocation;
+			if (!(currentRow instanceof Row)) continue;
+			
+			// Helper function to determine the row for the transformed unit (similar to avenger)
+			const getTransformedRow = (transformedCard, originalCard) => {
+				const transformedRowDesignation = transformedCard.row;
+				const originalRow = originalCard.currentLocation;
+				
+				if (originalRow instanceof Row) {
+					const rowIndex = originalRow.getRowIndex();
+					let rowName;
+					if (rowIndex === 0 || rowIndex === 5) rowName = "siege";
+					else if (rowIndex === 1 || rowIndex === 4) rowName = "ranged";
+					else if (rowIndex === 2 || rowIndex === 3) rowName = "close";
+					else rowName = null;
+					
+					if (rowName) {
+						if (transformedRowDesignation === "agile") {
+							if (rowName === "close" || rowName === "ranged") return rowName;
+						} else if (transformedRowDesignation === "any") {
+							if (rowName === "close" || rowName === "ranged" || rowName === "siege") return rowName;
+						} else if (transformedRowDesignation === "melee_siege") {
+							if (rowName === "close" || rowName === "siege") return rowName;
+						} else if (transformedRowDesignation === "ranged_siege") {
+							if (rowName === "ranged" || rowName === "siege") return rowName;
+						} else if (transformedRowDesignation === rowName) {
+							return rowName;
+						}
+					}
+				}
+				
+				// Fallback: use target's row designation
+				if (transformedRowDesignation === "agile" || transformedRowDesignation === "any" || transformedRowDesignation === "melee_siege") {
+					return "close";
+				} else if (transformedRowDesignation === "ranged_siege") {
+					return "ranged";
+				}
+				return transformedRowDesignation;
+			};
+			
+			// Discard the hunger card
+			await board.toGrave(hungerCard, currentRow);
+			
+			// Create and play the target card
+			let transformedCard;
+			if (hungerCard.holder.deck.findCards(c => c.key === hungerTarget).length) {
+				transformedCard = hungerCard.holder.deck.findCard(c => c.key === hungerTarget);
+				const targetRow = getTransformedRow(transformedCard, hungerCard);
+				await board.moveTo(transformedCard, targetRow, hungerCard.holder.deck);
+			} else if (hungerCard.holder.hand.findCards(c => c.key === hungerTarget).length) {
+				transformedCard = hungerCard.holder.hand.findCard(c => c.key === hungerTarget);
+				const targetRow = getTransformedRow(transformedCard, hungerCard);
+				await board.moveTo(transformedCard, targetRow, hungerCard.holder.hand);
+			} else {
+				transformedCard = new Card(hungerTarget, card_dict[hungerTarget], hungerCard.holder);
+				const targetRow = getTransformedRow(transformedCard, hungerCard);
+				await board.addCardToRow(transformedCard, targetRow, hungerCard.holder);
+				// If the target card is different from the hunger card, mark it for removal
+				if (hungerTarget !== hungerCard.key) {
+					transformedCard.removed.push(() => setTimeout(() => transformedCard.holder.grave.removeCard(transformedCard), 2000));
+				}
+			}
+		}
 	}
 
 	// Override
@@ -2052,7 +2223,23 @@ class Row extends CardContainer {
 	}
 
 	cardScore(card) {
+		const previousPower = card.power;
 		let total = this.calcCardScore(card);
+		
+		// Check if adaptive ability triggered a strength change due to weather
+		// Animate when: card has adaptive, weather is active, strength changed to 2 (adaptive value)
+		if (card.abilities.includes("adaptive") && this.effects.weather && !card.hero && previousPower !== total) {
+			// Calculate the base adaptive strength (2 when weather is active)
+			const adaptiveBaseStrength = this.halfWeather ? Math.max(Math.min(2, card.basePower), Math.floor(card.basePower / 2)) : Math.min(2, card.basePower);
+			
+			// Animate if strength changed and is now at the adaptive base value (2) or higher
+			// This happens when weather is applied and adaptive kicks in
+			if (total >= adaptiveBaseStrength && (previousPower < adaptiveBaseStrength || previousPower === card.basePower)) {
+				// Animate the adaptive effect when strength changes to adaptive value (2) due to weather
+				card.animate("adaptive").catch(err => console.error("Adaptive animation failed:", err));
+			}
+		}
+		
 		card.setPower(total);
 		return total;
 	}
@@ -2068,6 +2255,10 @@ class Row extends CardContainer {
 				let maxBase = inspires.reduce((a, b) => a.basePower > b.basePower ? a : b);
 				total = maxBase.basePower;
 			}
+		}
+		// Add veteran bonus if card has veteran ability
+		if (card.abilities.includes("veteran") && card.veteranBonus) {
+			total += card.veteranBonus;
 		}
 		if (this.effects.weather) {
 			if (card.abilities.includes("adaptive")) {
@@ -2085,7 +2276,7 @@ class Row extends CardContainer {
 			let school = card.abilities.at(-1);
 			if (card.holder.effects["witchers"][school]) total += (card.holder.effects["witchers"][school] - 1) * 2;
 		}
-		if (card.abilities.includes("whorshipped") && card.holder.effects["whorshippers"] > 0 && !card.isLocked()) total += card.holder.effects["whorshippers"] * game.whorshipBoost;
+		if (card.abilities.includes("worshipped") && card.holder.effects["worshippers"] > 0 && !card.isLocked()) total += card.holder.effects["worshippers"] * game.whorshipBoost;
 		if (this.effects.horn - ((card.abilities.includes("horn") || card.abilities.includes("redania_horn")) ? 1 : 0) > 0) total *= 2;
 		// Fortify: +5 if alone on its row
 		if (card.abilities.includes("fortify") && !card.isLocked()) {
@@ -2217,6 +2408,11 @@ class Weather extends CardContainer {
 				name: "storm",
 				count: 0,
 				rows: []
+			},
+			nightfall: {
+				name: "nightfall",
+				count: 0,
+				rows: []
 			}
 		}
 		let i = 0;
@@ -2227,6 +2423,9 @@ class Weather extends CardContainer {
 			} else if (key === "storm") {
 				// Storm affects ranged and siege rows (1,2,4,5) - combines rain and fog
 				this.types[key].rows = [board.row[1], board.row[2], board.row[4], board.row[5]];
+			} else if (key === "nightfall") {
+				// Nightfall affects all rows (0,1,2,3,4,5)
+				this.types[key].rows = [board.row[0], board.row[1], board.row[2], board.row[3], board.row[4], board.row[5]];
 			} else {
 				this.types[key].rows = [board.row[i], board.row[5 - i++]];
 			}
@@ -2447,6 +2646,7 @@ class Game {
 			me: new Set(),
 			op: new Set()
 		};
+		this.blockadeActive = null;
 		if (board) {
 			if (board.row) {
 				board.row.forEach(r => {
@@ -2747,6 +2947,9 @@ class Card {
 						this.desc_name += " / " + secondLastAbility.name;
 					}
 				}
+			} else {
+				// Ability not found in ability_dict, set desc_name to empty to avoid showing undefined/previous values
+				this.desc_name = "";
 			}
 		} else if (this.row === "agile") this.desc_name = "Agile";
 		else if (this.row === "any") this.desc_name = "Any";
@@ -2774,6 +2977,15 @@ class Card {
 				this.desc += "<p>Summons <b>" + target["name"] + "</b> with strength " + target["strength"];
 				if (target["ability"].length > 0) this.desc += " and abilities " + target["ability"].split(" ").map(a => ability_dict[a]["name"]).join(" / ");
 				this.desc += "</p>";
+			}
+		}
+		if (this.abilities.includes("hunger") && this.target) {
+			let hungerTarget = this.target;
+			let target = card_dict[hungerTarget];
+			if (target) {
+				this.desc += "<p>Transforms into <b>" + target["name"] + "</b> with strength " + target["strength"];
+				if (target["ability"].length > 0) this.desc += " and abilities " + target["ability"].split(" ").map(a => ability_dict[a]["name"]).join(" / ");
+				this.desc += " when Nightfall is applied to this row.</p>";
 			}
 		}
 		if (this.hero) this.desc += "<p><b>Hero:</b> " + ability_dict["hero"].description + "</p>";
@@ -2933,13 +3145,15 @@ class Card {
 				else if (str === "redania_horn") str = "horn";
 				else if (str === "decree") str = "decree"; // Use decree icon
 				else if (str === "waylay") str = "waylay";
-				else if (str === "guard") str = "guard";
-				else if (str === "sacrifice") str = "sacrifice";
-				else if (str === "conspiracy") str = "conspiracy";
-				else if (str === "skellige_tactics") str = "skelligetactics";
-				if (str && str.trim() !== "") {
-					abi.style.backgroundImage = iconURL("card_ability_" + str);
-				}
+			else if (str === "guard") str = "guard";
+			else if (str === "sacrifice") str = "sacrifice";
+			else if (str === "conspiracy") str = "conspiracy";
+			else if (str === "worshipper") str = "worshipper";
+			else if (str === "worshipped") str = "worshipped";
+			else if (str === "skellige_tactics") str = "skelligetactics";
+			if (str && str.trim() !== "") {
+				abi.style.backgroundImage = iconURL("card_ability_" + str);
+			}
 			}
 		} else if ((card.key === "spe_redania_decree") || (card.faction === "special" && card.abilities.includes("decree") && card.filename === "realms_decree")) {
 			abi.style.backgroundImage = iconURL("card_special_decree");
@@ -3245,14 +3459,21 @@ class UI {
 			else await ui.viewCardsInContainer(row);
 			return;
 		}
-		if (
-			this.previewCard.key === "spe_decoy" ||
-			this.previewCard.abilities.includes("alzur_maker") ||
-			(
-				this.previewCard.abilities.includes("decoy") &&
-				row.cards.filter(c => c.isUnit()).length > 0
-			)
-		) return;
+		// Handle Decoy: requires a target unit to swap with - cannot be played without a target
+		if (this.previewCard.key === "spe_decoy" || this.previewCard.abilities.includes("decoy")) {
+			const unitsInRow = row.cards.filter(c => c.isUnit());
+			if (unitsInRow.length > 0) {
+				// Valid target exists - will be handled by selectCard when user clicks a unit
+				return;
+			} else {
+				// No valid target - cannot play decoy
+				console.log("⚠️ Cannot play Decoy - no units in selected row to swap with");
+				return;
+			}
+		}
+		if (this.previewCard.abilities.includes("alzur_maker")) {
+			return;
+		}
 		let card = this.previewCard;
 		let holder = card.holder;
 		this.hidePreview();
@@ -3269,14 +3490,18 @@ class UI {
 		} else if (card.faction === "special" && card.abilities.includes("knockback")) {
 			this.hidePreview();
 			await ability_dict[card.abilities.at(-1)].activated(card, row);
-		} else if (
-			card.key === "spe_decoy" ||
-			card.abilities.includes("alzur_maker") ||
-			(
-				card.abilities.includes("decoy") &&
-				row.cards.filter(c => c.isUnit()).length > 0
-			)
-		) return;
+		} else if (card.key === "spe_decoy" || card.abilities.includes("decoy")) {
+			// Decoy requires a target - this should have been caught earlier, but double-check
+			const unitsInRow = row.cards.filter(c => c.isUnit());
+			if (unitsInRow.length === 0) {
+				console.log("⚠️ Cannot play Decoy - no units in selected row to swap with");
+				return;
+			}
+			// Valid target exists - will be handled by selectCard when user clicks a unit
+			return;
+		} else if (card.abilities.includes("alzur_maker")) {
+			return;
+		}
 		else if (card.abilities.includes("anna_henrietta_duchess")) {
 			this.hidePreview(card);
 			this.enablePlayer(false);
@@ -3383,6 +3608,8 @@ class UI {
 			else if (str === "waylay") str = "waylay";
 			else if (str === "guard") str = "guard";
 			else if (str === "sacrifice") str = "sacrifice";
+			else if (str === "worshipper") str = "worshipper";
+			else if (str === "worshipped") str = "worshipped";
 			else if (str === "skellige_tactics") str = "skelligetactics";
 			if (card.faction === "faction" || card.abilities.length === 0 && card.row !== "agile" && card.row !== "any" && card.row !== "melee_siege" && card.row !== "ranged_siege") desc.children[0].style.backgroundImage = "";
 			else if (card.row === "leader") desc.children[0].style.backgroundImage = iconURL("deck_shield_" + card.faction);
@@ -3607,7 +3834,7 @@ class UI {
 						r.special.elem.classList.add("noclick");
 					}
 				} else {
-					if (i < 3 || r.special.containsCardByKey(card.key) || (card.abilities.includes("toussaint_wine") && i == 5)) {
+					if (i < 3 || r.special.containsCardByKey(card.key) || ((card.abilities.includes("toussaint_wine") || card.abilities.includes("wine")) && i == 5)) {
 						r.elem.classList.add("noclick");
 						r.special.elem.classList.add("noclick");
 					} else {
@@ -3629,19 +3856,34 @@ class UI {
 				} else {
 					if (card.abilities.includes("decoy") && card.row.length > 0) {
 						if ((card.row === "close" && i === 3) || (card.row === "ranged" && i === 4) || (card.row === "siege" && i === 5) || (card.row === "agile" && i > 2 && i < 5) || (card.row === "melee_siege" && (i === 3 || i === 5)) || (card.row === "ranged_siege" && (i === 4 || i === 5))) {
-							r.elem.classList.add("row-selectable");
-							if (units.length === 0) r.elem.classList.remove("noclick");
-							alteraClicavel(r, true);
-							units.forEach(c => c.elem.classList.remove("noclick"));
+							// Decoy requires units to swap with - if no units, row is not clickable
+							if (units.length > 0) {
+								r.elem.classList.add("row-selectable");
+								alteraClicavel(r, true);
+								units.forEach(c => c.elem.classList.remove("noclick"));
+							} else {
+								// No units in row - decoy cannot be played here
+								r.elem.classList.add("noclick");
+								r.special.elem.classList.add("noclick");
+								r.elem.classList.remove("card-selectable");
+							}
 						} else {
 							r.elem.classList.add("noclick");
 							r.special.elem.classList.add("noclick");
 							r.elem.classList.remove("card-selectable");
 						}
 					} else {
-						r.elem.classList.add("row-selectable");
-						alteraClicavel(r, true);
-						units.forEach(c => c.elem.classList.remove("noclick"));
+						// Decoy requires units to swap with - if no units, row is not clickable
+						if (units.length > 0) {
+							r.elem.classList.add("row-selectable");
+							alteraClicavel(r, true);
+							units.forEach(c => c.elem.classList.remove("noclick"));
+						} else {
+							// No units in row - decoy cannot be played here
+							r.elem.classList.add("noclick");
+							r.special.elem.classList.add("noclick");
+							r.elem.classList.remove("card-selectable");
+						}
 					}
 				}
 			}
@@ -4061,9 +4303,16 @@ class DeckMaker {
 		el = document.getElementById("add-file"); if (el) el.addEventListener("change", () => this.uploadDeck(), false);
 		el = document.getElementById("save-deck"); if (el) el.addEventListener("click", () => this.saveDeck(), false);
 		el = document.getElementById("load-deck"); if (el) el.addEventListener("click", () => this.loadSavedDeck(), false);
+		el = document.getElementById("card-search"); if (el) el.addEventListener("input", () => this.filterCards(), false);
 		document.getElementById("start-game").addEventListener("click", async () => await this.startNewGame(false), false);
 		document.getElementById("start-ai-game").addEventListener("click", async () => await this.startNewGame(true), false);
 		window.addEventListener("keydown", function (e) {
+			// Don't trigger shortcuts if user is typing in an input field
+			const activeElement = document.activeElement;
+			if (activeElement && (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")) {
+				return;
+			}
+			
 			if (document.getElementById("deck-customization").className.indexOf("hide") == -1) {
 				switch(e.keyCode) {
 					case 69:
@@ -4155,6 +4404,8 @@ class DeckMaker {
 			this.makePreview(p.index, Number.parseInt(p.card.count) - count, this.bank_elem, this.bank, );
 			this.makePreview(p.index, count, this.deck_elem, this.deck);
 		});
+		// Apply search filter if there's a search query
+		this.filterCards();
 	}
 
 	makePreview(index, num, container_elem, cards) {
@@ -4236,6 +4487,86 @@ class DeckMaker {
 		stats.children[9].innerHTML = this.stats.hero;
 		stats.children[3].style.color = this.stats.units < 22 ? "red" : "";
 		stats.children[5].style.color = (this.stats.special > 10) ? "red" : "";
+	}
+
+	filterCards() {
+		const searchInput = document.getElementById("card-search");
+		if (!searchInput) return;
+		
+		const query = searchInput.value.trim().toLowerCase();
+		
+		// If search is empty, show all cards that have count > 0
+		if (query === "") {
+			for (let x of this.bank) {
+				if (x.count) x.elem.classList.remove("hide");
+				else x.elem.classList.add("hide");
+			}
+			return;
+		}
+		
+		// Filter cards based on search query
+		for (let x of this.bank) {
+			if (!x.count) {
+				x.elem.classList.add("hide");
+				continue;
+			}
+			
+			const card_data = card_dict[x.index];
+			if (!card_data) {
+				x.elem.classList.add("hide");
+				continue;
+			}
+			
+			// Check card name
+			const cardName = (card_data.name || "").toLowerCase();
+			let matches = cardName.includes(query);
+			
+			// Check abilities
+			if (!matches && card_data.ability) {
+				const abilities = card_data.ability.split(" ");
+				for (let abi of abilities) {
+					if (abi.toLowerCase().includes(query)) {
+						matches = true;
+						break;
+					}
+					// Check ability name from ability_dict
+					if (ability_dict[abi] && ability_dict[abi].name) {
+						if (ability_dict[abi].name.toLowerCase().includes(query)) {
+							matches = true;
+							break;
+						}
+					}
+				}
+			}
+			
+			// Check keywords
+			if (!matches) {
+				const lowerQuery = query.toLowerCase();
+				// Check for unit/special/weather keywords
+				if (lowerQuery === "unit" && card_data.row && card_data.row !== "leader" && !card_data.deck.startsWith("special") && !card_data.deck.startsWith("weather")) {
+					matches = true;
+				} else if (lowerQuery === "special" && card_data.deck.startsWith("special")) {
+					matches = true;
+				} else if (lowerQuery === "weather" && card_data.deck.startsWith("weather")) {
+					matches = true;
+				} else if (lowerQuery === "hero" && card_data.ability && card_data.ability.split(" ").includes("hero")) {
+					matches = true;
+				} else if (lowerQuery === "leader" && card_data.row === "leader") {
+					matches = true;
+				} else if (card_data.row && card_data.row.toLowerCase().includes(lowerQuery)) {
+					matches = true;
+				} else if (card_data.deck && card_data.deck.toLowerCase().includes(lowerQuery)) {
+					matches = true;
+				}
+			}
+			
+			// Show or hide based on match
+			if (matches) {
+				x.elem.classList.remove("hide");
+			} else {
+				x.elem.classList.add("hide");
+			}
+		}
 	}
 
 	selectLeader() {
@@ -4797,6 +5128,12 @@ function iconURL(name, ext = "png") {
 	if (name === "card_ability_sandstorm") {
 		name = "overlay_sandstorm";
 	}
+	// Map corrected spellings to old icon file names
+	if (name === "card_ability_worshipper") {
+		name = "card_ability_whorshipper";
+	} else if (name === "card_ability_worshipped") {
+		name = "card_ability_whorshipped";
+	}
 	return imgURL("icons/" + name, ext);
 }
 
@@ -4924,6 +5261,8 @@ function getPreviewElem(elem, card, nb = 0) {
 				else if (str === "redania_purge") str = "scorch"; // Use scorch icon for purge
 				else if (str === "redania_horn") str = "horn";
 				else if (str === "decree") str = "decree"; // Use decree icon
+				else if (str === "worshipper") str = "worshipper";
+				else if (str === "worshipped") str = "worshipped";
 				else if (str === "skellige_tactics") str = "skelligetactics";
 				if (str && str.trim() !== "") {
 					abi.style.backgroundImage = iconURL("card_ability_" + str);
@@ -4946,12 +5285,14 @@ function getPreviewElem(elem, card, nb = 0) {
 				else if (str === "scorch_s") str = "scorch_siege";
 				else if (str === "shield_c" || str == "shield_r" || str === "shield_s") str = "shield";
 				else if (str === "redania_purge") str = "scorch"; // Use scorch icon for purge
-				else if (str === "redania_horn") str = "horn";
-				else if (str === "decree") str = "decree"; // Use decree icon
-				else if (str === "skellige_tactics") str = "skelligetactics";
-				if (str && str.trim() !== "") {
-					abi2.style.backgroundImage = iconURL("card_ability_" + str);
-				}
+			else if (str === "redania_horn") str = "horn";
+			else if (str === "decree") str = "decree"; // Use decree icon
+			else if (str === "worshipper") str = "worshipper";
+			else if (str === "worshipped") str = "worshipped";
+			else if (str === "skellige_tactics") str = "skelligetactics";
+			if (str && str.trim() !== "") {
+				abi2.style.backgroundImage = iconURL("card_ability_" + str);
+			}
 			}
 		}
 	}

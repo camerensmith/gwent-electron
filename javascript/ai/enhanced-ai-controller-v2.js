@@ -726,20 +726,52 @@ class EnhancedAIControllerV2 {
         
         const roundNumber = gameState.roundNumber || game.roundCount || 1;
         const cardsInHand = this.player.hand.cards.length;
+        const isLosing = !this.player.winning;
+        const pointDifferential = opponent.total - this.player.total;
+        const lostPreviousRound = this.player.health < 2; // Lost at least one round
         
-        // GENERAL: If we have 2 or fewer cards left, always pass (critical card conservation)
+        // CRITICAL: NEVER pass if we're losing and need to win this round
+        // If we lost the previous round, we MUST win this round or we lose the game
+        if (lostPreviousRound && isLosing) {
+            console.log(`⚔️ AI refusing to pass - lost previous round and currently losing (must fight!)`);
+            return false;
+        }
+        
+        // NEVER pass if we're significantly behind (more than 15 points) - we need to try to catch up
+        if (isLosing && pointDifferential > 15) {
+            console.log(`⚔️ AI refusing to pass - losing by ${pointDifferential} points (must fight!)`);
+            return false;
+        }
+        
+        // NEVER pass in round 2 if we lost round 1 - we MUST win round 2
+        if (roundNumber === 2 && lostPreviousRound) {
+            console.log(`⚔️ AI refusing to pass round 2 - lost round 1 (must win this round!)`);
+            return false;
+        }
+        
+        // GENERAL: If we have 2 or fewer cards left, only pass if we're winning or tied
+        // If we're losing, we must try to win even with few cards
         if (cardsInHand <= 2 && roundNumber < 3) {
-            console.log(`🛡️ AI passing to conserve critical cards (only ${cardsInHand} cards left)`);
+            if (isLosing) {
+                console.log(`⚔️ AI refusing to pass - only ${cardsInHand} cards but losing (must fight!)`);
+                return false;
+            }
+            console.log(`🛡️ AI passing to conserve critical cards (only ${cardsInHand} cards left, winning)`);
             return true;
         }
         
         // CRITICAL: Card conservation for round 1 - don't play all cards
         // In round 1, we need to save cards for rounds 2 and 3
+        // BUT: Only if we're winning or close
         if (roundNumber === 1) {
-            // If we have 3 or fewer cards left in round 1, strongly pass (80% chance)
+            // If we have 3 or fewer cards left in round 1, only pass if we're winning
             if (cardsInHand <= 3) {
+                if (isLosing) {
+                    console.log(`⚔️ AI refusing to pass round 1 - only ${cardsInHand} cards but losing (must fight!)`);
+                    return false;
+                }
                 if (Math.random() > 0.2) {
-                    console.log(`🛡️ AI passing round 1 to conserve cards (only ${cardsInHand} cards remaining)`);
+                    console.log(`🛡️ AI passing round 1 to conserve cards (only ${cardsInHand} cards remaining, winning)`);
                     return true;
                 }
             }
@@ -764,10 +796,10 @@ class EnhancedAIControllerV2 {
         const strategicOverride = (cardsInHand <= 3 && roundNumber < 3) || (cardsInHand <= 2);
         
         // Sometimes make unexpected pass decisions (human unpredictability)
-        // But not if we're low on cards (strategic necessity)
-        if (!strategicOverride && randomizationFactor < 0.1) {
+        // But NEVER if we're losing, lost previous round, or low on cards (strategic necessity)
+        if (!strategicOverride && !isLosing && !lostPreviousRound && randomizationFactor < 0.1) {
             console.log("🎭 AI making unexpected pass (human-like unpredictability)");
-            return true; // Pass when you wouldn't expect it
+            return true; // Pass when you wouldn't expect it (only when winning)
         }
         
         // Sometimes refuse to pass even when you should (human stubbornness)
@@ -785,8 +817,9 @@ class EnhancedAIControllerV2 {
         // Enhanced pass conditions with randomization
         
         // If we have strong synergies and opponent is weak, don't pass (but sometimes do)
-        if (synergyAnalysis.synergyScore > 0.6 && gameState.powerAdvantage > 10) {
-            // 80% chance to continue, 20% chance to pass anyway
+        // BUT: Never pass if we're losing or lost previous round
+        if (synergyAnalysis.synergyScore > 0.6 && gameState.powerAdvantage > 10 && !isLosing && !lostPreviousRound) {
+            // 80% chance to continue, 20% chance to pass anyway (only when winning)
             if (randomizationFactor > 0.8) {
                 console.log("🎲 AI passing despite strong position (human-like inconsistency)");
                 return true;
@@ -795,7 +828,8 @@ class EnhancedAIControllerV2 {
         }
         
         // If opponent has strong synergies and we're weak, consider passing (but sometimes fight)
-        if (gameState.powerAdvantage < -20 && gameState.cardAdvantage < 0) {
+        // BUT: Never pass if we lost previous round - we MUST fight
+        if (gameState.powerAdvantage < -20 && gameState.cardAdvantage < 0 && !lostPreviousRound) {
             // 70% chance to pass, 30% chance to fight back
             if (randomizationFactor > 0.7) {
                 console.log("💪 AI fighting back despite weak position (human-like stubbornness)");

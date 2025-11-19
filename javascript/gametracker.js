@@ -132,7 +132,7 @@ class Round {
 				if (!t.action.card.isLocked() &&
 					(
 						t.action.card.abilities.includes("bond") ||
-						t.action.card.abilities.includes("whorshipped") ||
+						t.action.card.abilities.includes("worshipped") ||
 						t.action.card.abilities.includes("inspire") ||
 						(t.action.card.abilities.at(-1) && t.action.card.abilities.at(-1).startsWith("witcher_"))
 					)
