@@ -66,7 +66,7 @@ menu .pure-menu ul,
 .faction-monsters,
 .faction-scoiatael,
 .faction-skellige,
-.faction-witcher_universe,
+.faction-witchers,
 .faction-toussaint,
 .faction-lyria_rivia,
 .faction-syndicate,
@@ -186,7 +186,7 @@ body {
 .faction-monsters,
 .faction-scoiatael,
 .faction-skellige,
-.faction-witcher_universe {
+.faction-witchers {
 	color:#fff
 }
 
@@ -254,7 +254,7 @@ body {
 	background-color:#3b1b57
 }
 
-.faction-witcher_universe {
+.faction-witchers {
 	background-color:#2e4b87
 }
 

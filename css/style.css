@@ -495,12 +495,12 @@ div.abs {
 	content:"Skellige Ability Triggered!"
 }
 
-#notif-witcher_universe {
+#notif-witchers {
 	background-image:url("../images/icons/notif_witcher_universe.png")
 }
 
-#notif-witcher_universe::after {
-	content:"Witcher Universe faction ability used:\A Turn skipped."
+#notif-witchers::after {
+	content:"Witchers faction ability used:\A Turn skipped."
 }
 
 #notif-toussaint::after {
@@ -1154,6 +1154,38 @@ div.abs {
 .deck-options {
 	top:15%;
 	position:relative
+}
+
+#site-links {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+#ai-difficulty-selector {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+#ai-difficulty-dropdown {
+	padding: 4px 8px;
+	font-size: 14px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	background-color: #fff;
+	cursor: pointer;
+}
+
+#ai-difficulty-dropdown:hover {
+	border-color: #999;
+}
+
+#ai-difficulty-dropdown:focus {
+	outline: none;
+	border-color: #4a90e2;
+	box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }
 
 .deck-options:not(:last-child):not(#op-deck-name)::after {

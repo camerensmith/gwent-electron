@@ -223,7 +223,7 @@ class DeckLoader {
             'syndicate': 'Syndicate',
             'toussaint': 'Toussaint',
             'lyria_rivia': 'Lyria & Rivia',
-            'witcher_universe': 'Witcher Universe',
+            'witchers': 'Witchers',
             'zerrikania': 'Zerrikania'
         };
         return factionNames[faction] || faction;

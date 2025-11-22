@@ -70,7 +70,7 @@ class StatisticsTracker {
                 syndicate: { games: 0, wins: 0, losses: 0, draws: 0, winRate: 0 },
                 toussaint: { games: 0, wins: 0, losses: 0, draws: 0, winRate: 0 },
                 lyria_rivia: { games: 0, wins: 0, losses: 0, draws: 0, winRate: 0 },
-                witcher_universe: { games: 0, wins: 0, losses: 0, draws: 0, winRate: 0 }
+                witchers: { games: 0, wins: 0, losses: 0, draws: 0, winRate: 0 }
             },
             leaders: {},
             cards: {},
@@ -846,7 +846,7 @@ The tracker will automatically monitor:
             'syndicate': 'Syndicate',
             'toussaint': 'Toussaint',
             'lyria_rivia': 'Lyria & Rivia',
-            'witcher_universe': 'Witcher Universe'
+            'witchers': 'Witchers'
         };
         
         return factionNames[faction] || faction;
@@ -1505,7 +1505,7 @@ The tracker will automatically monitor:
         } else if (deckLower.includes('lyria') || deckLower.includes('rivia')) {
             return 'lyria_rivia';
         } else if (deckLower.includes('witcher')) {
-            return 'witcher_universe';
+            return 'witchers';
         }
         
         return null;

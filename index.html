@@ -212,6 +212,14 @@
 			<input type = "text" id = "card-search" class = "card-search-input" placeholder = "Search cards or keywords..." />
 			<div class = "links" id = "site-links">
 				<a href = "rules.html" target = "_blank">Rules of Gwent</a>
+				<div id = "ai-difficulty-selector">
+					<span>AI Difficulty: </span>
+					<select id = "ai-difficulty-dropdown">
+						<option value = "easy">Easy (80% optimal)</option>
+						<option value = "medium" selected>Medium (90% optimal)</option>
+						<option value = "hard">Hard (100% optimal)</option>
+					</select>
+				</div>
 			</div>
 			<p id = "faction-description"></p>
 			<a id = "save-deck" class = "deck-options">Save Deck</a>
@@ -290,15 +298,8 @@
 		<script type = "text/javascript" language = "JavaScript" src = "javascript/factions.js" defer></script>
 		<script type = "text/javascript" language = "JavaScript" src = "javascript/deck-loader.js" defer></script>
 
-		<!-- AI modules (load before gwent.js so factory is available) -->
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/game-state-analyzer.js" defer></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/strategic-manager.js" defer></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/round-strategy.js" defer></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/enhanced-card-evaluator.js" defer></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/predictive-ai.js" defer></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/enhanced-ai-controller-v2.js" defer></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/enhanced-ai-controller.js" defer></script>
-		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai/index.js" defer></script>
+		<!-- AI Difficulty Manager (load first) -->
+		<script type = "text/javascript" language = "JavaScript" src = "javascript/ai-difficulty.js"></script>
 
 		<script type = "text/javascript" language = "JavaScript" src = "javascript/gwent.js" defer></script>
 		<script type = "text/javascript" language = "JavaScript" src = "javascript/statistics-tracker.js" defer></script>
@@ -330,9 +331,22 @@
 		<!-- Bridge AI difficulty from Electron menu into AI config -->
 		<script type = "text/javascript" language = "JavaScript">
 			(function(){
+				// Listen for difficulty changes from Electron menu and update UI
 				if (window.electronAPI && window.electronAPI.onSetAIDifficulty) {
 					window.electronAPI.onSetAIDifficulty((_, difficulty) => {
 						try {
+							// Update AI difficulty manager
+							if (window.aiDifficultyManager) {
+								window.aiDifficultyManager.setDifficulty(difficulty);
+							}
+							
+							// Update dropdown to reflect change
+							const dropdown = document.getElementById('ai-difficulty-dropdown');
+							if (dropdown) {
+								dropdown.value = difficulty;
+							}
+							
+							// Legacy support
 							if (window.AIConfigurationManager && window.AIConfigurationManager.updateConfig) {
 								const type = (difficulty === 'hard') ? 'ENHANCED' : (difficulty === 'easy' ? 'BASIC' : 'AUTO');
 								window.AIConfigurationManager.updateConfig('ai.type', type);

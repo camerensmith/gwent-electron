@@ -1,6 +1,16 @@
 "use strict"
 
 var factions = {
+	novigrad: {
+		name: "Free City of Novigrad",
+		factionAbility: player => {
+			// Passive ability: After drawing opening hand, may redraw 1 extra card
+			// This is handled in initialRedraw function
+		},
+		activeAbility: false,
+		abilityUses: 0,
+		description: "After drawing your opening hand, you may redraw 1 extra card."
+	},
 	realms: {
 		name: "Northern Realms",
 		factionAbility: player => game.roundStart.push(async () => {
@@ -28,12 +38,18 @@ var factions = {
 			if (units.length === 0)
 				return;
 			let card = units[randomInt(units.length)];
-			card.noRemove = true;
-			game.roundStart.push(async () => {
-				await ui.notification("monsters", 1200);
-				delete card.noRemove;
-				return true; 
-			});
+			// Safety check: Only set noRemove on cards that belong to the Monsters player
+			if (card.holder && card.holder.deck && card.holder.deck.faction === "monsters") {
+				console.log("[MONSTERS] Setting noRemove on:", card.name, card.key, "for player:", player.tag);
+				card.noRemove = true;
+				game.roundStart.push(async () => {
+					await ui.notification("monsters", 1200);
+					delete card.noRemove;
+					return true; 
+				});
+			} else {
+				console.error("[MONSTERS] ERROR: Attempted to set noRemove on card that doesn't belong to Monsters:", card.name, card.key, "card holder faction:", card.holder?.deck?.faction, "player faction:", player.deck?.faction);
+			}
 			return false;
 		}),
 		description: "Keeps a random Unit Card out after each round.",
@@ -75,10 +91,10 @@ var factions = {
 		activeAbility: false,
 		abilityUses: 0
 	},
-	witcher_universe: {
-		name: "Witcher Universe",
+	witchers: {
+		name: "Witchers",
 		factionAbility: async player => {
-			await ui.notification("witcher_universe", 1200);
+			await ui.notification("witchers", 1200);
 		},
 		description: "Can skip a turn once per game.",
 		activeAbility: true,

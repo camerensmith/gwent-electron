@@ -53,7 +53,7 @@ let default_decks = [
 			["lr_grey_rider", 2],
 			["lr_light_cavalry", 2],
 			["ntr_ciri", 1],
-			["ntr_yennefer", 1]
+			["nv_yennefer", 1]
 		]
 	},
 	// Monsters Decks (3)
@@ -150,7 +150,7 @@ let default_decks = [
 			["mo_dragon_fyresdal", 1],
 			["mo_glustyworp", 1],
 			["ntr_ciri", 1],
-			["ntr_yennefer", 1]
+			["nv_yennefer", 1]
 		]
 	},
 	// Nilfgaard Decks (3)
@@ -246,7 +246,7 @@ let default_decks = [
 			["spe_treason", 1],
 			["ne_infiltrator", 1],
 			["ntr_ciri", 1],
-			["ntr_yennefer", 1]
+			["nv_yennefer", 1]
 		]
 	},
 	// Northern Realms Decks (3)
@@ -316,7 +316,7 @@ let default_decks = [
 			["nr_seltkirk", 1],
 			["nr_kaedweni_sergeant", 1],
 			["ntr_ciri", 1],
-			["ntr_yennefer", 1]
+			["nv_yennefer", 1]
 		]
 	},
 	{
@@ -407,7 +407,7 @@ let default_decks = [
 			["ofir_courtesan", 1],
 			["ofir_scribe", 2],
 			["ntr_ciri", 1],
-			["ntr_yennefer", 1]
+			["nv_yennefer", 1]
 		]
 	},
 	// Scoia'tael Decks (2)
@@ -600,7 +600,7 @@ let default_decks = [
 			["sy_tax_collector", 1],
 			["sy_coin_master", 1],
 			["ntr_ciri", 1],
-			["ntr_yennefer", 1]
+			["nv_yennefer", 1]
 		]
 	},
 	// Toussaint Decks (2)
@@ -660,15 +660,15 @@ let default_decks = [
 			["to_guard_1", 1],
 			["to_archer", 1],
 			["ntr_ciri", 1],
-			["ntr_yennefer", 1]
+			["nv_yennefer", 1]
 		]
 	},
-	// Witcher Universe Deck (1)
+	// Witchers Deck (1)
 	{
-		"title": "Witcher Universe - Heroes & Signs",
+		"title": "Witchers - Heroes & Signs",
 		"description": "Focus on strong heroes and unique signs",
 		"leader": "wu_vilgefortz_sorcerer",
-		"faction": "witcher_universe",
+		"faction": "witchers",
 		"cards": [
 			["spe_horn", 1],
 			["spe_decoy", 2],
@@ -693,7 +693,7 @@ let default_decks = [
 			["wu_tissaia", 1],
 			["wu_coral", 1],
 			["ntr_ciri", 1],
-			["ntr_yennefer", 1]
+			["nv_yennefer", 1]
 		]
 	}
 ];

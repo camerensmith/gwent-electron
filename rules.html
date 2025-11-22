@@ -383,30 +383,6 @@
 					</div>
 					<div class = "pure-g">
 						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_bond.png" alt = "Tight Bond ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Tight Bond</div>
-							<div class = "ability-list-description">
-								<p>
-									Place next to a card with the same name to double the strength of both cards.
-								</p>
-								<p>
-									In a way, the Tight Bond ability behaves similarly to the Muster ability. These cards are part of a "familly" and are stronger together.
-									<br />
-									For each card of the same familly (same or similar name) with the Tight Bond ability, the base strength of the card is multiplied by the number of copies in the same row.
-									<br />
-									So if you have managed to play 3 copies, each card will have its value tripled. All combined, the total will be 9 times higher than without the ability.
-									<br />
-									The power of this ability is that you can reach a very high strength on the row, so high that it will be very difficult for your opponent to match it (with 3 cards you have the strength of 9 cards).
-									<br />
-									However, this very strength is also its main weakness. Since these cards are copies, they share the same strength and tend to be the strongest cards on the board, easy target for Scorch.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_bribe.png" alt = "Bribe ability" />
 						</div>
 						<div class = "pure-u-7-8">
@@ -670,7 +646,7 @@
 					</div>
 					<div class = "pure-g">
 						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_hero.png" alt = "Hero ability" />
+							<img class = "pure-img-responsive" src = "images/icons/power_hero.png" alt = "Hero ability" />
 						</div>
 						<div class = "pure-u-7-8">
 							<div class = "ability-list-name">Hero</div>
@@ -868,12 +844,10 @@
 							<div class = "ability-list-name">Necromancy</div>
 							<div class = "ability-list-description">
 								<p>
-									When this unit is played, add a unit with base power 5 or less back to your hand from your discard pile.
+									When this unit is played, return all units (including heroes) with a base power of 4 or less to the field in their appropriate rows.
 								</p>
 								<p>
-									This ability allows you to recover units from your graveyard, similar to Medic but with a power restriction. The restored card goes to your hand rather than being played immediately, giving you more flexibility.
-									<br />
-									The card is displayed in the center of the screen with an animation so both players can see what was restored.
+									This ability automatically returns all eligible units from your discard pile directly to the battlefield in their appropriate rows. Unlike Medic, which requires selection and only works on non-hero units, Necromancy returns all qualifying units (including heroes) automatically. This can quickly restore multiple units to the board, making it a powerful tool for maintaining board presence.
 								</p>
 							</div>
 						</div>
@@ -1008,10 +982,10 @@
 							<div class = "ability-list-name">Sacrifice</div>
 							<div class = "ability-list-description">
 								<p>
-									When this unit is played, you may choose to kill a friendly unit of your choice and play a random higher cost unit from your deck immediately, then shuffle your deck. If no higher cost unit card exists, the friendly unit just dies.
+									When this unit is played, it automatically kills the weakest friendly unit and plays a random higher cost unit from your deck immediately, then shuffles your deck. If no higher cost unit card exists, the friendly unit just dies.
 								</p>
 								<p>
-									This ability allows you to trade a weaker unit for a potentially stronger one from your deck. You choose which friendly unit to sacrifice, and if there's a unit in your deck with higher base power, it will be played immediately.
+									This ability allows you to trade a weaker unit for a potentially stronger one from your deck. The weakest friendly unit is automatically sacrificed, and if there's a unit in your deck with higher base power, it will be played immediately.
 									<br />
 									This is useful for upgrading weak units or units with beneficial death effects (like Martyr) into stronger units.
 								</p>
@@ -1110,65 +1084,6 @@
 									However, we have changed it to always target the Melee row to make this ability a little more usable/effective and predictable, because most factions have a lot more Melee units than the other rows.
 									<br />
 									Also, we believe that having this ability affect only the first enemy line seems more "realistic".
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_muster.png" alt = "Muster ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Muster</div>
-							<div class = "ability-list-description">
-								<p>
-									When a card with the Muster ability is played on the board, it summons as well all the other cards in your deck and hand with the same name.
-									<br />
-									In reality, they do not always have the same name but they share a common element which is easily distinguishable.
-								</p>
-								<p>
-									The power of this ability resides in the fact it can quickly add several cards to the board and increase your total score.
-									<br />
-									Its weakness is that the cards often have the same strength and can consequently be destroyed all at the same time if not played carefully.
-									<br />
-									Also, keep in mind that if you have several Muster cards of the same familly in hand, playing one of them will play all the copies in hand, putting you at a disadvantage.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_bond.png" alt = "Tight Bond ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Tight Bond</div>
-							<div class = "ability-list-description">
-								<p>
-									In a way, the Tight Bond ability behaves similarly to the Muster ability. These cards are part of a "familly" and are stronger together.
-									<br />
-									For each card of the same familly (same or similar name) with the Tight Bond ability, the base strength of the card is multiplied by the number of copies in the same row.
-									<br />
-									So if you have managed to play 3 copies, each card will have its value tripled. All combined, the total will be 9 times higher than without the ability.
-								</p>
-								<p>
-									The power of this ability is that you can reach a very high strength on the row, so high that it will be very difficult for your opponent to match it (with 3 cards you have the strength of 9 cards).
-									<br />
-									However, this very strength is also its main weakness. Since these cards are copies, they share the same strength and tend to be the strongest cards on the board, easy target for Scorch.
-									<br />
-									Also, a single copy of such a card isn't very strong, the most important part is managing to gather several copies.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_morale.png" alt = "Morale Boost ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Morale Boost</div>
-							<div class = "ability-list-description">
-								<p>
-									Now let's get into row boosting. Morale boost increases the base strength of all units of the row by 1, except on itself. It is obviously more effective if you have many units concentrated in the same row.
 								</p>
 							</div>
 						</div>
@@ -1328,83 +1243,6 @@
 							</div>
 						</div>
 					</div>
-					<h4 class = "content-subhead">Original game - Weather cards</h4>
-					<p>
-						Like mentioned earlier, Weather Cards are a more specific kind of special cards (and thus special amongst abilities).
-						<br />
-						Their effect is more global and will affect both players. In some rare cases, a unit card might have a weather ability, but these are exceptions.
-					</p>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_weather_frost.png" alt = "Biting Frost Weather" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Biting Frost</div>
-							<div class = "ability-list-description">
-								<p>
-									Reduce the base strength of all units in the Melee row (not heroes) to 1, for both players. This applies before any other ability/effect.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_weather_fog.png" alt = "Impenetrable Fog Weather" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Impenetrable Fog</div>
-							<div class = "ability-list-description">
-								<p>
-									Reduce the base strength of all units in the Ranged row (not heroes) to 1, for both players. This applies before any other ability/effect.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_weather_rain.png" alt = "Torrential Rain Weather" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Torrential Rain</div>
-							<div class = "ability-list-description">
-								<p>
-									Reduce the base strength of all units in the Siege row (not heroes) to 1, for both players. This applies before any other ability/effect.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_weather_storm.png" alt = "Skellige Storm Weather" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Skellige Storm</div>
-							<div class = "ability-list-description">
-								<p>
-									Reduce the base strength of all units in both the Ranged and Siege rows (not heroes) to 1, for both players. This applies before any other ability/effect.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_weather_clear.png" alt = "Clear Weather" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Clear Weather</div>
-							<div class = "ability-list-description">
-								<p>
-									Remove all other weather effects currently effective on the board, this applies to all players.
-								</p>
-							</div>
-						</div>
-					</div>
-					<h4 class = "content-subhead">New custom abilities</h4>
-					<p>
-						To extend the game with more cards and factions, additional abilities have been added. Otherwise most decks would look and play similarly.
-						<br />
-						This might make the game a little more complex, since there are more concepts to assimilate, but these abilities have been designed to keep the spirit of the original game and remain simple.
-					</p>
 					<div class = "pure-g">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_cintra_slaughter.png" alt = "Slaughter of Cintra unit ability" />
@@ -1585,8 +1423,8 @@
 					</div>
 					<div class = "pure-g">
 						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_worshipper.png" alt = "Worshipper ability" />
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_worshipped.png" alt = "Worshipped ability" />
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_whorshipper.png" alt = "Worshipper ability" />
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_whorshipped.png" alt = "Worshipped ability" />
 						</div>
 						<div class = "pure-u-7-8">
 							<div class = "ability-list-name">Worshipper/Worshipped</div>
@@ -1706,12 +1544,10 @@
 							<div class = "ability-list-name">Necromancy</div>
 							<div class = "ability-list-description">
 								<p>
-									When this unit is played, add a unit with base power 5 or less back to your hand from your discard pile.
+									When this unit is played, return all units (including heroes) with a base power of 4 or less to the field in their appropriate rows.
 								</p>
 								<p>
-									This ability allows you to recover units from your graveyard, similar to Medic but with a power restriction. The restored card goes to your hand rather than being played immediately, giving you more flexibility.
-									<br />
-									The card is displayed in the center of the screen with an animation so both players can see what was restored.
+									This ability automatically returns all eligible units from your discard pile directly to the battlefield in their appropriate rows. Unlike Medic, which requires selection and only works on non-hero units, Necromancy returns all qualifying units (including heroes) automatically. This can quickly restore multiple units to the board, making it a powerful tool for maintaining board presence.
 								</p>
 							</div>
 						</div>
@@ -1724,10 +1560,10 @@
 							<div class = "ability-list-name">Sacrifice</div>
 							<div class = "ability-list-description">
 								<p>
-									When this unit is played, you may choose to kill a friendly unit of your choice and play a random higher cost unit from your deck immediately, then shuffle your deck. If no higher cost unit card exists, the friendly unit just dies.
+									When this unit is played, it automatically kills the weakest friendly unit and plays a random higher cost unit from your deck immediately, then shuffles your deck. If no higher cost unit card exists, the friendly unit just dies.
 								</p>
 								<p>
-									This ability allows you to trade a weaker unit for a potentially stronger one from your deck. You choose which friendly unit to sacrifice, and if there's a unit in your deck with higher base power, it will be played immediately.
+									This ability allows you to trade a weaker unit for a potentially stronger one from your deck. The weakest friendly unit is automatically sacrificed, and if there's a unit in your deck with higher base power, it will be played immediately.
 									<br />
 									This is useful for upgrading weak units or units with beneficial death effects (like Martyr) into stronger units.
 								</p>
@@ -1778,10 +1614,10 @@
 							<div class = "ability-list-name">Fortify</div>
 							<div class = "ability-list-description">
 								<p>
-									When this unit is alone on its row, gain +5 strength.
+									When this unit is alone on its row, gain +10 strength.
 								</p>
 								<p>
-									This ability rewards you for playing a unit on an empty row. The +5 strength bonus is permanent as long as the unit remains alone, making it useful for early game tempo or for protecting a single strong unit.
+									This ability rewards you for playing a unit on an empty row. The +10 strength bonus is permanent as long as the unit remains alone, making it useful for early game tempo or for protecting a single strong unit.
 									<br />
 									If another unit is added to the row, the bonus is lost. If units are removed and the Fortify unit becomes alone again, the bonus is restored.
 								</p>
@@ -2012,7 +1848,7 @@
 					</div>
 					<h2 class = "content-subhead" id = "factions">Factions</h2>
 					<p>
-						The Witcher universe is vast, so to bring more variety and fun to the game, it is divided into several factions.
+						The Witcher world is vast, so to bring more variety and fun to the game, it is divided into several factions.
 						<br />
 						Factions usually represent a realm or a group/faction of people. Each faction has its own set of cards along with a faction ability, and thus its own playstyle.
 						<br />
@@ -2026,20 +1862,32 @@
 						this means that they can be played in any faction.
 					</p>
 					<h3 class = "content-subhead">Factions available</h3>
-					<h4 class = "content-subhead">Original game</h4>
 					<div class = "pure-g">
 						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/deck_shield_realms.png" alt = "Northern Realms Faction" />
+							<img class = "pure-img-responsive" src = "images/icons/deck_shield_novigrad.png" alt = "Free City of Novigrad Faction" />
 						</div>
 						<div class = "pure-u-7-8">
-							<div class = "faction-list-name">Northern Realms</div>
+							<div class = "faction-list-name">Free City of Novigrad</div>
 							<div class = "faction-list-description">
 								<p>
 									<b>Faction Ability:</b>
-									Draw a card from your deck when you win a round.
+									After drawing your opening hand, you may redraw 1 extra card.
 								</p>
 								<p>
-									Northern Realms relies on Veterancy and Fortify abilities. Units with Veteran gain increasing strength over time, making them more valuable the longer they stay on the board. Fortify units gain a significant strength bonus when alone on their row, rewarding strategic placement and row control. This faction also has access to Tight Bond units, Spies, and strong Siege units, making it a versatile and powerful faction.
+									<b>Playstyle:</b>
+									Balanced
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									(None)
+								</p>
+								<p>
+									<b>Lore:</b>
+									The Free City of Novigrad stands as an independent city-state, a melting pot of cultures, religions, and political interests. This bustling metropolis is home to mages, fighters, criminals, merchants, and refugees from across the Northern Kingdoms. Despite the constant political intrigue and power struggles, Novigrad maintains its autonomy through trade, diplomacy, and the sheer diversity of its population.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
+									The Free City of Novigrad represents the independent city-state and its diverse inhabitants. This faction features a mix of mages, fighters, criminals, and other characters from the bustling metropolis. Novigrad has access to Muster units like The Rats, which work together to create board presence. The faction includes various mages and sorceresses, healers, spies, and unique characters that represent the political intrigue and diverse population of the free city. The faction ability provides better opening hand consistency, allowing players to improve their starting position with an additional redraw opportunity.
 								</p>
 							</div>
 						</div>
@@ -2047,17 +1895,30 @@
 					<br />
 					<div class = "pure-g">
 						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/deck_shield_nilfgaard.png" alt = "Nilfgaard Faction" />
+							<img class = "pure-img-responsive" src = "images/icons/deck_shield_lyria_rivia.png" alt = "Lyria & Rivia Faction" />
 						</div>
 						<div class = "pure-u-7-8">
-							<div class = "faction-list-name">Nilfgaard</div>
+							<div class = "faction-list-name">Lyria & Rivia</div>
 							<div class = "faction-list-description">
 								<p>
 									<b>Faction Ability:</b>
-									If a round ends in a draw, Nilfgaard wins the round.
+									Once per game, apply a Morale Boost to a row of your choice.
 								</p>
 								<p>
-									Nilfgaard relies on cheap cost Spies and Conspiracy abilities. Their spies are cost-effective units that provide card advantage while disrupting the opponent. The Conspiracy ability allows units to recover special cards from the graveyard while discarding cards from the opponent's deck, creating both resource recovery and disruption. This faction also has access to Tight Bond units, Medics, and strong cards, making it a control-oriented faction focused on card advantage and strategic disruption.
+									<b>Playstyle:</b>
+									Defense
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Shield (row protection), Scorch - Siege
+								</p>
+								<p>
+									<b>Lore:</b>
+									Lyria and Rivia are two neighboring kingdoms in the Northern Realms, often united in their struggles against external threats. These realms are known for their resilience and defensive strategies, having survived numerous wars and invasions. The people of Lyria & Rivia value protection and fortification, building strong defenses and developing tactics that emphasize safeguarding their lands and people.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
+									Lyria & Rivia are strong against opponent Siege units, with unique Scorch - Siege abilities that specifically target enemy siege units. They have access to Shield abilities that protect entire rows from opponent abilities (except weather), making them excellent at defensive play. This faction also has Decoy units and Shield special cards, along with Muster and Medic cards. Their defensive capabilities and siege-focused removal make them effective at controlling the battlefield and protecting their own units while disrupting enemy siege strategies.
 								</p>
 							</div>
 						</div>
@@ -2075,7 +1936,113 @@
 									At the end of each round, a random unit card stays on the board.
 								</p>
 								<p>
-									Monsters rely on swarms and Muster abilities, allowing them to quickly flood the board with multiple units. They also have access to Sacrifice, Necromancy, and Curse abilities. Sacrifice allows units to trade weaker allies for stronger units from the deck, while Necromancy recovers units from the graveyard. Curse units can be placed on the opponent's side to destroy their next non-hero unit played on that row. Combined with their faction ability that keeps units on the board between rounds, Monsters excel at maintaining board presence and overwhelming opponents with numbers.
+									<b>Playstyle:</b>
+									Aggressive
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Sacrifice, Necromancy, Curse
+								</p>
+								<p>
+									<b>Lore:</b>
+									The wild lands of the Continent are home to countless terrifying creatures and monsters that prey upon the unwary. From ancient vampires and werewolves to grotesque necrophages and insectoids, these creatures represent the untamed darkness that lurks beyond civilization. Many of these monsters are remnants of the Conjunction of the Spheres, a cataclysmic event that brought them from other worlds into the realm of humans.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
+									Monsters rely on swarms and Muster abilities, allowing them to quickly flood the board with multiple units. They also have access to Sacrifice, Necromancy, and Curse abilities. Sacrifice allows units to trade weaker allies for stronger units from the deck, while Necromancy automatically returns all units with base power 4 or less (including heroes) from the graveyard directly to the battlefield. Curse units can be placed on the opponent's side to destroy their next non-hero unit played on that row. Combined with their faction ability that keeps units on the board between rounds, Monsters excel at maintaining board presence and overwhelming opponents with numbers.
+								</p>
+							</div>
+						</div>
+					</div>
+					<br />
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/deck_shield_nilfgaard.png" alt = "Nilfgaard Faction" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "faction-list-name">Nilfgaard</div>
+							<div class = "faction-list-description">
+								<p>
+									<b>Faction Ability:</b>
+									If a round ends in a draw, Nilfgaard wins the round.
+								</p>
+								<p>
+									<b>Playstyle:</b>
+									Control
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Bribe, Conspiracy
+								</p>
+								<p>
+									<b>Lore:</b>
+									The Nilfgaardian Empire is a vast, expansionist power that seeks to conquer and assimilate all of the Northern Kingdoms. Known for their military might, political intrigue, and sophisticated intelligence networks, Nilfgaard represents order through conquest. The empire's agents and spies operate throughout the Continent, using deception, manipulation, and strategic planning to achieve their goals of imperial dominance.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
+									Nilfgaard relies on cheap cost Spies and Conspiracy abilities. Their spies are cost-effective units that provide card advantage while disrupting the opponent. The Conspiracy ability allows units to recover special cards from the graveyard while discarding cards from the opponent's deck, creating both resource recovery and disruption. This faction also has access to Tight Bond units, Medics, and strong cards, making it a control-oriented faction focused on card advantage and strategic disruption.
+								</p>
+							</div>
+						</div>
+					</div>
+					<br />
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/deck_shield_realms.png" alt = "Northern Realms Faction" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "faction-list-name">Northern Realms</div>
+							<div class = "faction-list-description">
+								<p>
+									<b>Faction Ability:</b>
+									Draw a card from your deck when you win a round.
+								</p>
+								<p>
+									<b>Playstyle:</b>
+									Balanced
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Veterancy, Fortify
+								</p>
+								<p>
+									<b>Lore:</b>
+									The Northern Kingdoms represent a collection of independent realms including Temeria, Redania, Kaedwen, and others, each with their own rulers and traditions. These kingdoms have long stood against the expansionist ambitions of Nilfgaard, relying on their experienced armies, fortified positions, and the bonds between their soldiers. The Northern Realms value honor, tradition, and the strength that comes from unity in the face of external threats.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
+									Northern Realms relies on Veterancy and Fortify abilities. Units with Veteran gain increasing strength over time, making them more valuable the longer they stay on the board. Fortify units gain a significant strength bonus when alone on their row, rewarding strategic placement and row control. This faction also has access to Tight Bond units, Spies, and strong Siege units, making it a versatile and powerful faction.
+								</p>
+							</div>
+						</div>
+					</div>
+					<br />
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/deck_shield_ofir.png" alt = "Ofir Faction" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "faction-list-name">Ofir</div>
+							<div class = "faction-list-description">
+								<p>
+									<b>Faction Ability:</b>
+									(Varies by leader)
+								</p>
+								<p>
+									<b>Playstyle:</b>
+									Control
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Trade, Adaptive, Sandstorm
+								</p>
+								<p>
+									<b>Lore:</b>
+									Ofir is a distant, exotic land far to the east, known for its rich trade routes, mysterious magic, and harsh desert environments. The people of Ofir have adapted to survive in extreme conditions, developing unique strategies and abilities that allow them to thrive where others would perish. Their merchants are renowned across the Continent, and their warriors have learned to turn the very elements against their enemies.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
+									Ofir features the Trade mechanic and Adaptive units. Trade units automatically draw cards when the opponent's total power reaches specific thresholds (12, 24, 36), rewarding patience and allowing the player to build card advantage over time. Adaptive units have a base strength of 2 (instead of 1) while affected by Weather, making them resilient to weather effects. Ofir can cause Sandstorms, a unique weather effect that reduces Close Combat and Ranged Combat units to 1. This faction excels at overcoming the elements and building incremental advantages through trade and adaptive strategies.
 								</p>
 							</div>
 						</div>
@@ -2093,6 +2060,19 @@
 									Before the game starts, this faction decides who plays first.
 								</p>
 								<p>
+									<b>Playstyle:</b>
+									Aggressive
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Waylay, Dwarven Guards
+								</p>
+								<p>
+									<b>Lore:</b>
+									Scoia'Tael, also known as the Squirrels, is a guerrilla organization composed of elves, dwarves, and other non-humans fighting for their freedom and rights against human oppression. Operating from the forests and mountains, they use hit-and-run tactics, ambushes, and their knowledge of the terrain to strike at their enemies. The organization is divided into various commando units, each with their own leaders and methods, united by their shared struggle for equality and independence.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
 									Scoia'Tael has Waylay, Dwarven Guards, and high mobility. Most of their units can be placed on more than one row, giving them exceptional flexibility in positioning. The Waylay ability allows units to be placed on the opponent's side and reward card draws when the opponent plays units on that row. Dwarven Guards protect adjacent units by redirecting lethal damage. This faction also has access to Muster and Medic units, making them adaptable and hard to predict.
 								</p>
 							</div>
@@ -2111,61 +2091,20 @@
 									On the third round, restores two random unit cards from the graveyard.
 								</p>
 								<p>
+									<b>Playstyle:</b>
+									Aggressive
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Berserker, Avenger, Skellige Tactics, Skellige Storm
+								</p>
+								<p>
+									<b>Lore:</b>
+									Skellige is an archipelago of harsh, windswept islands off the coast of the Continent, home to fierce warriors who value honor, strength, and the glory of battle. The Skelligers are known for their naval prowess, berserker warriors, and their belief in an afterlife where the greatest warriors feast in eternal glory. Their culture revolves around raiding, warfare, and proving one's worth through combat, making them some of the most feared warriors on the Continent.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
 									Skellige focuses on Siege power, with Berserkers and Avenger abilities, along with special mechanics like Tactics and Storms. Their Berserker units transform into powerful bears when Mardroeme is played, creating devastating combos. Avenger units transform into stronger units when removed from the board, providing long-term value. Skellige Tactics consolidates naval units onto a single row for maximum synergy. They also have access to Skellige Storm weather cards that affect multiple rows, and a balance of Tight Bond, Muster, and Medic units.
-								</p>
-							</div>
-						</div>
-					</div>
-					<h4 class = "content-subhead">Custom new factions</h4>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/deck_shield_witcher_universe.png" alt = "Witcher Universe Faction" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "faction-list-name">Witcher Universe</div>
-							<div class = "faction-list-description">
-								<p>
-									<b>Faction Ability:</b>
-									Once per game, the player can skip a turn.
-								</p>
-								<p>
-									Witcher Universe relies on strong heroes and unique signs. This faction features witchers from various schools (Wolf, Viper, Cat, Bear, and Griffin), each with school-specific synergies that boost each other when multiple witchers of the same school are on the board. Witcher Keeps have the Resilience ability, staying on the board between rounds when paired with their corresponding witcher school. The faction has a variety of cards representing the broader Witcher universe, with powerful heroes and unique sign-based abilities that provide strategic depth.
-								</p>
-							</div>
-						</div>
-					</div>
-					<br />
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/deck_shield_toussaint.png" alt = "Toussaint Faction" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "faction-list-name">Toussaint</div>
-							<div class = "faction-list-description">
-								<p>
-									<b>Faction Ability:</b>
-									Draw a card from your deck whenever you lose a round.
-								</p>
-								<p>
-									Toussaint relies on Nightfall and Wine abilities. Toussaint Wine boosts all units in a row by 2, providing stronger row bonuses than standard Morale Boost. Nightfall is a unique weather card that affects all rows and triggers Hunger transformations on units with the Hunger ability, allowing vampires and other creatures to transform into their true forms. This faction has a balance of Tight Bond, Muster, and Scorch units, along with many strong cards representing the opulent and dangerous duchy of Toussaint.
-								</p>
-							</div>
-						</div>
-					</div>
-					<br />
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/deck_shield_lyria_rivia.png" alt = "Lyria & Rivia Faction" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "faction-list-name">Lyria & Rivia</div>
-							<div class = "faction-list-description">
-								<p>
-									<b>Faction Ability:</b>
-									Once per game, apply a Morale Boost to a row of your choice.
-								</p>
-								<p>
-									Lyria & Rivia are strong against opponent Siege units, with unique Scorch - Siege abilities that specifically target enemy siege units. They have access to Shield abilities that protect entire rows from opponent abilities (except weather), making them excellent at defensive play. This faction also has Decoy units and Shield special cards, along with Muster and Medic cards. Their defensive capabilities and siege-focused removal make them effective at controlling the battlefield and protecting their own units while disrupting enemy siege strategies.
 								</p>
 							</div>
 						</div>
@@ -2183,7 +2122,82 @@
 									Start the game with the hero Sigi Reuven on the board.
 								</p>
 								<p>
+									<b>Playstyle:</b>
+									Control
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Execute, Bank, Witch Hunt, Embargo
+								</p>
+								<p>
+									<b>Lore:</b>
+									The Syndicate is a powerful criminal organization that operates throughout the Northern Kingdoms, controlling illegal activities, black markets, and political corruption. Led by figures like Sigi Reuven, the Syndicate uses money, intimidation, and violence to achieve its goals. Their agents include assassins, thieves, corrupt officials, and witch hunters who eliminate threats to their operations, making them a shadowy but influential force in the politics of the Continent.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
 									Syndicate relies on Execute, Bank, and Witch Hunters. Execute allows units to destroy hero cards when they're alone in the opposite row, providing a powerful counter to hero-heavy strategies. The Bank special card provides simple card draw, giving card advantage. Witch Hunt units destroy the weakest units in the opposite row, making them excellent counters to Muster strategies. This faction also has access to Spies, Muster, and Tight Bond units, creating a versatile mix of removal, card advantage, and board presence.
+								</p>
+							</div>
+						</div>
+					</div>
+					<br />
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/deck_shield_toussaint.png" alt = "Toussaint Faction" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "faction-list-name">Toussaint</div>
+							<div class = "faction-list-description">
+								<p>
+									<b>Faction Ability:</b>
+									Draw a card from your deck whenever you lose a round.
+								</p>
+								<p>
+									<b>Playstyle:</b>
+									Balanced
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Nightfall, Wine
+								</p>
+								<p>
+									<b>Lore:</b>
+									Toussaint is a wealthy, opulent duchy in the south, known for its vineyards, chivalric tournaments, and seemingly idyllic way of life. However, beneath the surface of this paradise lies a darker truth, with ancient vampires, political intrigue, and dangerous creatures lurking in the shadows. The duchy's knights and nobles maintain a facade of honor and romance, while the night brings forth the true nature of the land's hidden dangers.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
+									Toussaint relies on Nightfall and Wine abilities. Toussaint Wine boosts all units in a row by 2, providing stronger row bonuses than standard Morale Boost. Nightfall is a unique weather card that affects all rows and triggers Hunger transformations on units with the Hunger ability, allowing vampires and other creatures to transform into their true forms. This faction has a balance of Tight Bond, Muster, and Scorch units, along with many strong cards representing the opulent and dangerous duchy of Toussaint.
+								</p>
+							</div>
+						</div>
+					</div>
+					<br />
+					<div class = "pure-g">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/deck_shield_witchers.png" alt = "Witchers Faction" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "faction-list-name">Witchers</div>
+							<div class = "faction-list-description">
+								<p>
+									<b>Faction Ability:</b>
+									Once per game, the player can skip a turn.
+								</p>
+								<p>
+									<b>Playstyle:</b>
+									Balanced
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Witcher School Synergies, Witcher Keeps (Resilience)
+								</p>
+								<p>
+									<b>Lore:</b>
+									Witchers are mutated monster hunters trained from childhood in ancient keeps scattered across the Continent. Each witcher school—Wolf, Viper, Cat, Bear, and Griffin—has its own traditions, training methods, and philosophies. These solitary warriors use their enhanced abilities, knowledge of monsters, and mastery of Signs (magical abilities) to protect the world from dangerous creatures, though they are often feared and misunderstood by the very people they protect.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
+									Witchers relies on strong heroes and unique signs. This faction features witchers from various schools (Wolf, Viper, Cat, Bear, and Griffin), each with school-specific synergies that boost each other when multiple witchers of the same school are on the board. Witcher Keeps have the Resilience ability, staying on the board between rounds when paired with their corresponding witcher school. Unlike other factions, Witchers have no access to Scorch or Decoy cards; instead, they rely on their Signs (Igni, Aard, Quen, Axii, and Yrden) for spell-like effects, providing unique strategic options through their magical abilities. The faction has a variety of cards representing the broader Witcher world, with powerful heroes and unique sign-based abilities that provide strategic depth.
 								</p>
 							</div>
 						</div>
@@ -2201,25 +2215,20 @@
 									Restore a random worshipper from your discard pile onto the field whenever you lose a round.
 								</p>
 								<p>
+									<b>Playstyle:</b>
+									Aggressive
+								</p>
+								<p>
+									<b>Unique Abilities:</b>
+									Worshipper/Worshipped, Inspire
+								</p>
+								<p>
+									<b>Lore:</b>
+									Zerrikania is a distant land far to the east, home to fierce warrior tribes and a mysterious dragon cult. The Zerrikanians are renowned for their martial prowess, with Free Warriors who fight for honor and glory, and devoted followers who worship ancient dragons. The land is known for its harsh deserts, warrior traditions, and the powerful bonds between its people, whether through shared combat or religious devotion to the great dragons that once ruled the skies.
+								</p>
+								<p>
+									<b>Gameplay Description:</b>
 									Zerrikania features the Worshipper/Worshipped mechanic and Inspire abilities. The dragon cult uses Worshipper units that boost Worshipped units by 1 for each Worshipper on the board, creating powerful scaling synergies. Free Warriors have the Inspire ability, where all Inspire units take the highest base strength among them, allowing weaker units to match the strongest. This creates interesting strategic decisions about when to play stronger Inspire units to boost the entire group. The faction ability ensures that Worshippers can be recovered after losing rounds, maintaining the synergy throughout the game.
-								</p>
-							</div>
-						</div>
-					</div>
-					<br />
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/deck_shield_ofir.png" alt = "Ofir Faction" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "faction-list-name">Ofir</div>
-							<div class = "faction-list-description">
-								<p>
-									<b>Faction Ability:</b>
-									(Varies by leader)
-								</p>
-								<p>
-									Ofir features the Trade mechanic and Adaptive units. Trade units automatically draw cards when the opponent's total power reaches specific thresholds (12, 24, 36), rewarding patience and allowing the player to build card advantage over time. Adaptive units have a base strength of 2 (instead of 1) while affected by Weather, making them resilient to weather effects. Ofir can cause Sandstorms, a unique weather effect that reduces Close Combat and Ranged Combat units to 1. This faction excels at overcoming the elements and building incremental advantages through trade and adaptive strategies.
 								</p>
 							</div>
 						</div>
