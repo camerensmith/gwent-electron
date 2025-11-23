@@ -1632,8 +1632,7 @@ var ability_dict = {
 				// Update the row total
 				if (unit.currentLocation instanceof Row) {
 					const row = unit.currentLocation;
-					const oldTotal = row.total;
-					row.updateTotal(1);
+					row.updateScore();
 				}
 			}
 			
@@ -1652,7 +1651,7 @@ var ability_dict = {
 								
 								// Update the row total
 								const row = unit.currentLocation;
-								row.updateTotal(-1);
+								row.updateScore();
 							}
 						}
 					}
