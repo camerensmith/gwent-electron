@@ -3,7 +3,16 @@
 var ability_dict = {
 	clear: {
 		name: "Clear Weather",
-		description: "Removes all Weather Cards (Biting Frost, Impenetrable Fog and Torrential Rain) effects. "
+		description: "Removes all Weather Cards (Biting Frost, Impenetrable Fog and Torrential Rain) effects. ",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			// Only trigger for units (not special cards, which use activated instead)
+			if (card.isUnit()) {
+				tocar("clear", false);
+				await card.animate("clear");
+				await weather.clearWeather();
+			}
+		}
 	},
 	frost: {
 		name: "Biting Frost",
@@ -125,6 +134,31 @@ var ability_dict = {
 		placed: async (card) => {
 			// Trigger the row scorch effect (animation plays on target units, not the triggering card)
 			await board.getRow(card, "siege", card.holder.opponent()).scorch();
+		}
+	},
+	cull: {
+		name: "Cull",
+		description: "Discard after playing. Kills the weakest card(s) on the battlefield. ",
+		activated: async card => {	
+			await ability_dict["cull"].placed(card);
+			await board.toGrave(card, card.holder.hand);
+		},
+		placed: async (card, row) => {
+			if (card.isLocked() || game.scorchCancelled) return;
+			if (row !== undefined) row.cards.splice(row.cards.indexOf(card), 1);
+			// Get weakest units from all rows (excluding heroes and shielded rows)
+			let minUnits = board.row.map(r => [r, r.minUnits().filter(u => !u.hero)]).filter(p => p[1].length > 0).filter(p => !p[0].isShielded());
+			if (row !== undefined) row.cards.push(card);
+			if (minUnits.length === 0) return; // No valid targets
+			let minPower = minUnits.reduce((a,p) => Math.min(a, p[1][0].power), Infinity);
+			let culled = minUnits.filter(p => p[1][0].power === minPower);
+			let cards = culled.reduce((a, p) => a.concat(p[1].map(u => [p[0], u])), []);
+			// Exclude the card itself if it's on the board
+			cards = cards.filter(u => u[1] !== card);
+			if (cards.length === 0) return; // No valid targets after filtering
+			await Promise.all(cards.map(async u => await u[1].animate("scorch", true, false)));
+			await Promise.all(cards.map(async u => await board.toGrave(u[1], u[0])));
+			board.updateScores();
 		}
 	},
 	any: {
@@ -412,7 +446,12 @@ var ability_dict = {
 		description: "Pick an Impenetrable Fog card from your deck and play it instantly.",
 		activated: async card => {
 			let out = card.holder.deck.findCard(c => c.name === "Impenetrable Fog");
-			if (out) await out.autoplay(card.holder.deck);
+			if (out) {
+				await out.autoplay(card.holder.deck);
+			} else if (card.holder.controller instanceof ControllerAI) {
+				// AI: No fog in deck, ability does nothing but still ends turn
+				return;
+			}
 		},
 		weight: (card, ai) => ai.weightWeatherFromDeck(card, "fog")
 	},
@@ -443,25 +482,26 @@ var ability_dict = {
 		description: "Pick a Torrential Rain card from your deck and play it instantly.",
 		activated: async card => {
 			let out = card.holder.deck.findCard(c => c.name === "Torrential Rain");
-			if (out) await out.autoplay(card.holder.deck);
+			if (out) {
+				await out.autoplay(card.holder.deck);
+			} else if (card.holder.controller instanceof ControllerAI) {
+				// AI: No rain in deck, ability does nothing but still ends turn
+				return;
+			}
 		},
 		weight: (card, ai) => ai.weightWeatherFromDeck(card, "rain")
 	},
 	emhyr_emperor: {
-		description: "Look at 3 random cards from your opponent's hand.",
+		description: "Cancel Decoy ability for one round.",
 		activated: async card => {
-			if (card.holder.controller instanceof ControllerAI) return;
-			let container = new CardContainer();
-			container.cards = card.holder.opponent().hand.findCardsRandom(() => true, 3);
-			try {
-				Carousel.curr.cancel();
-			} catch (err) {}
-			await ui.viewCardsInContainer(container);
+			game.decoyCancelled = true;
+			await ui.notification("toussaint-decoy-cancelled", 1200);
+			game.roundStart.push(async () => {
+				game.decoyCancelled = false;
+				return true;
+			});
 		},
-		weight: card => {
-			let count = card.holder.opponent().hand.cards.length;
-			return count === 0 ? 0 : Math.max(10, 10 * (8 - count));
-		}
+		weight: (card) => game.decoyCancelled ? 0 : 10
 	},
 	emhyr_whiteflame: {
 		description: "Cancel your opponent's Leader Ability."
@@ -501,6 +541,11 @@ var ability_dict = {
 		name: "Eredin : Bringer of Death",
 		description: "Restore a card from your discard pile to your hand.",
 		activated: async card => {
+			// Check if there are any units in the grave
+			if (card.holder.grave.findCards(c => c.isUnit()).length === 0) {
+				// No units in grave, ability does nothing
+				return;
+			}
 			let newCard;
 			if (card.holder.controller instanceof ControllerAI) newCard = card.holder.controller.medic(card, card.holder.grave);
 			else {
@@ -516,12 +561,23 @@ var ability_dict = {
 	eredin_destroyer: {
 		description: "Discard 2 cards and draw 1 card of your choice from your deck.",
 		activated: async (card) => {
+			// Check if player has at least 2 cards in hand
+			if (card.holder.hand.cards.length < 2) {
+				// Not enough cards to discard, ability does nothing
+				return;
+			}
 			let hand = board.getRow(card, "hand", card.holder);
 			let deck = board.getRow(card, "deck", card.holder);
 			if (card.holder.controller instanceof ControllerAI) {
 				let cards = card.holder.controller.discardOrder(card).splice(0, 2).filter(c => c.basePower < 7);
+				if (cards.length < 2) {
+					// Not enough viable cards to discard, ability does nothing
+					return;
+				}
 				await Promise.all(cards.map(async c => await board.toGrave(c, card.holder.hand)));
-				card.holder.deck.draw(card.holder.hand);
+				if (card.holder.deck.cards.length > 0) {
+					card.holder.deck.draw(card.holder.hand);
+				}
 				return;
 			} else {
 				try {
@@ -541,8 +597,15 @@ var ability_dict = {
 		description: "Pick any weather card from your deck and play it instantly.",
 		activated: async card => {
 			let deck = board.getRow(card, "deck", card.holder);
-			if (card.holder.controller instanceof ControllerAI) await ability_dict["eredin_king"].helper(card).card.autoplay(card.holder.deck);
-			else {
+			if (card.holder.controller instanceof ControllerAI) {
+				let helperResult = ability_dict["eredin_king"].helper(card);
+				if (helperResult && helperResult.card) {
+					await helperResult.card.autoplay(card.holder.deck);
+				} else {
+					// AI: No weather cards in deck, ability does nothing but still ends turn
+					return;
+				}
+			} else {
 				try {
 					Carousel.curr.cancel();
 				} catch (err) { }
@@ -571,9 +634,53 @@ var ability_dict = {
 		gameStart: () => game.spyPowerMult = 2
 	},
 	francesca_queen: {
-		description: "Destroy your enemy's strongest Close Combat unit(s) if the combined strength of all his or her Close Combat units is 10 or more.",
-		activated: async card => await ability_dict["scorch_c"].placed(card),
-		weight: (card, ai, max) => ai.weightScorchRow(card, max, "close")
+		description: "If you have 4 or more Ranged combat units in play, they gain +2 strength each.",
+		gameStart: (card, player) => {
+			// Function to update Francesca Queen boost
+			const updateFrancescaQueenBoost = () => {
+				const rangedRow = board.getRow(card, "ranged", player);
+				const rangedUnits = rangedRow.cards.filter(c => c.isUnit() && !c.hero);
+				
+				// Remove boost from all units first
+				rangedUnits.forEach(unit => {
+					if (unit.francescaQueenBoost) {
+						unit.francescaQueenBoost = false;
+						unit.power -= 2;
+						unit.setPower(unit.power);
+					}
+				});
+				
+				// If we have 4 or more ranged units, give them +2 strength
+				if (rangedUnits.length >= 4) {
+					rangedUnits.forEach(unit => {
+						if (!unit.francescaQueenBoost) {
+							unit.francescaQueenBoost = true;
+							unit.power += 2;
+							unit.setPower(unit.power);
+						}
+					});
+				}
+				board.updateScores();
+			};
+			
+			// Hook into updateScores to check after every score update
+			const originalUpdateScores = board.updateScores;
+			board.updateScores = function() {
+				const result = originalUpdateScores.call(this);
+				if (player.leader && player.leader.abilities && player.leader.abilities.includes("francesca_queen")) {
+					updateFrancescaQueenBoost();
+				}
+				return result;
+			};
+			
+			// Initial check
+			updateFrancescaQueenBoost();
+		},
+		weight: (card, ai) => {
+			const rangedRow = board.getRow(card, "ranged", card.holder);
+			const rangedUnits = rangedRow.cards.filter(c => c.isUnit() && !c.hero);
+			return rangedUnits.length >= 4 ? rangedUnits.length * 2 : 0;
+		}
 	},
 	francesca_beautiful: {
 		description: "Doubles the strength of all your Ranged Combat units (unless a Commander's Horn is also present on that row).",
@@ -597,10 +704,10 @@ var ability_dict = {
 		weight: (card, ai) => ai.weightWeatherFromDeck(card, "frost")
 	},
 	francesca_hope: {
-		description: "Move agile units to whichever valid row maximizes their strength (don't move units already in optimal row).",
+		description: "Automatically calculate the maximal row value based on agile units in ranged or close, and based on cards already on those rows.",
 		activated: async card => {
-			let close = board.getRow(card, "close");
-			let ranged =  board.getRow(card, "ranged");
+			let close = board.getRow(card, "close", card.holder);
+			let ranged = board.getRow(card, "ranged", card.holder);
 			let cards = ability_dict["francesca_hope"].helper(card);
 			await Promise.all(cards.map(async p => await board.moveTo(p.card, p.row === close ? ranged : close, p.row)));
 		},
@@ -609,8 +716,8 @@ var ability_dict = {
 			return cards.reduce((a,c) => a + c.weight, 0);
 		},
 		helper: card => {
-			let close = board.getRow(card, "close");
-			let ranged = board.getRow(card, "ranged");
+			let close = board.getRow(card, "close", card.holder);
+			let ranged = board.getRow(card, "ranged", card.holder);
 			return validCards(close).concat(validCards(ranged));
 			
 			function validCards(cont) {
@@ -620,32 +727,114 @@ var ability_dict = {
 			}
 			
 			function dif(card, source) {
+				// Calculate the difference in power if moved to the other row
+				// This considers cards already on both rows
 				return (source === close ? ranged : close).calcCardScore(card) - card.power;
 			}
 		}
 	},
 	crach_an_craite: {
-		description: "Shuffle all cards from each player's graveyard back into their decks.",
-		activated: async card => {
-			Promise.all(card.holder.grave.cards.map(c => board.toDeck(c, card.holder.grave)));
-			await Promise.all(card.holder.opponent().grave.cards.map(c => board.toDeck(c, card.holder.opponent().grave)));
+		description: "Once per game: Play the Kraken card from your hand or deck (if it exists).",
+		activated: async (card, player) => {
+			// Check if already used
+			if (player.crachAnCraiteUsed) {
+				return;
+			}
+			
+			// Look for Kraken in hand first
+			let kraken = player.hand.findCard(c => c.key === "sk_kraken");
+			
+			// If not in hand, look in deck
+			if (!kraken) {
+				kraken = player.deck.findCard(c => c.key === "sk_kraken");
+			}
+			
+			if (!kraken) {
+				// No Kraken found
+				return;
+			}
+			
+			// Play the Kraken
+			if (kraken.currentLocation === player.hand) {
+				await kraken.autoplay(player.hand);
+			} else if (kraken.currentLocation === player.deck) {
+				await kraken.autoplay(player.deck);
+			}
+			
+			// Mark as used
+			player.crachAnCraiteUsed = true;
 		},
-		weight: (card, ai, max, data) => {
-			if (game.roundCount < 2) return 0;
-			let medics = card.holder.hand.findCard(c => c.abilities.includes("medic"));
-			if (medics !== undefined) return 0;
-			let spies = card.holder.hand.findCard(c => c.abilities.includes("spy"));
-			if (spies !== undefined) return 0;
-			if (card.holder.hand.findCard(c => c.abilities.includes("decoy")) !== undefined && (data.medic.length || data.spy.length && card.holder.deck.findCard(c => c.abilities.includes("medic")) !== undefined)) return 0;
-			return 15;
+		weight: (card, ai) => {
+			const player = ai.player;
+			// If already used, no value
+			if (player.crachAnCraiteUsed) return 0;
+			
+			// Check if Kraken exists in hand or deck
+			const krakenInHand = player.hand.findCard(c => c.key === "sk_kraken");
+			const krakenInDeck = player.deck.findCard(c => c.key === "sk_kraken");
+			
+			if (krakenInHand || krakenInDeck) {
+				// Value based on Kraken's power (typically high)
+				return 15;
+			}
+			
+			return 0; // No Kraken available
 		}
 	},
 	king_bran: {
-		description: "Units only lose half their Strength in bad weather conditions.",
-		placed: card => {
-			for (var i = 0; i < board.row.length; i++) {
-				if ((card.holder === player_me && i > 2) || (card.holder === player_op && i < 3)) board.row[i].halfWeather = true;
+		description: "Once per game: Add +1 strength to all ships in play until the end of the round.",
+		activated: async (card, player) => {
+			// Check if already used
+			if (player.kingBranUsed) {
+				return;
 			}
+			
+			// Ship card keys
+			const shipKeys = ["sk_cog", "sk_dimun_warship", "sk_light_longship", "sk_raiders_fleet", "sk_war_longship", "sk_wild_boa"];
+			
+			// Find all ships in play
+			const ships = player.getAllRowCards().filter(c => shipKeys.includes(c.key) && c.isUnit());
+			
+			if (ships.length === 0) {
+				// No ships in play
+				return;
+			}
+			
+			// Boost each ship by +1
+			ships.forEach(ship => {
+				if (!ship.kingBranBoost) {
+					ship.kingBranBoost = true;
+					ship.power += 1;
+					ship.setPower(ship.power);
+				}
+			});
+			
+			// Mark as used
+			player.kingBranUsed = true;
+			
+			// Remove boost at round end
+			game.roundEnd.push(async () => {
+				ships.forEach(ship => {
+					if (ship && ship.kingBranBoost && ship.currentLocation instanceof Row) {
+						ship.kingBranBoost = false;
+						ship.power -= 1;
+						ship.setPower(ship.power);
+					}
+				});
+				return true; // Remove hook after execution
+			});
+			
+			board.updateScores();
+		},
+		weight: (card, ai) => {
+			const player = ai.player;
+			// If already used, no value
+			if (player.kingBranUsed) return 0;
+			
+			const shipKeys = ["sk_cog", "sk_dimun_warship", "sk_light_longship", "sk_raiders_fleet", "sk_war_longship", "sk_wild_boa"];
+			const ships = player.getAllRowCards().filter(c => shipKeys.includes(c.key) && c.isUnit());
+			
+			return ships.length; // Value based on number of ships
 		}
 	},
 	queen_calanthe: {
@@ -669,7 +858,7 @@ var ability_dict = {
 		}
 	},
 	fake_ciri: {
-		description: "Discard a card from your hand and then draw two cards from your deck.",
+		description: "Discard a card from your hand and then draw one card from your deck.",
 		activated: async card => {
 			if (card.holder.hand.cards.length === 0) return;
 			let hand = board.getRow(card, "hand", card.holder);
@@ -682,9 +871,7 @@ var ability_dict = {
 				} catch (err) {}
 				await ui.queueCarousel(hand, 1, (c, i) => board.toGrave(c.cards[i], c), () => true);
 			}
-			for (let i = 0; i < 2; i++) {
-				if (card.holder.deck.cards.length > 0) await card.holder.deck.draw(card.holder.hand);
-			}
+			if (card.holder.deck.cards.length > 0) await card.holder.deck.draw(card.holder.hand);
 		},
 		weight: (card, ai) => {
 			if (card.holder.hand.cards.length === 0) return 0;
@@ -1235,12 +1422,31 @@ var ability_dict = {
 		weight: (card, ai) => ai.weightCard(card_dict["spe_clear"])
 	},
 	anna_henrietta_duchess: {
-		description: "Destroy one Commander's Horn in any opponent's row of your choice.",
-		activated: (card, player) => {
-			player.endTurnAfterAbilityUse = false;
-			ui.showPreviewVisuals(card);
-			ui.enablePlayer(true);
-			if (!(player.controller instanceof ControllerAI)) ui.setSelectable(card, true);
+		description: "Destroy one Commander's Horn on one of your opponent's rows. If there are multiple, randomly selects one.",
+		activated: async (card, player) => {
+			const opponent = player.opponent();
+			
+			// Get all opponent's rows that have a Commander's Horn
+			const rowsWithHorns = opponent.getAllRows().filter(r => 
+				r.special.findCards(c => c.abilities.includes("horn")).length > 0
+			);
+			
+			// If no horns exist, ability does nothing
+			if (rowsWithHorns.length === 0) {
+				await ui.notification("anna_henrietta_no_horn", 1200);
+				return;
+			}
+			
+			// If multiple rows have horns, randomly select one
+			const targetRow = rowsWithHorns[randomInt(rowsWithHorns.length)];
+			
+			// Find the horn card in that row
+			const horns = targetRow.special.findCards(c => c.abilities.includes("horn"));
+			if (horns.length > 0) {
+				const horn = horns[0];
+				await board.toGrave(horn, targetRow);
+				board.updateScores();
+			}
 		},
 		weight: (card, ai) => {
 			let horns = card.holder.opponent().getAllRows().filter(r => r.special.findCards(c => c.abilities.includes("horn")).length > 0).sort((a, b) => b.total - a.total);
@@ -1280,16 +1486,38 @@ var ability_dict = {
 		weight: (card, ai, max, data) => ai.weightMedic(data, 0, card.holder)
 	},
 	anna_henrietta_grace: {
-		description: "Cancel Decoy ability for one round.",
-		activated: async card => {
-			game.decoyCancelled = true;
-			await ui.notification("toussaint-decoy-cancelled", 1200);
-			game.roundStart.push(async () => {
-				game.decoyCancelled = false;
-				return true;
+		description: "Play Nightfall immediately (even if it's not in your deck) and destroy it after the end of the round.",
+		activated: async (card, player) => {
+			// Create Nightfall card dynamically
+			const nightfallData = card_dict["spe_nightfall"];
+			if (!nightfallData) {
+				console.error("Nightfall card data not found");
+				return;
+			}
+			
+			const nightfallCard = new Card("spe_nightfall", nightfallData, player);
+			nightfallCard.temporaryCard = true; // Mark as temporary so it doesn't go to discard
+			
+			// Play Nightfall on all rows
+			for (let i = 0; i < board.row.length; i++) {
+				await board.row[i].addOverlay("nightfall");
+			}
+			
+			// Destroy it at round end (don't send to discard)
+			game.roundEnd.push(async () => {
+				// Remove nightfall from all rows
+				for (let i = 0; i < board.row.length; i++) {
+					board.row[i].removeOverlay("nightfall");
+				}
+				// Don't send to discard - just destroy the card object
+				return true; // Remove hook after execution
 			});
 		},
-		weight: (card) => game.decoyCancelled ? 0 : 10
+		weight: (card, ai) => {
+			// Value based on whether player has hunger cards that would benefit
+			const hungerCards = ai.player.getAllRowCards().filter(c => c.abilities.includes("hunger"));
+			return hungerCards.length > 0 ? 15 : 5;
+		}
 	},
 	meve_princess: {
 		description: "If an opponent has 4 or more cards in one row, destroy one of them.",
@@ -1470,15 +1698,58 @@ var ability_dict = {
 		}
 	},
 	carlo_varese: {
-		description: "If the opponent has a total of 10 or higher on one row, destroy that row's strongest card(s) (affects only the opponent's side of the battle field).",
+		description: "Kill the strongest Hero card in play. (Once per game)",
 		activated: async (card, player) => {
-			player.endTurnAfterAbilityUse = false;
-			ui.showPreviewVisuals(card);
-			ui.enablePlayer(true);
-			if (!(player.controller instanceof ControllerAI)) ui.setSelectable(card, true);
+			// Check if already used
+			if (player.carloVareseUsed) {
+				return;
+			}
+			
+			// Get all heroes from both players
+			const allHeroes = [];
+			player.getAllRowCards().forEach(c => {
+				if (c.hero && !c.immortal) allHeroes.push({card: c, player: player});
+			});
+			player.opponent().getAllRowCards().forEach(c => {
+				if (c.hero && !c.immortal) allHeroes.push({card: c, player: player.opponent()});
+			});
+			
+			if (allHeroes.length === 0) {
+				// No heroes in play
+				return;
+			}
+			
+			// Find the strongest hero
+			const strongestHero = allHeroes.reduce((max, h) => 
+				h.card.power > max.card.power ? h : max, allHeroes[0]);
+			
+			// Kill the strongest hero
+			await strongestHero.card.animate("scorch", true, false);
+			await board.toGrave(strongestHero.card, strongestHero.card.currentLocation);
+			board.updateScores();
+			
+			// Mark as used
+			player.carloVareseUsed = true;
 		},
-		weight: (card, ai, max) => {
-			return Math.max(ai.weightScorchRow(card, max, "close"), ai.weightScorchRow(card, max, "ranged"), ai.weightScorchRow(card, max, "siege"));
+		weight: (card, ai) => {
+			const player = ai.player;
+			// Check if already used
+			if (player.carloVareseUsed) return 0;
+			
+			// Get all heroes
+			const allHeroes = [];
+			player.getAllRowCards().forEach(c => {
+				if (c.hero && !c.immortal) allHeroes.push(c);
+			});
+			player.opponent().getAllRowCards().forEach(c => {
+				if (c.hero && !c.immortal) allHeroes.push(c);
+			});
+			
+			if (allHeroes.length === 0) return 0;
+			
+			// Value based on strongest hero's power
+			const strongestPower = Math.max(...allHeroes.map(h => h.power));
+			return strongestPower;
 		}
 	},
 	francis_bedlam: {
@@ -2052,11 +2323,14 @@ var ability_dict = {
 		}
 	},
 	ofir_aamad_merchant: {
-		description: "Passive: If you've drawn 10 cards this round, you win the round.",
+		description: "If you've drawn 5 cards this round (emissary, spy, trade, or other means), you win the round. Only happens once per game.",
 		gameStart: (card, player) => {
-			// Initialize draw counter
+			// Initialize draw counter and used flag
 			if (!player.merchantKingDraws) {
 				player.merchantKingDraws = 0;
+			}
+			if (!player.merchantKingUsed) {
+				player.merchantKingUsed = false;
 			}
 			
 			// Track all card draws by hooking into hand.addCard
@@ -2065,15 +2339,15 @@ var ability_dict = {
 			player.hand.addCard = function(card) {
 				const result = originalAddCard(card);
 				
-				// Check if this player has the merchant king ability
-				if (player.leader && player.leader.abilities && player.leader.abilities.includes("ofir_aamad_merchant")) {
+				// Check if this player has the merchant king ability and hasn't used it yet
+				if (player.leader && player.leader.abilities && player.leader.abilities.includes("ofir_aamad_merchant") && !player.merchantKingUsed) {
 					// Increment draw counter
 					player.merchantKingDraws = (player.merchantKingDraws || 0) + 1;
 					
-					// Check if 10 cards have been drawn
-					if (player.merchantKingDraws >= 10 && !player.merchantKingWon) {
-						// Mark that we've triggered the win to prevent multiple triggers
-						player.merchantKingWon = true;
+					// Check if 5 cards have been drawn
+					if (player.merchantKingDraws >= 5) {
+						// Mark as used (once per game)
+						player.merchantKingUsed = true;
 						
 						// Win the round immediately
 						(async () => {
@@ -2116,40 +2390,31 @@ var ability_dict = {
 				return result;
 			};
 			
-			// Reset draw counter and win flag at round start
+			// Reset draw counter at round start (but keep used flag)
 			game.roundStart.push(async () => {
 				if (player.merchantKingDraws !== undefined) {
 					player.merchantKingDraws = 0;
-				}
-				if (player.merchantKingWon !== undefined) {
-					player.merchantKingWon = false;
 				}
 				return false; // Don't remove this hook
 			});
 		},
 		weight: (card, ai, max) => {
 			const player = ai.player;
-			const currentDraws = player.merchantKingDraws || 0;
-			const drawsNeeded = 10 - currentDraws;
+			// If already used, no value
+			if (player.merchantKingUsed) return 0;
 			
-			// If we're close to 10 draws, this becomes very valuable
-			if (currentDraws >= 7) {
-				return 50; // Very high priority if close to winning
-			} else if (currentDraws >= 5) {
-				return 30; // High priority if halfway there
+			const currentDraws = player.merchantKingDraws || 0;
+			
+			// If we're close to 5 draws, this becomes valuable
+			if (currentDraws >= 4) {
+				return 30; // Very high priority if close
 			} else if (currentDraws >= 3) {
-				return 15; // Moderate priority
+				return 20; // High priority
+			} else if (currentDraws >= 2) {
+				return 10; // Moderate priority
 			}
 			
-			// Base value: encourage drawing cards
-			// Value increases if we have cards/abilities that draw (emissary, spy, trade)
-			const drawAbilities = player.getAllRowCards().filter(c => 
-				c.abilities.includes("emissary") || 
-				c.abilities.includes("spy") || 
-				c.abilities.includes("trade")
-			).length;
-			
-			return Math.max(5, 5 + drawAbilities * 2);
+			return 5; // Low priority if far from goal
 		}
 	},
 	ofir_grand_vizier_saheem: {

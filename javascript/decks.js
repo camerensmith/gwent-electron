@@ -710,6 +710,7 @@ var deckWeightConsts = {
 	"medic": 7,
 	"scorch": 5,
 	"scorch_c": 5,
+	"cull": 5,
 	"morale": 5,
 	"agile": 2,
 	"horn": 10,

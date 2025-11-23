@@ -19,6 +19,16 @@ var default_cards = {
         "count": "3",
         "quote": "Best part about frost - bodies of the fallen don't rot so quickly."
     },
+    "spe_cull": {
+        "name": "Cull",
+        "deck": "special",
+        "row": "",
+        "strength": "",
+        "ability": "cull",
+        "filename": "cull",
+        "count": "3",
+        "quote": "Not every death’s heroic. Most are just… flimsy necks meeting sharp steel."
+    },
     "ntr_sunsetwanderers": {
         "name": "Sunset Wanderers",
         "deck": "neutral",
@@ -89,6 +99,16 @@ var default_cards = {
         "filename": "scorch",
         "count": "3",
         "quote": "Pillars of flame turn the mightiest to ash. All others tremble in shock and awe."
+    },
+    "spe_cull": {
+        "name": "Cull",
+        "deck": "special",
+        "row": "",
+        "strength": "",
+        "ability": "cull",
+        "filename": "cull",
+        "count": "3",
+        "quote": "Not every death's heroic. Most are just… flimsy necks meeting sharp steel."
     },
     "spe_rain": {
         "name": "Torrential Rain",
@@ -1618,6 +1638,16 @@ var default_cards = {
         "filename": "figgis",
         "count": "1",
         "quote": "I'm not a hero. I'm a mercenary. I'm here to make money."
+    },
+    "nv_dana_meadbh": {
+        "name": "Dana Meadbh",
+        "deck": "scoiatael",
+        "row": "ranged",
+        "strength": "8",
+        "ability": "hero morale",
+        "filename": "dana_meadbh",
+        "count": "1",
+        "quote": "Through the grasses covering the glade floated a golden-haired queen. Queen of the Fields."
     },
     "sc_dwarf": {
         "name": "Dwarven Skirmisher",
@@ -3421,13 +3451,13 @@ var ext_nr_cards = {
         "count": "1",
         "quote": "When the horn sounds, mercy ends and duty begins."
     },
-    "spe_redania_purge": {
+    "spe_murder": {
         "name": "Murder",
         "deck": "special syndicate",
         "row": "",
         "strength": "",
         "ability": "redania_purge",
-        "filename": "redania_purge",
+        "filename": "murder",
         "count": "3",
         "quote": "I can't bloody breathe! Won't they burn the wretches someplace else?"
     },
@@ -3631,7 +3661,7 @@ var ext_nr_cards = {
     },
     "ne_catanddog": {
         "name": "Cat and Dog",
-        "deck": "neutral",
+        "deck": "omen_only",
         "row": "any",
         "strength": "0",
         "ability": "",
@@ -4697,7 +4727,7 @@ var ext_mo_cards = {
         "name": "Cultist",
         "deck": "monsters",
         "row": "close",
-        "strength": "7",
+        "strength": "6",
         "ability": "sacrifice",
         "filename": "cultist",
         "count": "2",
@@ -5118,7 +5148,7 @@ var ext_st_cards = {
         "deck": "scoiatael",
         "row": "agile",
         "strength": "1",
-        "ability": "hero horn",
+        "ability": "horn",
         "filename": "malena",
         "count": "1",
         "quote": "I hate you, dh'oine. You are all the same."
@@ -5839,7 +5869,7 @@ var ext_nv_cards = {
         "deck": "novigrad",
         "row": "siege",
         "strength": "5",
-        "ability": "medic",
+        "ability": "clear",
         "filename": "ortolan",
         "count": "1",
         "quote": "He was a legendary mage who was in charge of the experiments done at Rissberg Castle."
@@ -5879,7 +5909,7 @@ var ext_nv_cards = {
         "deck": "novigrad",
         "row": "siege",
         "strength": "8",
-        "ability": "hero",
+        "ability": "clear",
         "filename": "gerhart_aelle",
         "count": "1",
         "quote": "Gerhart of Aelle, otherwise known as Hen Gedymdeith, was the oldest living sorcerer. That is, until his death on Thanedd Island during the coup."
@@ -5894,20 +5924,10 @@ var ext_nv_cards = {
         "count": "1",
         "quote": "Whether by brush or by sorcery, there was no event, emotion, or scene beyond Lydia's power to depict. Apart from joy."
     },
-    "nv_dana_meadbh": {
-        "name": "Dana Meadbh",
-        "deck": "novigrad",
-        "row": "ranged",
-        "strength": "8",
-        "ability": "hero morale",
-        "filename": "dana_meadbh",
-        "count": "1",
-        "quote": "Through the grasses covering the glade floated a golden-haired queen. Queen of the Fields."
-    },
     "nv_rience": {
         "name": "Rience",
         "deck": "novigrad",
-        "row": "siege",
+        "row": "ranged",
         "strength": "5",
         "ability": "",
         "filename": "rience",
@@ -5929,7 +5949,7 @@ var ext_nv_cards = {
         "deck": "novigrad",
         "row": "close",
         "strength": "2",
-        "ability": "horn",
+        "ability": "hero horn",
         "filename": "dandelion",
         "count": "1",
         "quote": "Dandelion, you're a cynic, a lecher, a whoremonger, a liar - and my best friend."
@@ -6018,7 +6038,7 @@ var ext_nv_cards = {
         "name": "Sarah",
         "deck": "novigrad",
         "row": "siege",
-        "strength": "7",
+        "strength": "8",
         "ability": "spy",
         "filename": "sarah",
         "count": "1",
@@ -6077,7 +6097,7 @@ var ext_nv_cards = {
     "nv_idarran_ulivo": {
         "name": "Idarran of Ulivo",
         "deck": "novigrad",
-        "row": "ranged",
+        "row": "close",
         "strength": "5",
         "ability": "avenger",
         "filename": "idarran_ulivo",
@@ -6343,7 +6363,7 @@ var ext_nv_cards = {
         "name": "Snowdrop",
         "deck": "novigrad",
         "row": "siege",
-        "strength": "5",
+        "strength": "6",
         "ability": "spy horn",
         "filename": "snowdrop",
         "count": "1",
@@ -6605,7 +6625,7 @@ var ext_wu_cards = {
     "wu_tyr": {
         "name": "Tyr",
         "deck": "witchers",
-        "row": "ranged",
+        "row": "close",
         "strength": "7",
         "ability": "witcher_viper_school",
         "filename": "tyr",
@@ -6615,7 +6635,7 @@ var ext_wu_cards = {
     "wu_merten": {
         "name": "Merten",
         "deck": "witchers",
-        "row": "ranged",
+        "row": "close",
         "strength": "7",
         "ability": "witcher_cat_school",
         "filename": "merten",
@@ -6625,7 +6645,7 @@ var ext_wu_cards = {
     "wu_jerome": {
         "name": "Jerome",
         "deck": "witchers",
-        "row": "ranged",
+        "row": "close",
         "strength": "8",
         "ability": "witcher_griffin_school",
         "filename": "jerome",
@@ -6645,7 +6665,7 @@ var ext_wu_cards = {
     "wu_aiden": {
         "name": "Aiden",
         "deck": "witchers",
-        "row": "ranged",
+        "row": "close",
         "strength": "7",
         "ability": "witcher_cat_school",
         "filename": "aiden",
@@ -6816,7 +6836,7 @@ var ext_wu_cards = {
     "wu_erland": {
         "name": "Erland of Larvik",
         "deck": "witchers",
-        "row": "ranged",
+        "row": "close",
         "strength": "12",
         "ability": "witcher_griffin_school",
         "filename": "erland",
@@ -6862,16 +6882,6 @@ var ext_wu_cards = {
         "filename": "kolgrim",
         "count": "1",
         "quote": "Fortune only smiled upon him if it was accompanied by a stroke of very bad luck."
-    },
-    "wu_swallow_potion": {
-        "name": "Swallow Potion",
-        "deck": "witchers",
-        "row": "agile",
-        "strength": "2",
-        "ability": "horn",
-        "filename": "swallow_potion",
-        "count": "1",
-        "quote": "Symbolizing spring and rejuvenation, the swallow lent its name to this potion that accelerates the rate at which wounds scab over and heal."
     },
     "wu_alzur_maker": {
         "name": "Alzur: The Maker of Spells",
@@ -7408,7 +7418,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "close",
         "strength": "5",
-        "ability": "hero hunger",
+        "ability": "hunger",
         "filename": "hubert",
         "count": "1",
         "quote": "I'm not a monster. I'm a man."
@@ -7496,7 +7506,7 @@ var ext_to_cards = {
     "to_vampire_invasion": {
         "name": "Vampire Invasion",
         "deck": "toussaint",
-        "row": "ranged",
+        "row": "close",
         "strength": "11",
         "ability": "scorch",
         "filename": "vampire_invasion",
@@ -7594,7 +7604,7 @@ var ext_to_cards = {
     "to_seditious_aristocrats": {
         "name": "Seditious Aristocrats",
         "deck": "toussaint",
-        "row": "ranged",
+        "row": "close",
         "strength": "6",
         "ability": "hunger morale",
         "filename": "seditious_aristocrats",
@@ -7627,7 +7637,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "siege",
         "strength": "1",
-        "ability": "scorch",
+        "ability": "scorch_c",
         "filename": "alchemist",
         "count": "1",
         "quote": "Two ounces of calcium equum, one ounce of rubedo..."
@@ -8485,16 +8495,6 @@ var ext_sy_cards = {
         "count": "1",
         "quote": "A name and bag full of gold. That's all I need."
     },
-    "sy_salamandra_assassin_2": {
-        "name": "Salamandra Assassin",
-        "deck": "syndicate",
-        "row": "ranged",
-        "strength": "4",
-        "ability": "scorch_c",
-        "filename": "salamandra_assassin_2",
-        "count": "1",
-        "quote": "A name and bag full of gold. That's all I need."
-    },
     "sy_walter_veritas": {
         "name": "Walter Veritas",
         "deck": "syndicate",
@@ -8567,13 +8567,13 @@ var ext_sy_cards = {
         "quote": "We've bedded more men than all Redania's army barracks combined."
     },
     "sy_cutthroat": {
-        "name": "Assassin",
+        "name": "Cutthroat",
         "deck": "syndicate",
         "row": "close",
         "strength": "3",
-        "ability": "execute",
+        "ability": "",
         "filename": "cutthroat",
-        "count": "1",
+        "count": "2",
         "quote": "A blade in the dark, a coin in the palm."
     },
     "sy_cleaver_gang_1": {
@@ -8654,18 +8654,6 @@ var ext_sy_cards = {
         "count": "1",
         "quote": "Initially, we burned any tomes on black magic we found.Recently we decided it might be wise to read them first."
     },
-    "sy_robber_1": {
-        "name": "Robber",
-        "id": 1,
-        "deck": "syndicate",
-        "row": "ranged",
-        "strength": "3",
-        "ability": "bond",
-        "filename": "robber_1",
-        "count": "1",
-        "target": "sy_robber",
-        "quote": "I-I already gave ye all me coin!"
-    },
     "sy_robber_2": {
         "name": "Robber",
         "id": 2,
@@ -8682,7 +8670,7 @@ var ext_sy_cards = {
         "name": "Robber",
         "id": 3,
         "deck": "syndicate",
-        "row": "ranged",
+        "row": "melee",
         "strength": "3",
         "ability": "bond",
         "filename": "robber_3",
@@ -8694,8 +8682,8 @@ var ext_sy_cards = {
         "name": "Robber",
         "id": 4,
         "deck": "syndicate",
-        "row": "ranged",
-        "strength": "3",
+        "row": "siege",
+        "strength": "2",
         "ability": "bond",
         "filename": "robber_4",
         "count": "1",
@@ -8767,7 +8755,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "4",
-        "ability": "",
+        "ability": "execute",
         "filename": "sausage_maker",
         "count": "1",
         "quote": "Body disposal and sausage makin', that's what I do."
@@ -8881,7 +8869,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "2",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "tidecloack_ransacker",
         "count": "1",
         "quote": "There's more wealth in Novigrad than in all of Skellige – and the number of poor saps to match."
@@ -8912,7 +8900,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "ranged",
         "strength": "5",
-        "ability": "",
+        "ability": "scorch_r",
         "filename": "salamandra_mage",
         "count": "1",
         "quote": "Building a fire warms people for a day, but setting them on fire..."
@@ -8922,9 +8910,9 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "ranged",
         "strength": "1",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "sewer_raider",
-        "count": "1",
+        "count": "3",
         "quote": "Built for movin' shite, but it moves coin just as well."
     },
     "sy_inquisitor_helveed": {
@@ -9012,7 +9000,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "4",
-        "ability": "scorch",
+        "ability": "scorch_c",
         "filename": "bounty_hunter",
         "count": "1",
         "quote": "Price? Price is what you pay. Value is what you get."
@@ -9023,7 +9011,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "1",
-        "ability": "muster",
+        "ability": "bond",
         "filename": "freak_show_1",
         "count": "1",
         "target": "sy_freak_show",
@@ -9035,7 +9023,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "2",
-        "ability": "muster",
+        "ability": "bond",
         "filename": "freak_show_2",
         "count": "1",
         "target": "sy_freak_show",
@@ -9047,7 +9035,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "3",
-        "ability": "muster",
+        "ability": "bond",
         "filename": "freak_show_3",
         "count": "1",
         "target": "sy_freak_show",
@@ -9059,7 +9047,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "3",
-        "ability": "muster",
+        "ability": "bond",
         "filename": "freak_show_4",
         "count": "1",
         "target": "sy_freak_show",
@@ -9070,7 +9058,7 @@ var ext_sy_cards = {
         "id": 1,
         "deck": "syndicate",
         "row": "close",
-        "strength": "4",
+        "strength": "2",
         "ability": "muster",
         "filename": "mutated_hound_1",
         "count": "1",
@@ -9082,7 +9070,7 @@ var ext_sy_cards = {
         "id": 2,
         "deck": "syndicate",
         "row": "close",
-        "strength": "4",
+        "strength": "2",
         "ability": "muster",
         "filename": "mutated_hound_2",
         "count": "1",
@@ -9245,7 +9233,7 @@ var ext_sy_cards = {
         "deck": "syndicate",
         "row": "close",
         "strength": "6",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "frightener",
         "count": "1",
         "quote": "The witchers thought the Salamandra thugs wouldn't get through Kaer Morhen's walls. The witchers were wrong."
