@@ -2001,8 +2001,8 @@ var default_cards = {
     "sk_gunnar": {
         "name": "Gunnar",
         "deck": "skellige",
-        "row": "siege",
-        "strength": "5",
+        "row": "ranged_siege",
+        "strength": "6",
         "ability": "berserker",
         "filename": "gunnar",
         "count": "1",
@@ -3956,7 +3956,7 @@ var ext_ne_cards = {
         "name": "Usurper",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "10",
+        "strength": "3",
         "ability": "conspiracy",
         "filename": "usurper",
         "count": "1",
@@ -3986,7 +3986,7 @@ var ext_ne_cards = {
         "name": "Master of Disguise",
         "deck": "nilfgaard",
         "row": "any",
-        "strength": "1",
+        "strength": "4",
         "ability": "spy morale",
         "filename": "master_disguise",
         "count": "1",
@@ -6064,16 +6064,6 @@ var ext_nv_cards = {
         "count": "1",
         "quote": "By day, Captain of the Vizima City Guard. By night, merciless avenger and defender of the downtrodden."
     },
-    "nv_raging_bear": {
-        "name": "Raging Bear",
-        "deck": "novigrad",
-        "row": "agile",
-        "strength": "6",
-        "ability": "",
-        "filename": "raging_bear",
-        "count": "1",
-        "quote": "Tame? Och, lad, people might train bears but that don't at all mean they tame 'em..."
-    },
     "nv_vlodimir_von_everec": {
         "name": "Vlodimir von Everec",
         "deck": "novigrad",
@@ -6947,12 +6937,22 @@ var ext_to_cards = {
         "count": "1",
         "quote": "Watch the balls, folks! The juggler's got tricks up 'er sleeve!"
     },
+    "nv_raging_bear": {
+        "name": "Raging Bear",
+        "deck": "toussaint",
+        "row": "siege",
+        "strength": "5",
+        "ability": "",
+        "filename": "raging_bear",
+        "count": "1",
+        "quote": "Tame? Och, lad, people might train bears but that don't at all mean they tame 'em..."
+    },
 
         "to_vampire1": {
         "name": "Vampiress",
         "deck": "toussaint",
         "row": "siege",
-        "strength": "7",
+        "strength": "4",
         "ability": "spy",
         "filename": "vampire1",
         "count": "1",
@@ -6963,7 +6963,7 @@ var ext_to_cards = {
         "id": 1,
         "deck": "toussaint",
         "row": "ranged",
-        "strength": "4",
+        "strength": "3",
         "ability": "muster",
         "filename": "panther_1",
         "count": "1",
@@ -6975,7 +6975,7 @@ var ext_to_cards = {
         "id": 2,
         "deck": "toussaint",
         "row": "ranged",
-        "strength": "4",
+        "strength": "3",
         "ability": "muster",
         "filename": "panther_2",
         "count": "1",
@@ -6987,7 +6987,7 @@ var ext_to_cards = {
         "id": 3,
         "deck": "toussaint",
         "row": "ranged",
-        "strength": "4",
+        "strength": "3",
         "ability": "muster",
         "filename": "panther_3",
         "count": "1",
@@ -7034,10 +7034,11 @@ var ext_to_cards = {
         "name": "Damien de la Tour",
         "deck": "toussaint",
         "row": "close",
-        "strength": "8",
-        "ability": "hero",
+        "strength": "6",
+        "ability": "hero bond",
         "filename": "damien_tour",
         "count": "1",
+        "target": "to_beauclair_cavalry",
         "quote": "I served Beauclair well. At least... I hope I did."
     },
     "to_gregoire_gorgon": {
@@ -7209,6 +7210,8 @@ var ext_to_cards = {
         "count": "1",
         "quote": "Limited to only one region of the Continent, scholars consider them critically endangered. Gods be praised..."
     },
+    // HUNGER TRANSFORMATION TARGET: Created card - cannot be added to decks via deckbuilding
+    // This card is created when "to_dettlaff" transforms via Hunger ability
     "to_dettlaff_higher_vampire": {
         "name": "Dettlaff: Higher Vampire",
         "deck": "toussaint",
@@ -7224,7 +7227,7 @@ var ext_to_cards = {
         "id": 1,
         "deck": "toussaint",
         "row": "ranged",
-        "strength": "5",
+        "strength": "3",
         "ability": "muster",
         "filename": "barghest_1",
         "count": "1",
@@ -7248,7 +7251,7 @@ var ext_to_cards = {
         "id": 3,
         "deck": "toussaint",
         "row": "ranged",
-        "strength": "5",
+        "strength": "4",
         "ability": "muster",
         "filename": "barghest_3",
         "count": "1",
@@ -7324,7 +7327,7 @@ var ext_to_cards = {
         "name": "Unseen Elder",
         "deck": "toussaint",
         "row": "agile",
-        "strength": "12",
+        "strength": "14",
         "ability": "hero",
         "filename": "unseen_elder",
         "count": "1",
@@ -7350,6 +7353,8 @@ var ext_to_cards = {
         "count": "1",
         "quote": "Folklore claims they sprout from soil watered with the blood of the dying."
     },
+    // HUNGER TRANSFORMATION CARDS:
+    // These cards transform into their target cards when Nightfall is applied to their row
     "to_dettlaff": {
         "name": "Dettlaff van der Eretein",
         "deck": "toussaint",
@@ -7358,11 +7363,24 @@ var ext_to_cards = {
         "ability": "hunger",
         "filename": "dettlaff",
         "count": "1",
-        "target": "to_vampire",
+        "target": "to_dettlaff_higher_vampire", // Transforms into Dettlaff: Higher Vampire (strength 11, hero scorch)
         "quote": "He did not love like a man, but like an animal. Madly, deeply, unconditionally. Wildly."
     },
+    "to_nobleman": {
+        "name": "Nobleman",
+        "deck": "toussaint",
+        "row": "close",
+        "strength": "5",
+        "ability": "hunger",
+        "filename": "nobleman",
+        "target": "to_vampire", // Transforms into Higher Vampire Count (strength 8, scorch_r)
+        "count": "1",
+        "quote": "Cut from a golden cloth, bred for the ecclesiastical courts."
+    },
+    // HUNGER TRANSFORMATION TARGET: Created card - cannot be added to decks via deckbuilding
+    // This card is created when "to_nobleman" transforms via Hunger ability
     "to_vampire": {
-        "name": "Vampire",
+        "name": "Higher Vampire Count",
         "deck": "toussaint",
         "row": "close",
         "strength": "8",
@@ -7396,7 +7414,7 @@ var ext_to_cards = {
         "name": "Orianna: Bruxa",
         "deck": "toussaint",
         "row": "ranged",
-        "strength": "8",
+        "strength": "11",
         "ability": "hero",
         "filename": "orianna",
         "count": "1",
@@ -7420,6 +7438,7 @@ var ext_to_cards = {
         "strength": "5",
         "ability": "hunger",
         "filename": "hubert",
+        "target": "to_lacerate",
         "count": "1",
         "quote": "I'm not a monster. I'm a man."
     },
@@ -7552,7 +7571,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "any",
         "strength": "2",
-        "ability": "",
+        "ability": "menagerie_muster",
         "filename": "menagerie_keeper",
         "count": "1",
         "quote": "If there's one thing Nilfgaardians love more than blood-soaked arena battles, it's blood-soaked arena battles with exotic beasts."
@@ -7573,10 +7592,9 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "ranged",
         "strength": "4",
-        "ability": "bond",
+        "ability": "",
         "filename": "caed_myrkvid_druid_1",
         "count": "1",
-        "target": "to_caed_myrkvid_druid",
         "quote": "We fled here to escape people such as you."
     },
     "to_caed_myrkvid_druid_2": {
@@ -7585,10 +7603,9 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "ranged",
         "strength": "4",
-        "ability": "bond",
+        "ability": "",
         "filename": "caed_myrkvid_druid_2",
         "count": "1",
-        "target": "to_caed_myrkvid_druid",
         "quote": "We fled here to escape people such as you."
     },
     "to_field_medic": {
@@ -7649,7 +7666,7 @@ var ext_to_cards = {
         "strength": "9",
         "ability": "spy hunger",
         "filename": "duchess_informant",
-        "target": "vampire1",
+        "target": "to_vampire1",
         "count": "1",
         "quote": "Anna Henrietta wakes every morn to the tune of her songbirds."
     }

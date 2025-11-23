@@ -146,17 +146,32 @@ var ability_dict = {
 		placed: async (card, row) => {
 			if (card.isLocked() || game.scorchCancelled) return;
 			if (row !== undefined) row.cards.splice(row.cards.indexOf(card), 1);
-			// Get weakest units from all rows (excluding heroes and shielded rows)
-			let minUnits = board.row.map(r => [r, r.minUnits().filter(u => !u.hero)]).filter(p => p[1].length > 0).filter(p => !p[0].isShielded());
+			
+			// Get all units from all rows (excluding heroes and shielded rows)
+			let allUnits = [];
+			for (let r of board.row) {
+				if (r.isShielded()) continue;
+				for (let u of r.cards) {
+					if (u.isUnit() && !u.hero && u !== card) {
+						allUnits.push([r, u]);
+					}
+				}
+			}
+			
 			if (row !== undefined) row.cards.push(card);
-			if (minUnits.length === 0) return; // No valid targets
-			let minPower = minUnits.reduce((a,p) => Math.min(a, p[1][0].power), Infinity);
-			let culled = minUnits.filter(p => p[1][0].power === minPower);
-			let cards = culled.reduce((a, p) => a.concat(p[1].map(u => [p[0], u])), []);
-			// Exclude the card itself if it's on the board
-			cards = cards.filter(u => u[1] !== card);
+			if (allUnits.length === 0) return; // No valid targets
+			
+			// Find the absolute minimum power across ALL units
+			let minPower = Math.min(...allUnits.map(u => u[1].power), Infinity);
+			if (minPower === Infinity) return; // No valid targets
+			
+			// Filter to only units with the absolute minimum power
+			let cards = allUnits.filter(u => u[1].power === minPower);
+			
 			if (cards.length === 0) return; // No valid targets after filtering
-			await Promise.all(cards.map(async u => await u[1].animate("scorch", true, false)));
+			
+			// Play cull animation over each card being killed (like scorch)
+			await Promise.all(cards.map(async u => await u[1].animate("cull", true, false)));
 			await Promise.all(cards.map(async u => await board.toGrave(u[1], u[0])));
 			board.updateScores();
 		}
@@ -178,6 +193,12 @@ var ability_dict = {
 		description: "Find any cards with the same name in your deck and play them instantly. ",
 		placed: async (card) => {
 			if (card.isLocked()) return;
+			
+			// CRITICAL: Only trigger muster if card was played directly (not summoned by another muster)
+			// Cards summoned by muster should NOT trigger their own muster ability
+			if (card._summonedByMuster === true) {
+				return;
+			}
 			
 			// CRITICAL: Only muster if card has a valid, non-empty string target
 			const cardTarget = card.target;
@@ -210,10 +231,85 @@ var ability_dict = {
 			
 			await card.animate("muster");
 			if (card.row === "agile") {
-				await Promise.all(units.map(async p => await board.addCardToRow(p[1], card.currentLocation, p[1].holder, p[0])));
+				await Promise.all(units.map(async p => {
+					// Mark cards as summoned by muster so they don't trigger their own muster
+					p[1]._summonedByMuster = true;
+					await board.addCardToRow(p[1], card.currentLocation, p[1].holder, p[0]);
+					// Clear the flag after a short delay to allow other effects to work
+					setTimeout(() => { p[1]._summonedByMuster = false; }, 100);
+				}));
 			} else {
-				await Promise.all(units.map(async p => await board.addCardToRow(p[1], p[1].row, p[1].holder, p[0])));
+				await Promise.all(units.map(async p => {
+					// Mark cards as summoned by muster so they don't trigger their own muster
+					p[1]._summonedByMuster = true;
+					await board.addCardToRow(p[1], p[1].row, p[1].holder, p[0]);
+					// Clear the flag after a short delay to allow other effects to work
+					setTimeout(() => { p[1]._summonedByMuster = false; }, 100);
+				}));
 			}
+		}
+	},
+	menagerie_muster: {
+		name: "Menagerie Muster",
+		description: "Summon one Panther, one Wolf, and one Raging Bear from your deck and hand.",
+		placed: async (card) => {
+			if (card.isLocked()) return;
+			
+			// Find exactly one Panther, one Wolf, and one Raging Bear
+			const menagerieCards = [];
+			const pantherKeys = ["to_panther_1", "to_panther_2", "to_panther_3"];
+			const wolfKeys = ["to_wolves_1", "to_wolves_2"];
+			const bearKey = "nv_raging_bear";
+			
+			let foundPanther = false;
+			let foundWolf = false;
+			let foundBear = false;
+			
+			// Check hand first (hand takes priority)
+			for (const c of card.holder.hand.cards) {
+				if (c === card) continue; // Skip the exact same card instance
+				if (!foundPanther && pantherKeys.includes(c.key)) {
+					menagerieCards.push([card.holder.hand, c]);
+					foundPanther = true;
+				} else if (!foundWolf && wolfKeys.includes(c.key)) {
+					menagerieCards.push([card.holder.hand, c]);
+					foundWolf = true;
+				} else if (!foundBear && c.key === bearKey) {
+					menagerieCards.push([card.holder.hand, c]);
+					foundBear = true;
+				}
+				if (foundPanther && foundWolf && foundBear) break; // Found all three
+			}
+			
+			// Check deck if we haven't found all three yet
+			if (!foundPanther || !foundWolf || !foundBear) {
+				for (const c of card.holder.deck.cards) {
+					if (c === card) continue; // Skip the exact same card instance
+					if (!foundPanther && pantherKeys.includes(c.key)) {
+						menagerieCards.push([card.holder.deck, c]);
+						foundPanther = true;
+					} else if (!foundWolf && wolfKeys.includes(c.key)) {
+						menagerieCards.push([card.holder.deck, c]);
+						foundWolf = true;
+					} else if (!foundBear && c.key === bearKey) {
+						menagerieCards.push([card.holder.deck, c]);
+						foundBear = true;
+					}
+					if (foundPanther && foundWolf && foundBear) break; // Found all three
+				}
+			}
+			
+			if (menagerieCards.length === 0) return;
+			
+			await card.animate("muster");
+			// Summon all found menagerie cards to their appropriate rows
+			await Promise.all(menagerieCards.map(async p => {
+				// Mark cards as summoned by muster so they don't trigger their own muster
+				p[1]._summonedByMuster = true;
+				await board.addCardToRow(p[1], p[1].row, p[1].holder, p[0]);
+				// Clear the flag after a short delay to allow other effects to work
+				setTimeout(() => { p[1]._summonedByMuster = false; }, 100);
+			}));
 		}
 	},
 	spy: {
@@ -387,20 +483,51 @@ var ability_dict = {
 				let avenger;
 				// Avenger bypasses embargo because it can create new cards from nothing
 				// First check deck, then hand, then create new if not found
-				if (card.holder.deck.findCards(c => c.key === avengerTarget).length) {
-					avenger = card.holder.deck.findCard(c => c.key === avengerTarget);
-					const targetRow = getAvengerRow(avenger, card);
-					await board.moveTo(avenger, targetRow, card.holder.deck);
-				} else if (card.holder.hand.findCards(c => c.key === avengerTarget).length) {
-					avenger = card.holder.hand.findCard(c => c.key === avengerTarget);
-					const targetRow = getAvengerRow(avenger, card);
-					await board.moveTo(avenger, targetRow, card.holder.hand);
+				// CRITICAL: Verify card is actually in the expected location before moving
+				const deckCards = card.holder.deck.findCards(c => c.key === avengerTarget);
+				if (deckCards.length > 0) {
+					avenger = deckCards[0];
+					// Verify card is still in deck before moving
+					if (avenger.currentLocation === card.holder.deck || card.holder.deck.cards.includes(avenger)) {
+						const targetRow = getAvengerRow(avenger, card);
+						await board.moveTo(avenger, targetRow, card.holder.deck);
+					} else {
+						// Card is no longer in deck, try hand or create new
+						const handCards = card.holder.hand.findCards(c => c.key === avengerTarget);
+						if (handCards.length > 0 && (handCards[0].currentLocation === card.holder.hand || card.holder.hand.cards.includes(handCards[0]))) {
+							avenger = handCards[0];
+							const targetRow = getAvengerRow(avenger, card);
+							await board.moveTo(avenger, targetRow, card.holder.hand);
+						} else {
+							// Not found in deck or hand - create new card (bypasses embargo)
+							avenger = new Card(avengerTarget, card_dict[avengerTarget], card.holder);
+							const targetRow = getAvengerRow(avenger, card);
+							await board.addCardToRow(avenger, targetRow, card.holder);
+							if (avengerTarget != card.key) avenger.removed.push(() => setTimeout(() => avenger.holder.grave.removeCard(avenger), 2000));
+						}
+					}
 				} else {
-					// Not found in deck or hand - create new card (bypasses embargo)
-					avenger = new Card(avengerTarget, card_dict[avengerTarget], card.holder);
-					const targetRow = getAvengerRow(avenger, card);
-					await board.addCardToRow(avenger, targetRow, card.holder);
-					if (avengerTarget != card.key) avenger.removed.push(() => setTimeout(() => avenger.holder.grave.removeCard(avenger), 2000));
+					const handCards = card.holder.hand.findCards(c => c.key === avengerTarget);
+					if (handCards.length > 0) {
+						avenger = handCards[0];
+						// Verify card is still in hand before moving
+						if (avenger.currentLocation === card.holder.hand || card.holder.hand.cards.includes(avenger)) {
+							const targetRow = getAvengerRow(avenger, card);
+							await board.moveTo(avenger, targetRow, card.holder.hand);
+						} else {
+							// Card is no longer in hand - create new card (bypasses embargo)
+							avenger = new Card(avengerTarget, card_dict[avengerTarget], card.holder);
+							const targetRow = getAvengerRow(avenger, card);
+							await board.addCardToRow(avenger, targetRow, card.holder);
+							if (avengerTarget != card.key) avenger.removed.push(() => setTimeout(() => avenger.holder.grave.removeCard(avenger), 2000));
+						}
+					} else {
+						// Not found in deck or hand - create new card (bypasses embargo)
+						avenger = new Card(avengerTarget, card_dict[avengerTarget], card.holder);
+						const targetRow = getAvengerRow(avenger, card);
+						await board.addCardToRow(avenger, targetRow, card.holder);
+						if (avengerTarget != card.key) avenger.removed.push(() => setTimeout(() => avenger.holder.grave.removeCard(avenger), 2000));
+					}
 				}
 			}
 		},
@@ -664,11 +791,18 @@ var ability_dict = {
 			};
 			
 			// Hook into updateScores to check after every score update
+			// CRITICAL: Use a flag to prevent infinite recursion
+			let isUpdatingFrancesca = false;
 			const originalUpdateScores = board.updateScores;
 			board.updateScores = function() {
 				const result = originalUpdateScores.call(this);
-				if (player.leader && player.leader.abilities && player.leader.abilities.includes("francesca_queen")) {
-					updateFrancescaQueenBoost();
+				if (!isUpdatingFrancesca && player.leader && player.leader.abilities && player.leader.abilities.includes("francesca_queen")) {
+					isUpdatingFrancesca = true;
+					try {
+						updateFrancescaQueenBoost();
+					} finally {
+						isUpdatingFrancesca = false;
+					}
 				}
 				return result;
 			};
@@ -1498,16 +1632,14 @@ var ability_dict = {
 			const nightfallCard = new Card("spe_nightfall", nightfallData, player);
 			nightfallCard.temporaryCard = true; // Mark as temporary so it doesn't go to discard
 			
-			// Play Nightfall on all rows
-			for (let i = 0; i < board.row.length; i++) {
-				await board.row[i].addOverlay("nightfall");
-			}
+			// Add Nightfall card to weather area (so it can be removed by Clear Weather)
+			await weather.addCard(nightfallCard, true);
 			
 			// Destroy it at round end (don't send to discard)
 			game.roundEnd.push(async () => {
-				// Remove nightfall from all rows
-				for (let i = 0; i < board.row.length; i++) {
-					board.row[i].removeOverlay("nightfall");
+				// Remove nightfall card from weather area if it still exists
+				if (weather.cards.includes(nightfallCard)) {
+					weather.removeCard(nightfallCard, true);
 				}
 				// Don't send to discard - just destroy the card object
 				return true; // Remove hook after execution
@@ -3174,14 +3306,32 @@ var ability_dict = {
 			// Play conspiracy sound effect
 			tocar("conspiracy", false);
 			
-			// Ensure card element is ready before animating
-			// The animation should play over the card that triggers conspiracy
-			if (card.elem && card.elem.children && card.elem.children.length > 0) {
-				await card.animate("conspiracy", false, false);
+			// CRITICAL: Ensure card element is fully positioned on the board before animating
+			// The animation must play over the card that triggers conspiracy
+			// translateTo animation completes before addCard is called, but we need to wait for the card to be fully rendered
+			// Wait longer to ensure the card element is fully positioned and the animation overlay can be created
+			await sleep(300);
+			
+			// Verify card is on the board and has an element before animating
+			if (card.currentLocation instanceof Row && card.elem) {
+				// Animate over the card that triggered conspiracy
+				// Use default parameters (bFade=true, bExpand=true) like spy animation
+				// This will fade in, hold, and fade out
+				try {
+					await card.animate("conspiracy");
+				} catch (err) {
+					console.warn("Conspiracy animation failed:", err);
+				}
 			} else {
-				// Wait a bit for card element to be ready
-				await sleep(100);
-				await card.animate("conspiracy", false, false);
+				// Card might not be ready yet, wait a bit more and try again
+				await sleep(200);
+				if (card.elem && card.currentLocation instanceof Row) {
+					try {
+						await card.animate("conspiracy");
+					} catch (err) {
+						console.warn("Conspiracy animation failed (retry):", err);
+					}
+				}
 			}
 			
 			// Find special cards in the discard pile
@@ -3197,8 +3347,12 @@ var ability_dict = {
 			// Discard 2 cards from opponent's deck into their discard pile
 			for (let i = 0; i < 2 && opponent.deck.cards.length > 0; i++) {
 				const cardToDiscard = opponent.deck.cards[0]; // Take from top of deck
-				opponent.deck.removeCard(cardToDiscard);
-				await board.toGrave(cardToDiscard, opponent.deck);
+				// CRITICAL: Remove card from deck first, then pass null as source since it's already removed
+				const removedCard = opponent.deck.removeCard(cardToDiscard);
+				if (removedCard) {
+					// Card was successfully removed, now move it to grave with null source
+					await board.toGrave(removedCard, null);
+				}
 			}
 		},
 		weight: (card, ai, max) => {

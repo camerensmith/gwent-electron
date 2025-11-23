@@ -2816,7 +2816,15 @@ class CardContainer {
 	}
 
 	removeCardElement(card, index) {
-		if (this.elem) this.elem.removeChild(card.elem);
+		if (this.elem && card && card.elem) {
+			// Check if the element is actually a child before removing
+			if (card.elem.parentNode === this.elem) {
+				this.elem.removeChild(card.elem);
+			} else {
+				// Element is not a child - it may have already been removed or moved
+				console.warn("[removeCardElement] Card element is not a child of container:", card.name || card.key);
+			}
+		}
 	}
 
 	addCardElement(card, index) {
@@ -3222,6 +3230,55 @@ class Row extends CardContainer {
 			this.addCardElement(card, index);
 			this.resize();
 		}
+		// CRITICAL: Apply weather effects immediately when card enters a weather-affected row
+		// This ensures units entering weather-affected rows have their stats properly affected
+		if (card.isUnit() && !card.hero && this.effects.weather && !card.weatherImmune) {
+			// Recalculate card power immediately to account for weather
+			this.cardScore(card);
+		}
+		// CRITICAL: Check for Nightfall and transform hunger units when they enter a row with Nightfall
+		if (card.isUnit() && !card.hero && this.effects.nightfall && card.abilities.includes("hunger") && card.target && !card.isLocked() && runEffect) {
+			// Unit with hunger entering a row with Nightfall - transform immediately
+			const hungerTarget = card.target;
+			if (hungerTarget && card_dict[hungerTarget]) {
+				// Check if target card is already on the field - if so, skip transformation
+				const targetAlreadyOnField = card.holder.getAllRowCards().some(c => c.key === hungerTarget);
+				if (!targetAlreadyOnField) {
+					// Remove the hunger card from the row
+					this.removeCard(card, false);
+					await board.toGrave(card, this);
+					
+					// CRITICAL: Check again if target is already on field (another transformation might have played it)
+					const targetAlreadyOnFieldNow = card.holder.getAllRowCards().some(c => c.key === hungerTarget);
+					if (targetAlreadyOnFieldNow) {
+						// Target card is already on the field (another transformation played it), skip this transformation
+						return;
+					}
+					
+					// Create and play the target card
+					// Priority: Use card from deck if available, else hand, else create new card
+					// Only ONE copy should be on the field
+					let transformedCard;
+					if (card.holder.deck.findCards(c => c.key === hungerTarget).length > 0) {
+						// Card exists in deck - play it from deck
+						transformedCard = card.holder.deck.findCard(c => c.key === hungerTarget);
+						const targetRow = this; // Use the same row
+						await board.moveTo(transformedCard, targetRow, card.holder.deck);
+					} else if (card.holder.hand.findCards(c => c.key === hungerTarget).length > 0) {
+						// Card exists in hand - play it from hand
+						transformedCard = card.holder.hand.findCard(c => c.key === hungerTarget);
+						const targetRow = this; // Use the same row
+						await board.moveTo(transformedCard, targetRow, card.holder.hand);
+					} else {
+						// Card doesn't exist in deck or hand - create new card
+						transformedCard = new Card(hungerTarget, card_dict[hungerTarget], card.holder);
+						const targetRow = this; // Use the same row
+						await board.addCardToRow(transformedCard, targetRow, card.holder);
+					}
+					return; // Don't process the hunger card further since it was transformed
+				}
+			}
+		}
 		// CRITICAL: Wait for card to be fully positioned before triggering animations
 		// This ensures animations align with the card's final position on the field
 		await sleep(50); // Small delay to ensure card element is fully rendered in its new position
@@ -3366,7 +3423,10 @@ class Row extends CardContainer {
 		// Nightfall is visual only and doesn't affect power
 		if (overlay === "nightfall") {
 			this.effects.nightfall = true;
-			this.triggerHungerTransformations();
+			// Note: When Nightfall is added via weather.addCard(), it processes all rows and discard pile cards
+			// This per-row call only processes cards on THIS row (not discard pile, to avoid duplicates)
+			// Pass false to skip discard pile processing (already handled by weather.addCard)
+			this.triggerHungerTransformations(false);
 		} else {
 			// Regular weather affects power
 		this.effects.weather = true;
@@ -3386,20 +3446,24 @@ class Row extends CardContainer {
 		this.updateScore();
 	}
 
-	async triggerHungerTransformations() {
+	async triggerHungerTransformations(includeDiscardPile = true) {
 		// Find all cards with hunger ability in this row
 		const hungerCardsOnRow = this.cards.filter(c => c.isUnit() && c.abilities.includes("hunger") && !c.isLocked() && c.target);
 		
 		// CRITICAL: Also find hunger cards in both players' discard piles (graves)
 		// Nightfall should trigger hunger transformations even if the cards are in the discard pile
+		// BUT: Only check discard pile cards once (when includeDiscardPile is true), not for every row
+		// Use a static flag to track if we've already processed discard pile cards
 		const hungerCardsInGrave = [];
-		
-		// Check both players' graves for hunger cards
-		for (const player of [player_me, player_op]) {
-			const graveHungerCards = player.grave.cards.filter(c => 
-				c.isUnit() && c.abilities.includes("hunger") && c.target
-			);
-			hungerCardsInGrave.push(...graveHungerCards);
+		if (includeDiscardPile && !Row._discardPileHungerProcessed) {
+			Row._discardPileHungerProcessed = true;
+			// Check both players' graves for hunger cards (only once)
+			for (const player of [player_me, player_op]) {
+				const graveHungerCards = player.grave.cards.filter(c => 
+					c.isUnit() && c.abilities.includes("hunger") && c.target
+				);
+				hungerCardsInGrave.push(...graveHungerCards);
+			}
 		}
 		
 		// Combine hunger cards from row and grave
@@ -3491,17 +3555,30 @@ class Row extends CardContainer {
 			}
 			// If hunger card is in grave, it STAYS in the grave (don't remove it)
 			
+			// CRITICAL: Check again if target is already on field (another transformation might have played it)
+			// This prevents duplicates when multiple hunger cards transform simultaneously
+			const targetAlreadyOnFieldNow = hungerCard.holder.getAllRowCards().some(c => c.key === hungerTarget);
+			if (targetAlreadyOnFieldNow) {
+				// Target card is already on the field (another transformation played it), skip this transformation
+				continue;
+			}
+			
 			// Create and play the target card
+			// Priority: Use card from deck if available, else hand, else create new card
+			// Only ONE copy should be on the field
 			let transformedCard;
-			if (hungerCard.holder.deck.findCards(c => c.key === hungerTarget).length) {
+			if (hungerCard.holder.deck.findCards(c => c.key === hungerTarget).length > 0) {
+				// Card exists in deck - play it from deck
 				transformedCard = hungerCard.holder.deck.findCard(c => c.key === hungerTarget);
 				const targetRow = getTransformedRow(transformedCard, hungerCard, isInGrave);
 				await board.moveTo(transformedCard, targetRow, hungerCard.holder.deck);
-			} else if (hungerCard.holder.hand.findCards(c => c.key === hungerTarget).length) {
+			} else if (hungerCard.holder.hand.findCards(c => c.key === hungerTarget).length > 0) {
+				// Card exists in hand - play it from hand
 				transformedCard = hungerCard.holder.hand.findCard(c => c.key === hungerTarget);
 				const targetRow = getTransformedRow(transformedCard, hungerCard, isInGrave);
 				await board.moveTo(transformedCard, targetRow, hungerCard.holder.hand);
 			} else {
+				// Card doesn't exist in deck or hand - create new card
 				transformedCard = new Card(hungerTarget, card_dict[hungerTarget], hungerCard.holder);
 				const targetRow = getTransformedRow(transformedCard, hungerCard, isInGrave);
 				await board.addCardToRow(transformedCard, targetRow, hungerCard.holder);
@@ -3548,7 +3625,22 @@ class Row extends CardContainer {
 	calcCardScore(card) {
 		if (card.key === "spe_decoy") return 0;
 		let total = card.basePower;
-		if (card.hero) return total;
+		
+		// CRITICAL: Heroes normally return early, but if they have bond ability, they can benefit from bond
+		const hasBond = card.abilities.includes("bond");
+		
+		// If hero without bond, return early (normal hero behavior - immune to all effects)
+		if (card.hero && !hasBond) return total;
+		
+		// For heroes with bond, they can benefit from bond but are still immune to other effects
+		if (card.hero && hasBond) {
+			// Hero with bond: only apply bond multiplier, skip all other effects
+			let bond = this.effects.bond[card.target];
+			if (isNumber(bond) && bond > 1 && !card.isLocked()) total *= Number(bond);
+			return total;
+		}
+		
+		// Non-hero cards: apply all effects normally
 		if (card.abilities.includes("spy")) total = Math.floor(game.spyPowerMult * total);
 		if (card.abilities.includes("inspire") && !card.isLocked()) {
 			let inspires = card.holder.getAllRowCards().filter(c => !c.isLocked() && c.abilities.includes("inspire"));
@@ -3833,6 +3925,22 @@ class Weather extends CardContainer {
 			this.clearWeather();
 		} else {
 			this.changeWeather(card, x => ++this.types[x].count === 1, (r, t) => r.addOverlay(t.name));
+			
+			// CRITICAL: When Nightfall is played, trigger hunger transformations for all rows
+			// This includes hunger cards in the discard pile
+			// Reset the flag so discard pile cards are processed once
+			if (card.abilities.includes("nightfall")) {
+				Row._discardPileHungerProcessed = false; // Reset flag before processing
+				// Trigger hunger transformations for all rows (this handles both on-board and discard pile cards)
+				// Discard pile cards will only be processed once (on first row, when includeDiscardPile=true)
+				for (let i = 0; i < board.row.length; i++) {
+					// First row processes discard pile cards, subsequent rows only process their own cards
+					await board.row[i].triggerHungerTransformations(i === 0);
+				}
+				// Clear the flag after processing
+				Row._discardPileHungerProcessed = false;
+			}
+			
 			for (let i = this.cards.length - 2; i >= 0; --i) {
 				if (card.abilities.at(-1) === this.cards[i].abilities.at(-1)) {
 					await sleep(750);
@@ -3952,7 +4060,16 @@ class Board {
 		// Check if source has removeCard method before calling it
 		let cardToAdd = card;
 		if (source && typeof source.removeCard === 'function') {
-			cardToAdd = source.removeCard(card);
+			// CRITICAL: Verify card is actually in the source before trying to remove it
+			// If not, use the card's currentLocation instead
+			let actualSource = source;
+			if (source.cards && !source.cards.includes(card)) {
+				// Card is not in the provided source, try using currentLocation
+				if (card.currentLocation && card.currentLocation !== source && typeof card.currentLocation.removeCard === 'function') {
+					actualSource = card.currentLocation;
+				}
+			}
+			cardToAdd = actualSource.removeCard(card);
 			// If removal failed (returned null), use the original card
 			if (!cardToAdd) {
 				console.warn("moveTo: Card removal from source failed, using original card reference");
@@ -4440,6 +4557,12 @@ class Game {
 		player_me.reset();
 		player_op.reset();
 		this.endScreen.classList.add("hide");
+		// Show main game screen
+		var mainEl = document.getElementsByTagName("main")[0];
+		if (mainEl) mainEl.style.display = "";
+		// Hide deck customization if visible
+		var deckEl = document.getElementById("deck-customization");
+		if (deckEl) deckEl.style.display = "none";
 		this.startGame();
 	}
 
@@ -4584,7 +4707,7 @@ class Card {
 		}
 		var temSom = new Array();
 		for (var x in guia) temSom[temSom.length] = x;
-		var literais = ["scorch", "spy", "horn", "shield", "lock", "seize", "aard", "resilience", "immortal", "fortify", "necromancy", "conspiracy", "skelligetactics", "clairvoyance", "omen", "guard", "quen", "yrden", "axii", "sacrifice", "embargo", "wine", "bribe", "emissary", "execute", "clear"];
+		var literais = ["scorch", "cull", "spy", "horn", "shield", "lock", "seize", "aard", "resilience", "immortal", "fortify", "necromancy", "conspiracy", "skelligetactics", "clairvoyance", "omen", "guard", "quen", "yrden", "axii", "sacrifice", "embargo", "wine", "bribe", "emissary", "execute", "clear"];
 		// CRITICAL: Ensure morale and bond always use "moral" sound, never "horn"
 		// Handle morale and bond explicitly before the general mapping to prevent any confusion
 		var som;
@@ -4601,19 +4724,95 @@ class Card {
 			// The animation should only play on the units being killed (handled in abilities.js and row.scorch())
 			return;
 		}
+		// CRITICAL: Don't animate the cull card itself - only animate units being killed
+		// The cull animation should only play on units that are being destroyed, not on the card triggering cull
+		if (name === "cull" && (this.abilities.includes("cull") || this.key === "spe_cull")) {
+			// This is the cull card itself - don't animate it
+			// The animation should only play on the units being killed (handled in abilities.js)
+			return;
+		}
 		if (name === "scorch") return await this.scorch(name);
-		let anim = this.elem.children[this.elem.children.length - 1];
-		anim.style.backgroundImage = iconURL("anim_" + name);
-		await sleep(50);
-		if (bFade) fadeIn(anim, 300);
-		if (bExpand) anim.style.backgroundSize = "100% auto";
-		await sleep(300);
-		if (bExpand) anim.style.backgroundSize = "80% auto";
-		await sleep(1000);
-		if (bFade) fadeOut(anim, 300);
-		if (bExpand) anim.style.backgroundSize = "40% auto";
-		await sleep(300);
+		if (name === "cull") return await this.scorch(name); // Use same animation style as scorch (cover, fade in/out)
+		
+		// CRITICAL: Ensure animation overlay element exists
+		// For temporary animations, always create a fresh overlay element
+		// Check if the last child is an animation overlay (has absolute positioning and full coverage)
+		let anim = null;
+		if (this.elem.children.length > 0) {
+			const lastChild = this.elem.children[this.elem.children.length - 1];
+			// Check if last child is an animation overlay by checking computed styles
+			const computedStyle = window.getComputedStyle(lastChild);
+			const isAbsolute = computedStyle.position === "absolute";
+			const hasFullWidth = computedStyle.width === "100%" || lastChild.style.width === "100%";
+			const hasFullHeight = computedStyle.height === "100%" || lastChild.style.height === "100%";
+			const hasPointerEventsNone = computedStyle.pointerEvents === "none" || lastChild.style.pointerEvents === "none";
+			
+			if (isAbsolute && hasFullWidth && hasFullHeight && hasPointerEventsNone) {
+				anim = lastChild;
+			}
+		}
+		
+		// Create animation overlay element if it doesn't exist
+		if (!anim) {
+			anim = document.createElement("div");
+			anim.style.position = "absolute";
+			anim.style.top = "0";
+			anim.style.left = "0";
+			anim.style.width = "100%";
+			anim.style.height = "100%";
+			anim.style.pointerEvents = "none";
+			anim.style.zIndex = "1000";
+			if (!this.elem.style.position || this.elem.style.position === "static") {
+				this.elem.style.position = "relative";
+			}
+			this.elem.appendChild(anim);
+		}
+		
+		// Clear any existing background and reset styles
 		anim.style.backgroundImage = "";
+		anim.style.backgroundSize = "";
+		anim.style.backgroundPosition = "";
+		
+		// Set initial opacity based on bFade parameter
+		if (!bFade) {
+			anim.style.opacity = "1"; // Make visible immediately if no fade
+		} else {
+			anim.style.opacity = "0"; // Start invisible for fade in
+		}
+		
+		// Set the animation background image
+		anim.style.backgroundImage = iconURL("anim_" + name);
+		anim.style.backgroundSize = bExpand ? "100% auto" : "cover";
+		anim.style.backgroundPosition = "center";
+		
+		await sleep(50);
+		if (bFade) {
+			fadeIn(anim, 300);
+		}
+		if (bExpand) {
+			anim.style.backgroundSize = "100% auto";
+		}
+		await sleep(300);
+		if (bExpand) {
+			anim.style.backgroundSize = "80% auto";
+		}
+		await sleep(1000);
+		if (bFade) {
+			fadeOut(anim, 300);
+		} else {
+			// If no fade, just wait a bit before clearing
+			await sleep(300);
+		}
+		if (bExpand) {
+			anim.style.backgroundSize = "40% auto";
+		}
+		await sleep(300);
+		
+		// Clean up: remove background image and reset opacity
+		anim.style.backgroundImage = "";
+		anim.style.opacity = "";
+		anim.style.backgroundSize = "";
+		anim.style.backgroundPosition = "";
 	}
 
 	showLockAnimation() {
@@ -4773,6 +4972,7 @@ class Card {
 			let str = card.abilities[card.abilities.length - 1];
 			if (str && str.trim() !== "") {
 				if (str === "cerys") str = "muster";
+				if (str === "menagerie_muster") str = "muster"; // Use muster icon for menagerie_muster
 				if (str.startsWith("avenger")) str = "avenger";
 				if (str === "scorch_c") str = "scorch_combat";
 				else if (str === "scorch_r") str = "scorch_ranged";
@@ -5306,6 +5506,7 @@ class UI {
 			let str = card.row === "agile" ? "agile" : (card.row === "any" ? "any" : (card.row === "melee_siege" ? "melee_siege" : (card.row === "ranged_siege" ? "ranged_siege" : "")));
 			if (card.abilities.length) str = card.abilities[card.abilities.length - 1];
 			if (str === "cerys") str = "muster";
+			if (str === "menagerie_muster") str = "muster"; // Use muster icon for menagerie_muster
 			if (str.startsWith("avenger")) str = "avenger";
 			if (str === "scorch_c") str = "scorch_combat";
 			else if (str === "scorch_r") str = "scorch_ranged";
@@ -5480,6 +5681,20 @@ class UI {
 		}
 		weather.elem.classList.add("noclick");
 		if (card.faction === "special" && (card.abilities.includes("scorch") || card.abilities.includes("redania_purge"))) {
+			for (let r of board.row) {
+				if (r.isShielded() || game.scorchCancelled) {
+					r.elem.classList.add("noclick");
+					r.special.elem.classList.add("noclick");
+				} else {
+					r.elem.classList.add("row-selectable");
+					r.special.elem.classList.add("row-selectable");
+					alteraClicavel(r, true);
+				}
+			}
+			return;
+		}
+		if (card.faction === "special" && card.abilities.includes("cull")) {
+			// Cull affects all rows - highlight all rows as selectable
 			for (let r of board.row) {
 				if (r.isShielded() || game.scorchCancelled) {
 					r.elem.classList.add("noclick");
@@ -6121,6 +6336,8 @@ class DeckMaker {
 			if (faction === "witchers" && (p.index === "spe_scorch" || p.index === "spe_decoy")) {
 				return false;
 			}
+			// NOTE: Hunger transformation target cards are NOT excluded here - they will be shown
+			// but greyed out and disabled in makePreview() and select() methods
 			// For other factions, use original filter
 			return (
 				(
@@ -6162,26 +6379,55 @@ class DeckMaker {
 		let elem = document.createElement("div");
 		elem.classList.add("card-lg");
 		elem = getPreviewElem(elem, card_data, num);
+		
+		// Check if this card is a hunger transformation target
+		// Hunger targets cannot be added to decks, only obtained through transformations
+		const isHungerTarget = this.isHungerTransformationTarget(index);
+		if (isHungerTarget) {
+			// Grey out the card visually but still allow previewing
+			elem.style.opacity = "0.5";
+			elem.style.filter = "grayscale(100%)";
+			elem.style.cursor = "not-allowed";
+			elem.title = "This card cannot be added to decks. It can only be obtained through Hunger transformations.";
+		}
+		
 		container_elem.appendChild(elem);
 		let bankID = {
 			index: index,
 			count: num,
-			elem: elem
+			elem: elem,
+			isHungerTarget: isHungerTarget
 		};
 		let isBank = cards === this.bank;
 		cards.push(bankID);
 		let cardIndex = cards.length - 1;
-		elem.addEventListener("dblclick", () => this.select(cardIndex, isBank), false);
-		elem.addEventListener("mouseover", () => {
-			var aux = this;
+		
+		// Only allow selecting if it's not a hunger target
+		if (!isHungerTarget) {
+			elem.addEventListener("dblclick", () => this.select(cardIndex, isBank), false);
+			elem.addEventListener("mouseover", () => {
+				var aux = this;
 
-			carta_selecionada = function() {
-				aux.select(cardIndex, isBank);
-			}
-		}, false);
-		window.addEventListener("keydown", function (e) {
-			if (e.keyCode == 13 && carta_selecionada !== null) carta_selecionada();
-		});
+				carta_selecionada = function() {
+					aux.select(cardIndex, isBank);
+				}
+			}, false);
+			window.addEventListener("keydown", function (e) {
+				if (e.keyCode == 13 && carta_selecionada !== null) carta_selecionada();
+			});
+		} else {
+			// Hunger targets: disable selection but show message
+			elem.addEventListener("dblclick", (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				// Could show a message here if desired
+			}, false);
+			elem.addEventListener("mouseover", () => {
+				carta_selecionada = null; // Clear selection for hunger targets
+			}, false);
+		}
+		
+		// Always allow previewing (right-click context menu) even for hunger targets
 		elem.addEventListener('contextmenu', async (e) => {
 			e.preventDefault();
 			let container = new CardContainer();
@@ -6192,6 +6438,20 @@ class DeckMaker {
 			await ui.viewCardsInContainer(container);
 		}, false);
 		return bankID;
+	}
+	
+	// Helper function to check if a card is a hunger transformation target
+	isHungerTransformationTarget(cardIndex) {
+		// Check all cards in card_dict to see if any have hunger ability with this card as target
+		for (const [key, cardData] of Object.entries(card_dict)) {
+			if (cardData.ability && cardData.ability.includes("hunger")) {
+				// Check if this card has a target field and if it matches the cardIndex
+				if (cardData.target === cardIndex) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	update() {
@@ -6373,6 +6633,14 @@ class DeckMaker {
 
 	select(index, isBank) {
 		carta_selecionada = null;
+		
+		// Prevent selecting hunger transformation target cards
+		const cardArray = isBank ? this.bank : this.deck;
+		if (cardArray[index] && cardArray[index].isHungerTarget) {
+			// Hunger target cards cannot be added to decks
+			return;
+		}
+		
 		if (isBank) {
 			tocar("menu_buy", false);
 			this.add(index, this.deck);
@@ -6446,6 +6714,8 @@ class DeckMaker {
 		this.clearDeck();
 		
 		// Separate available cards into units and specials
+		// Special cards include: Horn, Scorch, Clear Weather, Cull, Decoy, Mardroeme, etc.
+		// All cards with deck starting with "special" or "weather" are included
 		const availableUnits = [];
 		const availableSpecials = [];
 		
@@ -6454,6 +6724,7 @@ class DeckMaker {
 			if (bankCard && bankCard.count > 0) {
 				const cardData = card_dict[bankCard.index];
 				if (cardData) {
+					// Include all special cards (Horn, Scorch, Clear, Cull, Decoy, etc.) and weather cards
 					const isSpecial = cardData.deck.startsWith("special") || cardData.deck.startsWith("weather");
 					if (isSpecial) {
 						availableSpecials.push({
@@ -7237,6 +7508,12 @@ class DeckMaker {
 			player_op = new Player(1, "Player 2", this.start_op_deck, true);
 		}
 		this.elem.classList.add("hide");
+		// Show main game screen
+		var mainEl = document.getElementsByTagName("main")[0];
+		if (mainEl) mainEl.style.display = "";
+		// Ensure deck customization is hidden
+		var deckEl = document.getElementById("deck-customization");
+		if (deckEl) deckEl.style.display = "none";
 		tocar("game_opening", false);
 		game.startGame();
 	}
@@ -7623,6 +7900,11 @@ class DeckMaker {
 				warning += "ID " + c[0] + " does not correspond to a card.\n";
 				return false
 			}
+			// Exclude hunger transformation target cards - these are "created" cards that cannot be added to decks
+			if (this.isHungerTransformationTarget(c[0])) {
+				warning += "'" + card.name + "' cannot be added to decks. It can only be obtained through Hunger transformations.\n";
+				return false;
+			}
 			if (!(
 				[deck.faction, "neutral", "special", "weather"].includes(card.deck) ||
 				(["special", "weather"].includes(card.deck.split(" ")[0]) && card.deck.split(" ").includes(deck.faction))
@@ -7904,6 +8186,7 @@ function getPreviewElem(elem, card, nb = 0) {
 			let str = c_abilities[c_abilities.length - 1];
 			if (str && str.trim() !== "") {
 				if (str === "cerys") str = "muster";
+				if (str === "menagerie_muster") str = "muster"; // Use muster icon for menagerie_muster
 				if (str.startsWith("avenger")) str = "avenger";
 				if (str === "scorch_c") str = "scorch_combat";
 				else if (str === "scorch_r") str = "scorch_ranged";
@@ -7931,6 +8214,7 @@ function getPreviewElem(elem, card, nb = 0) {
 			let str = c_abilities[c_abilities.length - 2];
 			if (str && str.trim() !== "") {
 				if (str === "cerys") str = "muster";
+				if (str === "menagerie_muster") str = "muster"; // Use muster icon for menagerie_muster
 				if (str.startsWith("avenger")) str = "avenger";
 				if (str === "scorch_c") str = "scorch_combat";
 				else if (str === "scorch_r") str = "scorch_ranged";
