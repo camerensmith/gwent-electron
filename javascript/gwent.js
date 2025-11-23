@@ -4161,6 +4161,11 @@ class Board {
 	getRow(card, row_name, player) {
 		player = player ? player : card ? card.holder : player_me;
 		let isMe = player === player_me;
+		// Safety check: ensure card.abilities exists (card might be invalid/malformed)
+		if (!card || !card.abilities) {
+			console.error("getRow: Invalid card object or missing abilities property", card);
+			return null;
+		}
 		let isSpy = card.abilities.includes("spy");
 		let isCurse = card.abilities.includes("curse");
 		let isEmissary = card.abilities.includes("emissary");

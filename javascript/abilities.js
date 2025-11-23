@@ -1541,7 +1541,7 @@ var ability_dict = {
 			ui.enablePlayer(true);
 			if(!(player.controller instanceof ControllerAI)) ui.setSelectable(card, true);
 		},
-		target: "wu_koshchey",
+		target: "nv_koshchey",
 		weight: (card, ai, max) => {
 			if (ai.player.getAllRowCards().filter(c => c.isUnit()).length === 0) return 0;
 			return ai.weightScorchRow(card, max, "close");
