@@ -3937,11 +3937,15 @@ class Board {
 class Game {
 	constructor() {
 		this.endScreen = document.getElementById("end-screen");
-		let buttons = this.endScreen.getElementsByTagName("button");
-		this.customize_elem = buttons[0];
-		this.replay_elem = buttons[1];
-		this.customize_elem.addEventListener("click", () => this.returnToCustomization(), false);
-		this.replay_elem.addEventListener("click", () => this.restartGame(), false);
+		// Use IDs for more reliable button selection
+		this.customize_elem = document.getElementById("end-main-menu");
+		this.replay_elem = document.getElementById("end-replay");
+		if (this.customize_elem) {
+			this.customize_elem.addEventListener("click", () => this.returnToCustomization(), false);
+		}
+		if (this.replay_elem) {
+			this.replay_elem.addEventListener("click", () => this.restartGame(), false);
+		}
 		this.reset();
 		this.randomOPDeck = true;
 		this.fullAI = false;
@@ -4248,6 +4252,12 @@ class Game {
 		statistics[cond][1]++;
 		fadeIn(endScreen, 300);
 		ui.enablePlayer(true);
+		// Ensure end screen is clickable and buttons work
+		endScreen.style.pointerEvents = "auto";
+		endScreen.style.zIndex = "1000";
+		// Ensure buttons are clickable
+		if (this.customize_elem) this.customize_elem.style.pointerEvents = "auto";
+		if (this.replay_elem) this.replay_elem.style.pointerEvents = "auto";
 	}
 
 	returnToCustomization() {
@@ -4256,8 +4266,25 @@ class Game {
 		player_me.reset();
 		player_op.reset();
 		ui.toggleMusic_elem.classList.add("music-customization");
+		// Hide end screen properly
+		this.endScreen.style.opacity = 0;
+		this.endScreen.style.zIndex = 0;
 		this.endScreen.classList.add("hide");
-		document.getElementById("deck-customization").classList.remove("hide");
+		// Hide main game screen
+		var mainEl = document.getElementsByTagName("main")[0];
+		if (mainEl) mainEl.style.display = "none";
+		// Show deck customization
+		var deckEl = document.getElementById("deck-customization");
+		if (deckEl) {
+			deckEl.style.display = "block";
+			deckEl.style.backgroundImage = "url('images/table.jpg')";
+			deckEl.style.backgroundSize = "cover";
+			deckEl.style.backgroundPosition = "center";
+			deckEl.style.backgroundRepeat = "no-repeat";
+		}
+		// Remove noclick from click background
+		var clickBg = document.getElementById("click-background");
+		if (clickBg) clickBg.classList.remove("noclick");
 	}
 
 	restartGame() {
@@ -4682,20 +4709,34 @@ class Card {
 class UI {
 	constructor() {
 		this.userInteracted = false;
-		// Listen for first user interaction to enable audio
+		// Listen for first user interaction to enable audio (critical for mobile)
 		const enableAudio = () => {
 			if (!this.userInteracted) {
 				this.userInteracted = true;
+				// Unlock audio context on mobile by playing a silent sound
+				// This is required for iOS and some Android browsers
+				try {
+					const unlockAudio = new Audio();
+					unlockAudio.volume = 0.01;
+					unlockAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+					unlockAudio.play().catch(() => {});
+				} catch (e) {}
+				
 				// Try to play music after user interaction
 				if (this.backgroundMusic && this.backgroundMusic.paused) {
 					this.playBackgroundMusic();
 				}
 			}
 		};
-		// Listen for various user interactions
+		// Listen for various user interactions (including mobile touch events)
 		document.addEventListener('click', enableAudio, { once: true });
 		document.addEventListener('keydown', enableAudio, { once: true });
 		document.addEventListener('touchstart', enableAudio, { once: true });
+		document.addEventListener('touchend', enableAudio, { once: true });
+		// Also listen on the document body for better mobile coverage
+		if (document.body) {
+			document.body.addEventListener('touchstart', enableAudio, { once: true, passive: true });
+		}
 		
 		this.carousels = [];
 		this.notif_elem = document.getElementById("notification-bar");
@@ -7600,16 +7641,38 @@ function cartaNaLinha(id, carta) {
 
 function tocar(arquivo, pararMusica) {
 	if (arquivo != lastSound && arquivo != "") {
+		// Check if user has interacted (required for mobile audio)
+		if (!ui.userInteracted && !iniciou) {
+			// Silently fail if user hasn't interacted yet (mobile requirement)
+			return;
+		}
+		
 		var s = new Audio("sfx/" + arquivo + ".mp3");
 		// Use UI's sound effects volume setting for consistent balance
 		s.volume = ui.getSoundEffectsVolume();
+		
+		// Preload audio for better mobile performance
+		s.preload = "auto";
 		
 		if (pararMusica && ui.backgroundMusic && !ui.backgroundMusic.paused) {
 			ui.backgroundMusic.pause();
 			ui.toggleMusic_elem.classList.add("fade");
 		}
 		lastSound = arquivo;
-		if (iniciou) s.play();
+		
+		// Play with proper error handling for mobile
+		if (iniciou || ui.userInteracted) {
+			const playPromise = s.play();
+			if (playPromise !== undefined) {
+				playPromise.catch(error => {
+					// Silently handle autoplay errors on mobile
+					// These are expected when user hasn't interacted yet
+					if (error.name !== 'NotAllowedError' && error.name !== 'NotSupportedError') {
+						console.warn("Audio play failed:", error);
+					}
+				});
+			}
+		}
 		setTimeout(function() {
 			lastSound = "";
 		}, 50);

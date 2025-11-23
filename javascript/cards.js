@@ -57,7 +57,7 @@ var default_cards = {
         "strength": "",
         "ability": "nightfall",
         "filename": "nightfall",
-        "count": "3",
+        "count": "4",
         "quote": "When darkness falls, the true nature of monsters is revealed."
     },
     "spe_horn": {
@@ -4472,12 +4472,12 @@ var ext_mo_cards = {
     "mo_johnny": {
         "name": "Johnny",
         "deck": "monsters",
-        "row": "siege",
+        "row": "ranged",
         "strength": "8",
         "ability": "curse",
         "filename": "johnny",
         "count": "1",
-        "quote": ""
+        "quote": "One, two...buckle my shoe..."
     },
     "mo_allgood": {
         "name": "Allgod",
@@ -4540,15 +4540,15 @@ var ext_mo_cards = {
         "count": "1",
         "quote": "Like a cross between a crab, a spider... and a ploughin' mountain."
     },
-    "mo_unholy": {
-        "name": "Unholy",
+    "mo_marlene_trastamara": {
+        "name": "Marlene de Trastamara",
         "deck": "monsters",
-        "row": "ranged",
-        "strength": "10",
+        "row": "close",
+        "strength": "6",
         "ability": "curse",
-        "filename": "unholy",
+        "filename": "marlene_trastamara",
         "count": "1",
-        "quote": "The end is nigh."
+        "quote": "None shall sit and dine with you at your table, no spoon you have shall sate you, never again shall you wish to spy your reflection in the mirror."
     },
     "mo_arachas_queen": {
         "name": "Arachas Queen",
@@ -5888,8 +5888,8 @@ var ext_nv_cards = {
         "name": "Lydia van Bredevoort",
         "deck": "novigrad",
         "row": "ranged",
-        "strength": "5",
-        "ability": "medic",
+        "strength": "6",
+        "ability": "scorch_r",
         "filename": "lydia_bredevoort",
         "count": "1",
         "quote": "Whether by brush or by sorcery, there was no event, emotion, or scene beyond Lydia's power to depict. Apart from joy."
@@ -5979,7 +5979,7 @@ var ext_nv_cards = {
         "deck": "novigrad",
         "row": "ranged",
         "strength": "5",
-        "ability": "scorch_c",
+        "ability": "",
         "filename": "operator",
         "count": "1",
         "quote": "As time and space collapse before us, they expand behind us..."
@@ -6008,7 +6008,7 @@ var ext_nv_cards = {
         "name": "Idr",
         "deck": "novigrad",
         "row": "close",
-        "strength": "11",
+        "strength": "12",
         "ability": "",
         "filename": "idr",
         "count": "1",
@@ -6029,7 +6029,7 @@ var ext_nv_cards = {
         "deck": "novigrad",
         "row": "siege",
         "strength": "6",
-        "ability": "scorch_c",
+        "ability": "medic",
         "filename": "djinn",
         "count": "1",
         "quote": "A djinn, good sirs, fulfills but three wishes. Thus freed, it flees to dimensions unknown."
@@ -6073,16 +6073,6 @@ var ext_nv_cards = {
         "filename": "phoenix",
         "count": "1",
         "quote": "What came first, the chicken or the egg? Compared to the conundrum that is the phoenix, that question seems downright trivial."
-    },
-    "nv_marlene_trastamara": {
-        "name": "Marlene de Trastamara",
-        "deck": "novigrad",
-        "row": "close",
-        "strength": "6",
-        "ability": "",
-        "filename": "marlene_trastamara",
-        "count": "1",
-        "quote": "None shall sit and dine with you at your table, no spoon you have shall sate you, never again shall you wish to spy your reflection in the mirror."
     },
     "nv_idarran_ulivo": {
         "name": "Idarran of Ulivo",
@@ -6201,7 +6191,7 @@ var ext_nv_cards = {
         "deck": "novigrad",
         "row": "close",
         "strength": "5",
-        "ability": "hero morale",
+        "ability": "morale",
         "filename": "sheenaz",
         "count": "1",
         "quote": "The excuses, the stupid and naive excuses: not the slightest bit of dedication!"
@@ -6241,7 +6231,7 @@ var ext_nv_cards = {
         "deck": "novigrad",
         "row": "siege",
         "strength": "10",
-        "ability": "hero",
+        "ability": "",
         "filename": "jonathan",
         "count": "1",
         "quote": "Jonathan, Jonathan, what a prick."
@@ -6338,16 +6328,6 @@ var ext_nv_cards = {
         "filename": "stregobor",
         "count": "1",
         "quote": "I'll be honest, although for my own sake I shouldn't."
-    },
-    "nv_healer": {
-        "name": "Healer of Novigrad",
-        "deck": "novigrad",
-        "row": "ranged",
-        "strength": "2",
-        "ability": "medic",
-        "filename": "healer",
-        "count": "1",
-        "quote": "Medicus curat, magicae sanat."
     },
     "nv_prophet_lebioda": {
         "name": "Prophet Lebioda",
