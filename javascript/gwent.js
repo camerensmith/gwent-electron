@@ -15,6 +15,121 @@ class ControllerAI {
 		}
 		let diff = player.opponent().total - player.total;
 		
+		// Declare round and health variables at the top for use throughout the function
+		const isRound2 = game.roundCount === 2;
+		const isRound3 = game.roundCount === 3;
+		const isTied1to1 = player.health === 1 && player.opponent().health === 1;
+		const lostRound1 = player.health === 1; // Lost round 1 (health decreased from 2 to 1)
+		const opponentWonRound1 = player.opponent().health === 1; // Opponent won round 1
+		
+		// CRITICAL: If score is tied 1-1 in round 3, AI cannot pass (would lose game)
+		if (isRound3 && isTied1to1) {
+			// Score is tied 1-1 - whoever loses round 3 loses the game
+			// AI cannot pass under ANY circumstances - must fight to the end
+			console.log("🚫 Round 3: Score tied 1-1 - cannot pass (must win or lose game)");
+			// Skip all strategic passing logic below - go straight to card playing
+		} else {
+			// Not round 3 with 1-1 tie - proceed with strategic passing logic
+		
+		// CRITICAL: If AI lost round 1, they cannot concede round 2 (would result in game loss)
+		
+		if (isRound2 && lostRound1) {
+			// AI lost round 1 - they MUST win round 2 or lose the game
+			// If they're losing, they cannot pass under any circumstances
+			if (diff > 0) {
+				// AI is losing in round 2 - cannot pass, must fight
+				console.log("🚫 Round 2: AI lost round 1 and is losing - cannot pass (must win or lose game)");
+				// Continue to play cards - don't allow strategic passing
+			} else {
+				// AI is winning or tied - can use default logic
+				// Strategic passing based on turn count and score difference
+				const turnCount = player.turnCount || 0;
+				if (turnCount >= 2 && turnCount <= 4) {
+					// Check for winning passing (any amount ahead)
+					if (diff < 0) {
+						let passChance = 0;
+						if (turnCount === 2) passChance = 0.35; // 35% chance on turn 2
+						else if (turnCount === 3) passChance = 0.75; // 75% chance on turn 3
+						else if (turnCount === 4) passChance = 0.95; // 95% chance on turn 4
+						
+						if (Math.random() < passChance) {
+							console.log(`⚠️ Turn ${turnCount}: AI is winning by ${Math.abs(diff)} points - strategic pass (${Math.round(passChance * 100)}% chance)`);
+							await player.passRound();
+							return;
+						}
+					}
+				}
+			}
+		} else if (isRound2 && opponentWonRound1) {
+			// Opponent won round 1 - use default strategic passing logic
+			const turnCount = player.turnCount || 0;
+			if (turnCount >= 2 && turnCount <= 4) {
+				// Check for deficit passing (5+ points behind)
+				if (diff >= 5) {
+					let passChance = 0;
+					if (turnCount === 2) passChance = 0.50; // 50% chance on turn 2
+					else if (turnCount === 3) passChance = 0.60; // 60% chance on turn 3
+					else if (turnCount === 4) passChance = 0.70; // 70% chance on turn 4
+					
+					if (Math.random() < passChance) {
+						console.log(`⚠️ Turn ${turnCount}: AI has ${diff} point deficit - strategic pass (${Math.round(passChance * 100)}% chance)`);
+						await player.passRound();
+						return;
+					}
+				}
+				
+				// Check for winning passing (any amount ahead)
+				if (diff < 0) {
+					let passChance = 0;
+					if (turnCount === 2) passChance = 0.35; // 35% chance on turn 2
+					else if (turnCount === 3) passChance = 0.75; // 75% chance on turn 3
+					else if (turnCount === 4) passChance = 0.95; // 95% chance on turn 4
+					
+					if (Math.random() < passChance) {
+						console.log(`⚠️ Turn ${turnCount}: AI is winning by ${Math.abs(diff)} points - strategic pass (${Math.round(passChance * 100)}% chance)`);
+						await player.passRound();
+						return;
+					}
+				}
+			}
+		} else {
+			// Not round 2, or neither player lost round 1 - use default strategic passing
+			// BUT skip if round 3 with 1-1 tie (cannot pass in deciding round)
+			if (!(isRound3 && isTied1to1)) {
+				const turnCount = player.turnCount || 0;
+				if (turnCount >= 2 && turnCount <= 4) {
+					// Check for deficit passing (5+ points behind)
+					if (diff >= 5) {
+						let passChance = 0;
+						if (turnCount === 2) passChance = 0.50; // 50% chance on turn 2
+						else if (turnCount === 3) passChance = 0.60; // 60% chance on turn 3
+						else if (turnCount === 4) passChance = 0.70; // 70% chance on turn 4
+						
+						if (Math.random() < passChance) {
+							console.log(`⚠️ Turn ${turnCount}: AI has ${diff} point deficit - strategic pass (${Math.round(passChance * 100)}% chance)`);
+							await player.passRound();
+							return;
+						}
+					}
+					
+					// Check for winning passing (any amount ahead)
+					if (diff < 0) {
+						let passChance = 0;
+						if (turnCount === 2) passChance = 0.35; // 35% chance on turn 2
+						else if (turnCount === 3) passChance = 0.75; // 75% chance on turn 3
+						else if (turnCount === 4) passChance = 0.95; // 95% chance on turn 4
+						
+						if (Math.random() < passChance) {
+							console.log(`⚠️ Turn ${turnCount}: AI is winning by ${Math.abs(diff)} points - strategic pass (${Math.round(passChance * 100)}% chance)`);
+							await player.passRound();
+							return;
+						}
+					}
+				}
+			}
+		}
+		} // End of else block for strategic passing (skipped if round 3 with 1-1 tie)
+		
 		// CRITICAL RULE: In round 1, if there's a 20+ point deficit, always pass
 		// This prevents wasting cards when the round is already lost
 		const isRound1Deficit = game.roundCount === 1;
@@ -71,6 +186,21 @@ class ControllerAI {
 		// Calculate pass weight
 		let passWeight = this.weightPass();
 		const opponent = player.opponent();
+		
+		// CRITICAL: If score is tied 1-1 in round 3, AI cannot pass if losing or tied (would lose game)
+		if (isRound3 && isTied1to1 && diff >= 0) {
+			// Score is tied 1-1 and AI is losing or tied - cannot pass
+			passWeight = 0;
+			console.log("🚫 Round 3: Score tied 1-1 and AI is losing/tied - pass weight set to 0 (must win or lose game)");
+		}
+		
+		// CRITICAL: If AI lost round 1, they cannot pass in round 2 if losing (would lose game)
+		// Reuse isRound2 and lostRound1 from earlier in the function
+		if (isRound2 && lostRound1 && diff > 0) {
+			// AI lost round 1 and is losing in round 2 - cannot pass
+			passWeight = 0;
+			console.log("🚫 Round 2: AI lost round 1 and is losing - pass weight set to 0 (must win or lose game)");
+		}
 		
 		// Filter out cards with negative or zero weight (bad plays)
 		const playableWeights = weights.filter(w => w.weight > 0);
@@ -802,6 +932,20 @@ class ControllerAI {
 		const difficulty = window.aiDifficultyManager ? window.aiDifficultyManager.getDifficulty() : 'medium';
 		const shouldBeOptimal = window.aiDifficultyManager ? window.aiDifficultyManager.shouldMakeOptimalDecision() : true;
 		
+		// CRITICAL: If score is tied 1-1 in round 3, AI cannot pass if losing or tied (would lose game)
+		const isTied1to1 = this.player.health === 1 && opponent.health === 1;
+		if (roundNumber === 3 && isTied1to1 && dif >= 0) {
+			// Score is tied 1-1 and AI is losing or tied - cannot pass under any circumstances
+			return 0; // Zero weight - must fight, cannot pass
+		}
+		
+		// CRITICAL: If AI lost round 1, they cannot pass in round 2 if losing (would lose game)
+		const lostRound1 = this.player.health === 1; // Lost round 1 (health decreased from 2 to 1)
+		if (roundNumber === 2 && lostRound1 && dif > 0) {
+			// AI lost round 1 and is losing in round 2 - cannot pass under any circumstances
+			return 0; // Zero weight - must fight, cannot pass
+		}
+		
 		// CRITICAL RULE: NEVER go below 5 cards in hand, EVER
 		if (cardsInHand <= 4) {
 			return 1000; // Very high weight to pass - must conserve cards
@@ -882,6 +1026,15 @@ class ControllerAI {
 		
 		// ROUND 3: Deciding round - play all cards, but don't fight losing battles after 3rd turn
 		if (roundNumber === 3) {
+			// CRITICAL: If score is tied 1-1, never pass (whoever loses round 3 loses the game)
+			if (isTied1to1) {
+				// Score tied 1-1 - must fight to the end, cannot pass
+				if (cardsInHand > 0) {
+					return 0; // Must play cards
+				}
+				return 1000; // No cards - must pass (only if truly no options)
+			}
+			
 			const isLosing = !this.player.winning;
 			// After 3rd turn, don't fight losing battles
 			if (turnsPlayed >= 3 && isLosing && dif > 20) {
@@ -1937,6 +2090,7 @@ class Player {
 		this.handsize = 10;
 		this.winning = false;
 		this.factionAbilityUses = 0;
+		this.turnCount = 0; // Initialize turn count
 		this.effects = {
 			"witchers": {},
 			"worshippers": 0,
@@ -1965,6 +2119,8 @@ class Player {
 		// This is important for cards that persist between rounds (resilience, immortal, monsters faction)
 		const worshippersOnField = this.getAllRowCards().filter(c => c.abilities.includes("worshipper") && !c.isLocked());
 		this.effects["worshippers"] = worshippersOnField.length;
+		// Reset turn count at the start of each round
+		this.turnCount = 0;
 	}
 
 	opponent() {
@@ -2065,6 +2221,10 @@ class Player {
 	}
 
 	async startTurn() {
+		// Increment turn count for this player
+		if (this.turnCount === undefined) this.turnCount = 0;
+		this.turnCount++;
+		
 		document.getElementById("stats-" + this.tag).classList.add("current-turn");
 		if (this.leaderAvailable) this.elem_leader.children[1].classList.remove("hide");
 		if (this === player_me) {
@@ -3271,7 +3431,14 @@ class Row extends CardContainer {
 			let school = card.abilities.at(-1);
 			if (card.holder.effects["witchers"][school]) total += (card.holder.effects["witchers"][school] - 1) * 2;
 		}
-		if (card.abilities.includes("worshipped") && card.holder.effects["worshippers"] > 0 && !card.isLocked()) total += card.holder.effects["worshippers"] * game.whorshipBoost;
+		if (card.abilities.includes("worshipped") && card.holder.effects["worshippers"] > 0 && !card.isLocked()) {
+			const boost = card.holder.effects["worshippers"] * game.whorshipBoost;
+			total += boost;
+			// Debug logging to track worshipper boost calculation
+			if (boost !== 1 && boost !== 2) {
+				console.log(`[WORSHIPPED DEBUG] Card: ${card.name}, Base: ${card.basePower}, Worshippers: ${card.holder.effects["worshippers"]}, Boost: ${boost}, Total: ${total}`);
+			}
+		}
 		if (this.effects.horn - ((card.abilities.includes("horn") || card.abilities.includes("redania_horn")) ? 1 : 0) > 0) total *= 2;
 		// Fortify: +10 if alone on its row
 		if (card.abilities.includes("fortify") && !card.isLocked()) {
@@ -4425,7 +4592,11 @@ class Card {
 		}
 		let abi = document.createElement("div");
 		elem.appendChild(abi);
-		if (card.faction !== "special" && card.faction !== "weather" && card.abilities.length > 0) {
+		// For hero cards with melee_siege/ranged_siege, ensure ability area stays empty (row icon is only on row element)
+		if (card.hero && (card.row === "melee_siege" || card.row === "ranged_siege")) {
+			// Leave ability area empty for hero cards with melee_siege/ranged_siege
+			abi.style.backgroundImage = "";
+		} else if (card.faction !== "special" && card.faction !== "weather" && card.abilities.length > 0) {
 			let str = card.abilities[card.abilities.length - 1];
 			if (str && str.trim() !== "") {
 				if (str === "cerys") str = "muster";
@@ -4454,6 +4625,10 @@ class Card {
 			abi.style.backgroundImage = iconURL("card_special_treaty");
 		} else if (card.row === "agile") abi.style.backgroundImage = iconURL("card_ability_agile");
 		else if (card.row === "any") abi.style.backgroundImage = iconURL("card_ability_agile"); // Use agile icon for "any" row type
+		// For hero cards with melee_siege/ranged_siege, don't show row icon in ability area - it's already on the row element
+		// The ability area should remain empty for hero cards with only melee_siege/ranged_siege
+		// For non-hero cards with melee_siege/ranged_siege, also don't show row icon in ability area (it's on the row element)
+		// Note: melee_siege and ranged_siege row icons are only shown on the row element, not in the ability area
 		if (card.abilities.length > 1) {
 			let abi2 = document.createElement("div");
 			abi2.classList.add("card-ability-2");
@@ -4963,6 +5138,12 @@ class UI {
 			else if (str === "skellige_tactics") str = "skelligetactics";
 			if (card.faction === "faction" || card.abilities.length === 0 && card.row !== "agile" && card.row !== "any" && card.row !== "melee_siege" && card.row !== "ranged_siege") desc.children[0].style.backgroundImage = "";
 			else if (card.row === "leader") desc.children[0].style.backgroundImage = iconURL("deck_shield_" + card.faction);
+			// Don't show row icon in description for hero cards - it's already shown on the card element
+			// Hero cards should show the hero ability icon in the description instead
+			else if (card.hero && (card.row === "melee_siege" || card.row === "ranged_siege")) {
+				// For hero cards with melee_siege/ranged_siege, show hero icon instead of row icon in description
+				desc.children[0].style.backgroundImage = iconURL("card_ability_hero");
+			}
 			else if (card.row === "melee_siege") desc.children[0].style.backgroundImage = iconURL("card_row_melee_siege");
 			else if (card.row === "ranged_siege") desc.children[0].style.backgroundImage = iconURL("card_row_ranged_siege");
 			else if (card.faction === "special") {
@@ -5669,7 +5850,25 @@ class DeckMaker {
 		el = document.getElementById("load-deck"); if (el) el.addEventListener("click", () => this.loadSavedDeck(), false);
 		el = document.getElementById("clear-deck"); if (el) el.addEventListener("click", () => this.clearDeck(), false);
 		el = document.getElementById("randomize-deck"); if (el) el.addEventListener("click", () => this.randomizeDeck(), false);
-		el = document.getElementById("card-search"); if (el) el.addEventListener("input", () => this.filterCards(), false);
+		el = document.getElementById("card-search"); 
+		if (el) {
+			el.addEventListener("input", () => {
+				this.filterCards();
+				this.updateSearchClear();
+			}, false);
+		}
+		el = document.getElementById("card-search-clear");
+		if (el) {
+			el.addEventListener("click", () => {
+				const searchInput = document.getElementById("card-search");
+				if (searchInput) {
+					searchInput.value = "";
+					this.filterCards();
+					this.updateSearchClear();
+					searchInput.focus();
+				}
+			}, false);
+		}
 		document.getElementById("start-game").addEventListener("click", async () => await this.startNewGame(false), false);
 		document.getElementById("start-ai-game").addEventListener("click", async () => await this.startNewGame(true), false);
 		window.addEventListener("keydown", function (e) {
@@ -5695,6 +5894,8 @@ class DeckMaker {
 		});
 		somCarta();
 		this.update();
+		// Check if search field has text on initialization
+		this.updateSearchClear();
 	}
 
 	async setFaction(faction_name, silent) {
@@ -5854,6 +6055,8 @@ class DeckMaker {
 			hero: hero
 		};
 		this.updateStats();
+		// Reapply search filter to preserve search query when cards are added/removed
+		this.filterCards();
 	}
 
 	updateStats() {
@@ -5865,6 +6068,18 @@ class DeckMaker {
 		stats.children[9].innerHTML = this.stats.hero;
 		stats.children[3].style.color = this.stats.units < 22 ? "red" : "";
 		stats.children[5].style.color = (this.stats.special > 10) ? "red" : "";
+	}
+
+	updateSearchClear() {
+		const searchInput = document.getElementById("card-search");
+		const clearButton = document.getElementById("card-search-clear");
+		if (searchInput && clearButton) {
+			if (searchInput.value.trim().length > 0) {
+				clearButton.style.display = "block";
+			} else {
+				clearButton.style.display = "none";
+			}
+		}
 	}
 
 	filterCards() {

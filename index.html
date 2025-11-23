@@ -206,20 +206,20 @@
 			<section id = "deck-selector"></section>
 		</main>
 		<section id = "deck-customization" style = "display:none">
+			<div id = "ai-difficulty-selector">
+				<span>AI Difficulty: </span>
+				<select id = "ai-difficulty-dropdown">
+					<option value = "easy">Easy (80% optimal)</option>
+					<option value = "medium" selected>Medium (90% optimal)</option>
+					<option value = "hard">Hard (100% optimal)</option>
+				</select>
+			</div>
 			<div id = "faction-title" class = "center">
 				<h1></h1>
 			</div>
-			<input type = "text" id = "card-search" class = "card-search-input" placeholder = "Search cards or keywords..." />
-			<div class = "links" id = "site-links">
-				<a href = "rules.html" target = "_blank">Rules of Gwent</a>
-				<div id = "ai-difficulty-selector">
-					<span>AI Difficulty: </span>
-					<select id = "ai-difficulty-dropdown">
-						<option value = "easy">Easy (80% optimal)</option>
-						<option value = "medium" selected>Medium (90% optimal)</option>
-						<option value = "hard">Hard (100% optimal)</option>
-					</select>
-				</div>
+			<div class = "search-container">
+				<input type = "text" id = "card-search" class = "card-search-input" placeholder = "Search cards or keywords..." />
+				<span id = "card-search-clear" class = "search-clear" style = "display: none;">×</span>
 			</div>
 			<p id = "faction-description"></p>
 			<a id = "save-deck" class = "deck-options">Save Deck</a>
@@ -252,6 +252,7 @@
 			</div>
 			<button id = "start-game" class = "start-game_class">Start game</button>
 			<button id = "start-ai-game" class = "start-game_class">Start AI game</button>
+			<button id = "rules-button" class = "rules-button" onclick = "window.open('rules.html', '_blank')">Rules of Gwent</button>
 		</section>
 		<div id = "toggle-music" class = "center music-customization" style = "display:none">♫</div>
 		<script type = "text/javascript" language = "JavaScript">

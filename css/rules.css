@@ -125,6 +125,69 @@ body {
 	color:#444
 }
 
+.rules-search-container {
+	position: absolute;
+	top: 1em;
+	right: 2em;
+	width: 250px;
+	z-index: 10;
+}
+
+.rules-search-input {
+	width: 100%;
+	padding: 0.5em 1em;
+	padding-right: 2em;
+	font-size: 14px;
+	color: #333;
+	background-color: rgba(255, 255, 255, 0.9);
+	border: 1px solid #999;
+	border-radius: 4px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	outline: none;
+	transition: border-color 0.3s, box-shadow 0.3s;
+	box-sizing: border-box;
+}
+
+.rules-search-input:focus {
+	border-color: #4a90e2;
+	box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.rules-search-input::placeholder {
+	color: #999;
+}
+
+.rules-search-container .search-clear {
+	position: absolute;
+	right: 0.5em;
+	top: 50%;
+	transform: translateY(-50%);
+	cursor: pointer;
+	font-size: 20px;
+	color: #999;
+	line-height: 1;
+	padding: 0.2em;
+	user-select: none;
+	z-index: 11;
+}
+
+.rules-search-container .search-clear:hover {
+	color: #333;
+}
+
+.header {
+	position: relative;
+}
+
+.search-highlight {
+	background-color: yellow;
+	font-weight: bold;
+}
+
+.search-hidden {
+	display: none;
+}
+
 .content-subhead {
 	margin:50px 0 20px 0;
 	color:#666

@@ -1624,12 +1624,26 @@ var ability_dict = {
 		placed: async card => {
 			if (card.isLocked()) return;
 			card.holder.effects["worshippers"]++;
+			// Update all worshipped cards' power when a worshipper is added
+			const worshippedCards = card.holder.getAllRowCards().filter(c => c.abilities.includes("worshipped") && !c.isLocked());
+			for (const worshippedCard of worshippedCards) {
+				if (worshippedCard.currentLocation && worshippedCard.currentLocation.cardScore) {
+					worshippedCard.currentLocation.cardScore(worshippedCard);
+				}
+			}
 			// Update scores to reflect the boost to worshipped units
 			board.updateScores();
 		},
 		removed: async card => {
 			if (card.isLocked()) return;
 			card.holder.effects["worshippers"]--;
+			// Update all worshipped cards' power when a worshipper is removed
+			const worshippedCards = card.holder.getAllRowCards().filter(c => c.abilities.includes("worshipped") && !c.isLocked());
+			for (const worshippedCard of worshippedCards) {
+				if (worshippedCard.currentLocation && worshippedCard.currentLocation.cardScore) {
+					worshippedCard.currentLocation.cardScore(worshippedCard);
+				}
+			}
 			// Update scores to reflect the loss of boost to worshipped units
 			board.updateScores();
 		},
@@ -1641,6 +1655,8 @@ var ability_dict = {
 	worshipped: {
 		name: "Worshipped",
 		description: "Boosted by 1 by all worshippers present on your side of the board.",
+		// Note: No placed callback needed - power is calculated automatically via cardScore() 
+		// when board.updateScores() is called after card placement
 	},
 	inspire: {
 		name: "Inspire",
