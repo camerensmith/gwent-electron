@@ -1927,6 +1927,25 @@ var ability_dict = {
 		}
 	},
 	cyrus_hemmelfart: {
+		description: "Once per game: Play an Inquisitional Pyres card in any of the opponent's rows.",
+		activated: async (card, player) => {
+			// Check if ability has already been used
+			if (player.cyrusHemmelfartUsed) {
+				return; // Already used once per game
+			}
+			player.cyrusHemmelfartUsed = true;
+			player.endTurnAfterAbilityUse = false;
+			ui.showPreviewVisuals(card);
+			ui.enablePlayer(true);
+			if (!(player.controller instanceof ControllerAI)) ui.setSelectable(card, true);
+		},
+		weight: (card) => {
+			// Don't use if already used
+			if (card.holder.cyrusHemmelfartUsed) return 0;
+			return 20;
+		}
+	},
+	sigi_reuven_leader: {
 		description: "Play a Dimeritum Shackles card in any of the opponent's row.",
 		activated: async (card, player) => {
 			player.endTurnAfterAbilityUse = false;

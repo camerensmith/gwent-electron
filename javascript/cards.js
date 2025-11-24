@@ -8467,6 +8467,16 @@ var ext_sy_cards = {
         "count": "1",
         "quote": "A war with Whoreson will see Novigrad's gutters run red with blood."
     },
+    "sy_sigi_reuvenleader": {
+        "name": "Sigi Reuven, the Cunning",
+        "deck": "syndicate",
+        "row": "leader",
+        "strength": "",
+        "ability": "sigi_reuven_leader",
+        "filename": "sigi_reuvenleader",
+        "count": "1",
+        "quote": "Navigating Novigrad can be like chess, but with more violence, and a little less subtlety."
+    },
     "sy_doadrick": {
         "name": "Doadric Leumaerts",
         "deck": "syndicate",

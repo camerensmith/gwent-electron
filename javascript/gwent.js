@@ -2185,6 +2185,7 @@ class Player {
 		this.winning = false;
 		this.factionAbilityUses = 0;
 		this.turnCount = 0; // Initialize turn count
+		this.cyrusHemmelfartUsed = false; // Reset once-per-game tracking
 		this.effects = {
 			"witchers": {},
 			"worshippers": 0,
@@ -2507,6 +2508,11 @@ class Player {
 						await ability_dict["meve_princess"].activated(this.leader, this);
 						if (this.endTurnAfterAbilityUse) this.endTurn();
 					} else if (this.leader.key === "sy_cyrus_hemmelfart") {
+						// Select a random opponent row for Inquisitional Pyres
+						let offset = 3;
+						if (this === player_me) offset = 0;
+						ui.selectRow(board.row[offset+randomInt(3)]);
+					} else if (this.leader.key === "sy_sigi_reuvenleader") {
 						let offset = 3;
 						if (this === player_me) offset = 0;
 						ui.selectRow(board.row[offset+randomInt(2)]);
@@ -5424,6 +5430,13 @@ class UI {
 			holder.endTurn();
 			return;
 		} else if (card.abilities.includes("cyrus_hemmelfart")) {
+			this.hidePreview(card);
+			this.enablePlayer(false);
+			// Play Inquisitional Pyres card
+			let new_card = new Card("nv_inquisitional_pyres", card_dict["nv_inquisitional_pyres"], card.holder);
+			await board.moveTo(new_card, row, null);
+			holder.endTurn();
+		} else if (card.abilities.includes("sigi_reuven_leader")) {
 			this.hidePreview(card);
 			this.enablePlayer(false);
 			let new_card = new Card("spe_dimeritium_shackles", card_dict["spe_dimeritium_shackles"], card.holder);
