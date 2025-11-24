@@ -3661,28 +3661,47 @@ class Row extends CardContainer {
 				total = this.halfWeather ? Math.max(Math.min(1, total), Math.floor(total / 2)) : Math.min(1, total);
 			}
 		}
+		// Check if this card is shaken down
+		const isShakenDown = card.shakenDownBy !== undefined;
+		
+		// Bond: Apply if not shaken down, OR if shaken down but bonding with the shakedown unit
 		let bond = this.effects.bond[card.target];
-		if (isNumber(bond) && bond > 1 && !card.isLocked()) total *= Number(bond);
-		total += Math.max(0, this.effects.morale + (card.abilities.includes("morale") ? -1 : 0));
-		total += Math.max(0, 2 * this.effects.toussaint_wine);
-		if (card.abilities.at(-1) && card.abilities.at(-1).startsWith("witcher_") && !card.isLocked()) {
-			let school = card.abilities.at(-1);
-			if (card.holder.effects["witchers"][school]) total += (card.holder.effects["witchers"][school] - 1) * 2;
-		}
-		if (card.abilities.includes("worshipped") && card.holder.effects["worshippers"] > 0 && !card.isLocked()) {
-			const boost = card.holder.effects["worshippers"] * game.whorshipBoost;
-			total += boost;
-			// Debug logging to track worshipper boost calculation
-			if (boost !== 1 && boost !== 2) {
-				console.log(`[WORSHIPPED DEBUG] Card: ${card.name}, Base: ${card.basePower}, Worshippers: ${card.holder.effects["worshippers"]}, Boost: ${boost}, Total: ${total}`);
+		if (isNumber(bond) && bond > 1 && !card.isLocked()) {
+			if (!isShakenDown) {
+				// Not shaken down - apply bond normally
+				total *= Number(bond);
+			} else {
+				// Shaken down - only apply bond if bonding with the shakedown unit
+				// Check if this card's target matches the shakedown unit's target (they bond together)
+				if (card.shakenDownByTarget && card.target === card.shakenDownByTarget) {
+					total *= Number(bond);
+				}
 			}
 		}
-		if (this.effects.horn - ((card.abilities.includes("horn") || card.abilities.includes("redania_horn")) ? 1 : 0) > 0) total *= 2;
-		// Fortify: +10 if alone on its row
-		if (card.abilities.includes("fortify") && !card.isLocked()) {
-			const unitsInRow = this.cards.filter(c => c.isUnit() && c !== card);
-			if (unitsInRow.length === 0) {
-				total += 10;
+		
+		// Apply other bonuses only if not shaken down
+		if (!isShakenDown) {
+			total += Math.max(0, this.effects.morale + (card.abilities.includes("morale") ? -1 : 0));
+			total += Math.max(0, 2 * this.effects.toussaint_wine);
+			if (card.abilities.at(-1) && card.abilities.at(-1).startsWith("witcher_") && !card.isLocked()) {
+				let school = card.abilities.at(-1);
+				if (card.holder.effects["witchers"][school]) total += (card.holder.effects["witchers"][school] - 1) * 2;
+			}
+			if (card.abilities.includes("worshipped") && card.holder.effects["worshippers"] > 0 && !card.isLocked()) {
+				const boost = card.holder.effects["worshippers"] * game.whorshipBoost;
+				total += boost;
+				// Debug logging to track worshipper boost calculation
+				if (boost !== 1 && boost !== 2) {
+					console.log(`[WORSHIPPED DEBUG] Card: ${card.name}, Base: ${card.basePower}, Worshippers: ${card.holder.effects["worshippers"]}, Boost: ${boost}, Total: ${total}`);
+				}
+			}
+			if (this.effects.horn - ((card.abilities.includes("horn") || card.abilities.includes("redania_horn")) ? 1 : 0) > 0) total *= 2;
+			// Fortify: +10 if alone on its row
+			if (card.abilities.includes("fortify") && !card.isLocked()) {
+				const unitsInRow = this.cards.filter(c => c.isUnit() && c !== card);
+				if (unitsInRow.length === 0) {
+					total += 10;
+				}
 			}
 		}
 		return total;
@@ -4712,7 +4731,7 @@ class Card {
 		}
 		var temSom = new Array();
 		for (var x in guia) temSom[temSom.length] = x;
-		var literais = ["scorch", "cull", "spy", "horn", "shield", "lock", "seize", "aard", "resilience", "immortal", "fortify", "necromancy", "conspiracy", "skelligetactics", "clairvoyance", "omen", "guard", "quen", "yrden", "axii", "sacrifice", "embargo", "wine", "bribe", "emissary", "execute", "clear"];
+		var literais = ["scorch", "cull", "spy", "horn", "shield", "lock", "seize", "aard", "resilience", "immortal", "fortify", "necromancy", "conspiracy", "skelligetactics", "clairvoyance", "omen", "guard", "quen", "yrden", "axii", "sacrifice", "embargo", "wine", "bribe", "emissary", "execute", "clear", "bank", "shakedown"];
 		// CRITICAL: Ensure morale and bond always use "moral" sound, never "horn"
 		// Handle morale and bond explicitly before the general mapping to prevent any confusion
 		var som;

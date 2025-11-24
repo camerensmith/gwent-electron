@@ -1954,11 +1954,76 @@ var ability_dict = {
 	bank: {
 		name: "Bank",
 		description: "Draw a card from your deck.",
+		placed: async (card, row) => {
+			// Only trigger for unit cards placed on a row (not special cards)
+			if (card.isLocked() || !card.isUnit()) return;
+			await card.animate("bank");
+			card.holder.deck.draw(card.holder.hand);
+		},
 		activated: async card => {
+			// For special cards (like Vivaldi Bank)
 			card.holder.deck.draw(card.holder.hand);
 			await board.toGrave(card, card.holder.hand);
 		},
 		weight: (card) => 20
+	},
+	shakedown: {
+		name: "Shakedown",
+		description: "When this unit enters play, a random non-hero unit in the opposite row cannot gain +Str bonuses from horn, morale, or row effects. Bond with this unit still applies.",
+		placed: async (card, row) => {
+			if (card.isLocked() || !card.isUnit()) return;
+			
+			// Get the opposite row
+			const oppositeRow = row.getOppositeRow();
+			if (!oppositeRow) return;
+			
+			// Get all non-hero units in the opposite row
+			const targetUnits = oppositeRow.cards.filter(c => c.isUnit() && !c.hero);
+			if (targetUnits.length === 0) return; // No valid targets
+			
+			// Select a random unit
+			const randomIndex = Math.floor(Math.random() * targetUnits.length);
+			const targetUnit = targetUnits[randomIndex];
+			
+			// If unit was already shaken down by another unit, clear the old reference
+			if (targetUnit.shakenDownBy && targetUnit.shakenDownBy !== card) {
+				// Clear old reference (the old shakedown unit's removed callback will handle cleanup if it's removed)
+				delete targetUnit.shakenDownBy;
+				delete targetUnit.shakenDownByTarget;
+			}
+			
+			// Mark the target unit as shaken down by this card
+			targetUnit.shakenDownBy = card;
+			targetUnit.shakenDownByTarget = card.target; // Store the shakedown unit's target for bond checking
+			
+			// Play animation
+			await card.animate("shakedown");
+			await targetUnit.animate("shakedown", true, false);
+			
+			// Update scores to reflect the change
+			board.updateScores();
+		},
+		removed: async (card) => {
+			// When shakedown unit is removed, clear the shaken down status from all units
+			let foundAny = false;
+			for (let r of board.row) {
+				for (let c of r.cards) {
+					if (c.shakenDownBy === card) {
+						delete c.shakenDownBy;
+						delete c.shakenDownByTarget;
+						foundAny = true;
+					}
+				}
+			}
+			// Update scores if any units were affected
+			if (foundAny) {
+				board.updateScores();
+			}
+		},
+		weight: (card, ai) => {
+			// Value based on potentially denying opponent bonuses
+			return 15;
+		}
 	},
 	witch_hunt: {
 		name: "Witch Hunt",
