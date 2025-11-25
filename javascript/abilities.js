@@ -1927,17 +1927,19 @@ var ability_dict = {
 		}
 	},
 	cyrus_hemmelfart: {
-		description: "Once per game: Play an Inquisitional Pyres card in any of the opponent's rows.",
+		description: "Once per game: Play an Inquisitional Pyres card on the appropriate row.",
 		activated: async (card, player) => {
 			// Check if ability has already been used
 			if (player.cyrusHemmelfartUsed) {
 				return; // Already used once per game
 			}
 			player.cyrusHemmelfartUsed = true;
-			player.endTurnAfterAbilityUse = false;
-			ui.showPreviewVisuals(card);
-			ui.enablePlayer(true);
-			if (!(player.controller instanceof ControllerAI)) ui.setSelectable(card, true);
+			player.endTurnAfterAbilityUse = true;
+			
+			// Create and play Inquisitional Pyres card on its appropriate row (on player's own side)
+			const pyresCard = new Card("nv_inquisitional_pyres", card_dict["nv_inquisitional_pyres"], player);
+			// Use addCardToRow which will automatically resolve the row based on card's row designation (agile)
+			await board.addCardToRow(pyresCard, pyresCard.row, player);
 		},
 		weight: (card) => {
 			// Don't use if already used

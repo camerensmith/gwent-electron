@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang = "en-US">
 	<head>
-		<title>Gwent 3.1 - Rules</title>
+		<title>Gwent Electron - Rules</title>
 		<meta charset = "utf-8" />
 		<meta name = "author" content = "Sundaram, Costa & Sylver" />
 		<meta name = "description" content = "Play the original Gwent minigame from The Witcher 3 in your browser! Includes cards from Hearts of Stone and Blood & Wine!" />
@@ -19,19 +19,78 @@
 			</a>
 			<div id = "menu">
 				<div class = "pure-menu">
-					<a class = "pure-menu-heading" href = "#">Gwent 3.1</a>
+					<a class = "pure-menu-heading" href = "#">Gwent Electron</a>
 					<ul class = "pure-menu-list">
-						<li class = "pure-menu-item menu-other-page">
-							<a href = "index.html" class = "pure-menu-link">Play Game</a>
-						</li>
-						<li class = "pure-menu-item menu-other-page">
-							<a href = "decks.html" class = "pure-menu-link">Decks</a>
-						</li>
 						<li class = "pure-menu-item">
 							<a href = "#cards" class = "pure-menu-link">Cards</a>
 						</li>
-						<li class = "pure-menu-item">
+						<li class = "pure-menu-item pure-menu-has-children">
 							<a href = "#abilities" class = "pure-menu-link">Abilities</a>
+							<ul class = "pure-menu-children">
+								<li class = "pure-menu-item"><a href = "#ability-adaptive" class = "pure-menu-link">Adaptive</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-agile" class = "pure-menu-link">Agile</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-any" class = "pure-menu-link">Any</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-avenger" class = "pure-menu-link">Avenger</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-bank" class = "pure-menu-link">Bank</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-berserker" class = "pure-menu-link">Berserker / Mardroeme</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-biting-frost" class = "pure-menu-link">Biting Frost</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-bribe" class = "pure-menu-link">Bribe</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-cintra-slaughter" class = "pure-menu-link">Slaughter of Cintra</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-clairvoyance" class = "pure-menu-link">Clairvoyance</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-clear-weather" class = "pure-menu-link">Clear Weather</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-commanders-horn" class = "pure-menu-link">Commander's Horn</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-conspiracy" class = "pure-menu-link">Conspiracy</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-cull" class = "pure-menu-link">Cull</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-curse" class = "pure-menu-link">Curse</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-decoy" class = "pure-menu-link">Decoy</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-decree" class = "pure-menu-link">Decree</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-embargo" class = "pure-menu-link">Embargo</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-emissary" class = "pure-menu-link">Emissary</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-execute" class = "pure-menu-link">Execute</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-fortify" class = "pure-menu-link">Fortify</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-guard" class = "pure-menu-link">Guard</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-hero" class = "pure-menu-link">Hero</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-hunger" class = "pure-menu-link">Hunger</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-impenetrable-fog" class = "pure-menu-link">Impenetrable Fog</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-immortal" class = "pure-menu-link">Immortal</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-inspire" class = "pure-menu-link">Inspire</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-knockback" class = "pure-menu-link">Knockback</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-lock" class = "pure-menu-link">Lock</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-martyr" class = "pure-menu-link">Martyr</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-medic" class = "pure-menu-link">Medic</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-melee-siege" class = "pure-menu-link">Melee/Siege</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-morale-boost" class = "pure-menu-link">Morale Boost</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-muster" class = "pure-menu-link">Muster</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-menagerie-muster" class = "pure-menu-link">Menagerie Muster</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-necromancy" class = "pure-menu-link">Necromancy</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-nightfall" class = "pure-menu-link">Nightfall</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-omen" class = "pure-menu-link">Omen</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-peace-treaty" class = "pure-menu-link">Peace Treaty</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-purge" class = "pure-menu-link">Purge</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-ranged-siege" class = "pure-menu-link">Ranged/Siege</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-redanian-horn" class = "pure-menu-link">Redanian Horn</a></li>
+								<li class = "pure-menu-item"><a href = "#witcher-abilities" class = "pure-menu-link">Witcher Abilities</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-resilience" class = "pure-menu-link">Resilience</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-sacrifice" class = "pure-menu-link">Sacrifice</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-sandstorm" class = "pure-menu-link">Sandstorm</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-scorch" class = "pure-menu-link">Scorch</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-scorch-close" class = "pure-menu-link">Scorch - Close Combat</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-scorch-ranged" class = "pure-menu-link">Scorch - Ranged</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-scorch-siege" class = "pure-menu-link">Scorch - Siege</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-scorch-combat" class = "pure-menu-link">Scorch Combat</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-seize" class = "pure-menu-link">Seize</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-shakedown" class = "pure-menu-link">Shakedown</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-shield" class = "pure-menu-link">Shield</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-skellige-tactics" class = "pure-menu-link">Skellige Tactics</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-spy" class = "pure-menu-link">Spy</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-toussaint-wine" class = "pure-menu-link">Toussaint Wine</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-trade" class = "pure-menu-link">Trade</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-veteran" class = "pure-menu-link">Veteran</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-waylay" class = "pure-menu-link">Waylay</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-witch-hunt" class = "pure-menu-link">Witch Hunt</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-witcher-school" class = "pure-menu-link">Witcher School(s)</a></li>
+								<li class = "pure-menu-item"><a href = "#ability-worshipper" class = "pure-menu-link">Worshipper/Worshipped</a></li>
+							</ul>
 						</li>
 						<li class = "pure-menu-item">
 							<a href = "#factions" class = "pure-menu-link">Factions</a>
@@ -44,8 +103,8 @@
 			</div>
 			<div id = "main">
 				<div class = "header">
-					<h1>Gwent 3.1</h1>
-					<h2>The Witcher 3 minigame pulled to the browser and pushed further</h2>
+					<h1>Gwent Electron</h1>
+					<h2>The Witcher 3 minigame fully enhanced for browser and desktop as standalone application.</h2>
 					<div class = "rules-search-container">
 						<input type = "text" id = "rules-search" class = "rules-search-input" placeholder = "Search rules..." />
 						<span id = "rules-search-clear" class = "search-clear" style = "display: none;">×</span>
@@ -56,22 +115,22 @@
 					<p>
 						<b>Gwent</b>
 						<i>(a.k.a Gwynt)</i>
-						used to be a minigame in the video game
+						originated as a minigame in the video game
 						<b>The Witcher 3</b>
-						developed by CD Project.
+						developed by CD Projekt Red.
 						<br />
-						It was designed to be a collection card game in which you could play your cards against the computer.
+						Originally designed as a single-player card collection game against AI opponents, Gwent has been reimagined and enhanced for modern multiplayer gameplay in both browser and desktop standalone applications.
 						<br />
-						You would start with a basic starting deck which you could improve in parallel of the game story and quests by buying more cards here and there or by defeating characters in the game.
+						This version expands far beyond the original, featuring new factions, cards, abilities, and mechanics while preserving the core strategic gameplay that made Gwent so beloved.
 					</p>
 					<p>
-						It was never designed to be a balanced game. NPCs don't complain, so the idea was to build a deck with all the strongest cards possible to try to always win.
+						The original Gwent was never designed to be balanced for competitive play. Since NPCs don't complain, the design philosophy encouraged players to build decks with the strongest cards possible to always win.
 						<br />
-						Adapting Gwent to be multiplayer is consequently not an easy task. Furthermore, the game could grow boring because there are obvious optimal decks and optimal ways to play the game.
+						This version addresses those balance issues by introducing deck restrictions, weakening overpowered cards, and creating more strategic diversity. Cards have been rebalanced, new factions have been added (including Witchers, Toussaint, Lyria & Rivia, Syndicate, Zerrikania, and more), and unique abilities have been distributed to prevent any single dominant strategy.
 						<br />
-						Players would usually do the same things over and over.
+						The game now features over 500 cards across multiple factions, each with distinct playstyles and unique abilities. This expanded content ensures that no single deck dominates the meta, and players must adapt their strategies based on their faction choice and available cards.
 						<br />
-						Fortunately, it does not stop the game from being very interesting and full of potential, which is why we wanted to push it even further, especially with a vast universe like The Witcher.
+						By making decks weaker and more balanced, every card choice matters, and players must think strategically about resource management, timing, and bluffing rather than simply playing the strongest cards available.
 					</p>
 					<h2 class = "content-subhead">But how does it play?</h2>
 					<p>
@@ -292,7 +351,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-any">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_agile.png" alt = "Any row designation" />
 						</div>
@@ -308,7 +367,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-avenger">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_avenger.png" alt = "Summon Avenger ability" />
 						</div>
@@ -328,7 +387,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-bank">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_special_bank.png" alt = "Bank ability" />
 						</div>
@@ -369,7 +428,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-biting-frost">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_weather_frost.png" alt = "Biting Frost Weather" />
 						</div>
@@ -401,7 +460,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-clear-weather">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_weather_clear.png" alt = "Clear Weather" />
 						</div>
@@ -460,7 +519,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-commanders-horn">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_horn.png" alt = "Commander' Horn unit ability" />
 							<img class = "pure-img-responsive" src = "images/icons/card_special_horn.png" alt = "Commander' Horn special ability" />
@@ -542,7 +601,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-decree">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_special_decree.png" alt = "Decree special ability" />
 						</div>
@@ -594,7 +653,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-impenetrable-fog">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_weather_fog.png" alt = "Impenetrable Fog Weather" />
 						</div>
@@ -648,7 +707,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-hero">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/power_hero.png" alt = "Hero ability" />
 						</div>
@@ -664,7 +723,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-hunger">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_hunger.png" alt = "Hunger ability" />
 						</div>
@@ -680,7 +739,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-knockback">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_special_knockback.png" alt = "Knockback ability" />
 						</div>
@@ -698,7 +757,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-lock">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_special_lock.png" alt = "Lock ability" />
 						</div>
@@ -724,7 +783,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-mardroeme">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_special_mardroeme.png" alt = "Mardroeme special ability" />
 						</div>
@@ -758,7 +817,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-medic">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_medic.png" alt = "Medic ability" />
 						</div>
@@ -784,7 +843,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-melee-siege">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_agile.png" alt = "Melee/Siege row designation" />
 						</div>
@@ -800,7 +859,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-morale-boost">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_morale.png" alt = "Morale Boost ability" />
 						</div>
@@ -816,7 +875,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-muster">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_muster.png" alt = "Muster ability" />
 						</div>
@@ -840,6 +899,22 @@
 							</div>
 						</div>
 					</div>
+					<div class = "pure-g" id = "ability-menagerie-muster">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_muster.png" alt = "Menagerie Muster ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Menagerie Muster</div>
+							<div class = "ability-list-description">
+								<p>
+									Summon one Panther, one Wolf, and one Raging Bear from your deck and hand.
+								</p>
+								<p>
+									Menagerie Muster is a specialized variant of Muster that summons exactly one Panther, one Wolf, and one Raging Bear from your deck and hand. Unlike standard Muster, this ability pulls specific cards rather than cards with the same name. The summoned units are marked so they don't trigger their own Muster abilities, preventing recursive summons.
+								</p>
+							</div>
+						</div>
+					</div>
 					<div class = "pure-g">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_necromancy.png" alt = "Necromancy ability" />
@@ -856,9 +931,9 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-nightfall">
 						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/overlay_nightfall.png" alt = "Nightfall weather" />
+							<img class = "pure-img-responsive" src = "images/icons/card_special_nightfall.png" alt = "Nightfall weather" />
 						</div>
 						<div class = "pure-u-7-8">
 							<div class = "ability-list-name">Nightfall</div>
@@ -910,7 +985,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-purge">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_scorch.png" alt = "Purge ability" />
 						</div>
@@ -926,7 +1001,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-cull">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_special_cull.png" alt = "Cull ability" />
 						</div>
@@ -946,7 +1021,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-ranged-siege">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_agile.png" alt = "Ranged/Siege row designation" />
 						</div>
@@ -962,7 +1037,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-redanian-horn">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_horn.png" alt = "Redanian Horn ability" />
 						</div>
@@ -974,26 +1049,6 @@
 								</p>
 								<p>
 									Redanian Horn functions identically to Commander's Horn, doubling the strength of all units in the row. This is a Redanian variant of the standard Commander's Horn ability.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_resilience.png" alt = "Resilience ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Resilience</div>
-							<div class = "ability-list-description">
-								<p>
-									Remains on the board for the following round if another unit on your side of the board had an ability in common.
-								</p>
-								<p>
-									If at the end of the round you have a card with the Resilience ability on the board and that it shares a second ability with another card on the board, keep the card with Resilience on the board for the next round.
-									<br />
-									For now, cards with the Resilience ability are Witchers Keeps. They stay on the board if a witcher of the corresponding school was also here.
-									<br />
-									This card will also contribute to boost witchers of the same school.
 								</p>
 							</div>
 						</div>
@@ -1016,9 +1071,9 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-sandstorm">
 						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/overlay_sandstorm.png" alt = "Sandstorm weather" />
+							<img class = "pure-img-responsive" src = "images/icons/card_special_sandstorm.png" alt = "Sandstorm weather" />
 						</div>
 						<div class = "pure-u-7-8">
 							<div class = "ability-list-name">Sandstorm</div>
@@ -1032,7 +1087,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-scorch">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_scorch.png" alt = "Scorch unit ability" />
 							<img class = "pure-img-responsive" src = "images/icons/card_special_scorch.png" alt = "Scorch special ability" />
@@ -1054,7 +1109,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-scorch-close">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_scorch_combat.png" alt = "Scorch - Close Combat ability" />
 						</div>
@@ -1072,7 +1127,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-scorch-ranged">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_scorch_ranged.png" alt = "Scorch - Ranged ability" />
 						</div>
@@ -1090,7 +1145,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-scorch-combat">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_scorch_combat.png" alt = "Scorch combat unit ability" />
 						</div>
@@ -1112,54 +1167,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_horn.png" alt = "Commander' Horn unit ability" />
-							<img class = "pure-img-responsive" src = "images/icons/card_special_horn.png" alt = "Commander' Horn special ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Commander' Horn</div>
-							<div class = "ability-list-description">
-								<p>
-									A stronger boost now. Commander' Horn doubles the strength of all units (not heroes then) in the row. It applies last, so it combines well with other boosts.
-									<br />
-									Here as well, it is more effective in a row with many cards, but the number of cards isn't has important as for Morale Boost. A couple Tight Bond cards might have a larger boost potential than 5 weak cards.
-									<br />
-									While this ability hold a huge potential, it also makes yourself very vulnerable to Scorch.
-								</p>
-								<p>
-									When this ability is played through a unit, the unit does not boost itself.
-									<br />
-									Also, only one Commander' Horn can be effective at the same time in a row. If several cards in the row have it, it will aply only once.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_medic.png" alt = "Medic ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Medic</div>
-							<div class = "ability-list-description">
-								<p>
-									When a card is removed from the board (destroyed or at the end of a round), it goes into the graveyard (aka discard pile).
-									<br />
-									The Medic ability allows to restore a unit card (not a hero) from the grave.
-									<br />
-									When a card is restored on the board, its abilities apply again.
-								</p>
-								<p>
-									This ability is very powerfull because it effectively gives you an additional card on the long term. It also allows you to use again some important abilities, which can be very decisive.
-									<br />
-									This card is like wine, it gets better with time. The later you play it, the more options of cards you have. If your graveyard is empty, this ability isn't very useful.
-									<br />
-									A medic can even restore another medic, allowing you to restore yet another card.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-spy">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_spy.png" alt = "Spy ability" />
 						</div>
@@ -1177,45 +1185,6 @@
 									In addition to the card advantage this card gives you, having drawn more cards than initially possible gives you more options and more chances to get good combos.
 									<br />
 									Be careful though, once on the opponent side of the board, the spy is under his/control and it can be played back against you.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_decoy.png" alt = "Decoy unit ability" />
-							<img class = "pure-img-responsive" src = "images/icons/card_special_decoy.png" alt = "Decoy special ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Decoy</div>
-							<div class = "ability-list-description">
-								<p>
-									This ability is often summarized as the counter to spies. It allows to swap one unit on the board with this card (in other words, take the targert card back into your hand).
-								</p>
-								<p>
-									The Decoy ability has many advantages. Obviously, this is a great counter to spies, because you can restore the balance by playing the spy back and draw cards as well.
-									<br />
-									But it can also be used on other cards with important abilities, such as Scorch or Medic.
-									<br />
-									Also, keep in mind that effectively when you play a Decoy, it is almost like skipping a round because your hand size does not reduce, this is often underestimated.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_agile.png" alt = "Agile row designation" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Agile (Row Designation)</div>
-							<div class = "ability-list-description">
-								<p>
-									This is not an ability, but rather a row designation. Cards with "Agile" can be placed in either the Melee (Close Combat) or Ranged row at the player's choice.
-									<br />
-									This flexibility allows players to adapt their strategy based on the board state, weather effects, or row bonuses. Once placed, the card cannot be moved to another row.
-								</p>
-								<p>
-									Other flexible row designations include "Any" (can be placed in any row), "Melee/Siege" (can be placed in Melee or Siege), and "Ranged/Siege" (can be placed in Ranged or Siege).
 								</p>
 							</div>
 						</div>
@@ -1290,7 +1259,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-toussaint-wine">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_special_toussaint_wine.png" alt = "Toussaint wine ability" />
 						</div>
@@ -1318,7 +1287,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-shakedown">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_shakedown.png" alt = "Shakedown ability" />
 						</div>
@@ -1334,47 +1303,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_special_lock.png" alt = "Lock ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Lock</div>
-							<div class = "ability-list-description">
-								<p>
-									This ability is actually shared by several special cards. This card is played in one of the opponent's row.
-									<br />
-									If he/she plays a unit card (not a hero) in that row and that the units has an ability, the card will be locked and this special card will go to the graveyard.
-									<br />
-									A locked card cannot use its ability until it is removed from the board.
-								</p>
-								<p>
-									This ability requires a good understanding of the opponent deck and anticipation of the cards it can have.
-									<br />
-									It is very powerfull at preventing Muster and Tight Bond from working as intended.
-									<br />
-									Be careful though not to play your spy in this row while a lock is pending.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_special_knockback.png" alt = "Knockback ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Knockback</div>
-							<div class = "ability-list-description">
-								<p>
-									This ability is quite straight-forward. It is played in either the enemy Melee or Ranged row. All unit cards (not heroes) are moved 1 row backward towards the Siege row.
-								</p>
-								<p>
-									The purpose of this ability is mostly to break some effective row bonuses (like a Commander's Horn) or to push units into bad weather.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-seize">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_special_seize.png" alt = "Seize ability" />
 						</div>
@@ -1392,7 +1321,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-shield">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_special_shield.png" alt = "Shield ability" />
 						</div>
@@ -1407,7 +1336,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-witch-hunt">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_witch_hunt.png" alt = "Witch Hunt ability" />
 						</div>
@@ -1422,7 +1351,31 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<h3 class = "content-subhead" id = "witcher-abilities">Witcher Abilities</h3>
+					<p>
+						These abilities are unique to the Witcher faction and are related to the various Witcher Schools.
+					</p>
+					<div class = "pure-g" id = "ability-resilience">
+						<div class = "pure-u-1-8">
+							<img class = "pure-img-responsive" src = "images/icons/card_ability_resilience.png" alt = "Resilience ability" />
+						</div>
+						<div class = "pure-u-7-8">
+							<div class = "ability-list-name">Resilience</div>
+							<div class = "ability-list-description">
+								<p>
+									Remains on the board for the following round if another unit on your side of the board had an ability in common.
+								</p>
+								<p>
+									If at the end of the round you have a card with the Resilience ability on the board and that it shares a second ability with another card on the board, keep the card with Resilience on the board for the next round.
+									<br />
+									For now, cards with the Resilience ability are Witchers Keeps. They stay on the board if a witcher of the corresponding school was also here.
+									<br />
+									This card will also contribute to boost witchers of the same school.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class = "pure-g" id = "ability-witcher-school">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_witcher_wolf_school.png" alt = "Witcher Wolf School ability" />
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_witcher_viper_school.png" alt = "Witcher Viper School ability" />
@@ -1443,25 +1396,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_resilience.png" alt = "Resilience ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Resilience</div>
-							<div class = "ability-list-description">
-								<p>
-									If at the end of the round you have a card with the Resilience ability on the board and that it shares a second ability with another card on the board, keep the card with Resilience on the board for the next round.
-								</p>
-								<p>
-									For now, cards with the Resilience ability are Witchers Keeps. They stay on the board if a witcher of the corresponding school was also here.
-									<br />
-									This card will also contribute to boost witchers of the same school.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-worshipper">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_whorshipper.png" alt = "Worshipper ability" />
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_whorshipped.png" alt = "Worshipped ability" />
@@ -1482,47 +1417,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_inspire.png" alt = "Inspire ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Inspire</div>
-							<div class = "ability-list-description">
-								<p>
-									All units with Inspire ability take the highest base strength of the Inspire units on your side of the board. Still affected by weather.
-								</p>
-								<p>
-									Basically, if you have several units on the board with the Inspire ability, they will align to the highest base strength among them (base strength, meaning before any effect, positive or negative).
-									<br />
-									Consequently playing late a stronger Inspire unit will boost all others on the board, which can bring an unpleasant and unnexpected surprise to the opponent.
-									<br />
-									Be aware though that since all Inspire units will have the same strength (prior to effects), they are vulnerable to scorch and can all be destroyed at the same time.
-									<br />
-									Providing a boost to some of them can help remediate this effect.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_emissary.png" alt = "Emissary ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Emissary</div>
-							<div class = "ability-list-description">
-								<p>
-									Place on your opponent's battlefield (counts towards your opponent's total). Draw 3 cards from the top of your opponent's deck, place 1 in your deck, then another is randomly discarded, and the last one is inserted back into your opponent's deck. Both your deck and your opponent's deck are shuffled.
-								</p>
-								<p>
-									This ability is similar to Spy, but instead of drawing from your own deck, you draw from your opponent's deck. This gives you information about their deck composition and allows you to disrupt their strategy by removing a card from their deck.
-									<br />
-									The card you choose goes to your deck (not your hand), giving you a potential future advantage. One of the remaining cards is randomly discarded to your opponent's graveyard, and the last card is inserted back into your opponent's deck. Both decks are then shuffled to randomize their order.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-trade">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_trade.png" alt = "Trade ability" />
 						</div>
@@ -1540,7 +1435,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-waylay">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_waylay.png" alt = "Waylay ability" />
 						</div>
@@ -1558,7 +1453,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-guard">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_guard.png" alt = "Guard ability" />
 						</div>
@@ -1576,77 +1471,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_necromancy.png" alt = "Necromancy ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Necromancy</div>
-							<div class = "ability-list-description">
-								<p>
-									When this unit is played, return all units (including heroes) with a base power of 4 or less to the field in their appropriate rows.
-								</p>
-								<p>
-									This ability automatically returns all eligible units from your discard pile directly to the battlefield in their appropriate rows. Unlike Medic, which requires selection and only works on non-hero units, Necromancy returns all qualifying units (including heroes) automatically. This can quickly restore multiple units to the board, making it a powerful tool for maintaining board presence.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_sacrifice.png" alt = "Sacrifice ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Sacrifice</div>
-							<div class = "ability-list-description">
-								<p>
-									When this unit is played, it automatically kills the weakest friendly unit and plays a random higher cost unit from your deck immediately, then shuffles your deck. If no higher cost unit card exists, the friendly unit just dies.
-								</p>
-								<p>
-									This ability allows you to trade a weaker unit for a potentially stronger one from your deck. The weakest friendly unit is automatically sacrificed, and if there's a unit in your deck with higher base power, it will be played immediately.
-									<br />
-									This is useful for upgrading weak units or units with beneficial death effects (like Martyr) into stronger units.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_execute.png" alt = "Execute ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Execute</div>
-							<div class = "ability-list-description">
-								<p>
-									Destroy a hero card if it is alone in the opposite row.
-								</p>
-								<p>
-									This ability specifically targets hero units, which are normally immune to most abilities. If there's exactly one hero in the opposite row and no other units, Execute will destroy it.
-									<br />
-									This is a powerful counter to hero-heavy strategies, but requires careful timing since the hero must be alone in the row.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_martyr.png" alt = "Martyr ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Martyr</div>
-							<div class = "ability-list-description">
-								<p>
-									If this unit dies, draw a card.
-								</p>
-								<p>
-									This ability provides card advantage when the unit is destroyed. This makes Martyr units valuable targets for Sacrifice or other abilities that destroy your own units, as you can trade them for card advantage.
-									<br />
-									The card draw happens whenever the unit is removed from the battlefield, whether by Scorch, Execute, or any other means.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-fortify">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_fortify.png" alt = "Fortify ability" />
 						</div>
@@ -1664,61 +1489,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_clairvoyance.png" alt = "Clairvoyance ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Clairvoyance</div>
-							<div class = "ability-list-description">
-								<p>
-									Look at the top 3 cards of your deck.
-								</p>
-								<p>
-									This ability gives you information about what cards are coming up in your deck. The cards are shown in a carousel for viewing, but they remain in your deck in the same order.
-									<br />
-									This is useful for planning your strategy and knowing what resources you have available.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_omen.png" alt = "Omen ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Omen</div>
-							<div class = "ability-list-description">
-								<p>
-									Create a copy of Cat and Dog and add it to your hand.
-								</p>
-								<p>
-									This ability creates a neutral "Cat and Dog" card and adds it directly to your hand. The card is created from scratch, so it doesn't require having Cat and Dog in your deck or discard pile.
-									<br />
-									This provides card advantage and gives you a flexible unit that can be placed in multiple rows.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_conspiracy.png" alt = "Conspiracy ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Conspiracy</div>
-							<div class = "ability-list-description">
-								<p>
-									When this unit enters play, add a single special card from your graveyard into your deck, and discard 2 cards from your opponent's deck into their discard pile.
-								</p>
-								<p>
-									This ability allows you to recover a special card from your graveyard, giving you another chance to use powerful special cards like Scorch, Clear Weather, or Commander's Horn.
-									<br />
-									Additionally, this ability disrupts your opponent by discarding cards from the top of their deck, reducing their available options and potentially removing key cards from play.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-skellige-tactics">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_skelligetactics.png" alt = "Skellige Tactics ability" />
 						</div>
@@ -1736,7 +1507,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-scorch-siege">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_scorch_siege.png" alt = "Scorch - Siege ability" />
 						</div>
@@ -1754,23 +1525,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_adaptive.png" alt = "Adaptive ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Adaptive</div>
-							<div class = "ability-list-description">
-								<p>
-									This unit's base Strength is 2 (instead of 1) while affected by Weather.
-								</p>
-								<p>
-									Adaptive units are more resilient to weather effects than standard units. While most units are reduced to 1 strength by weather, Adaptive units maintain a base strength of 2, making them valuable in weather-heavy matchups. This ability is particularly useful for Ofir faction units that need to overcome harsh environmental conditions.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-embargo">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_embargo.png" alt = "Embargo ability" />
 						</div>
@@ -1786,23 +1541,7 @@
 							</div>
 						</div>
 					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_embargo.png" alt = "Embargo ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Embargo</div>
-							<div class = "ability-list-description">
-								<p>
-									Prevents the opponent from drawing from their deck on their next turn only. The effect does not stack - only one unit can trigger embargo.
-								</p>
-								<p>
-									When a unit with Embargo enters the battlefield, an animation plays over the unit and then over the opponent's deck. The embargo animation stays static on the opponent's deck throughout their next turn, preventing them from drawing cards by any means. The effect is removed when the opponent's turn ends. This ability is powerful for disrupting opponent strategies that rely on card draw, but only one Embargo can be active at a time.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
+					<div class = "pure-g" id = "ability-veteran">
 						<div class = "pure-u-1-8">
 							<img class = "pure-img-responsive" src = "images/icons/card_ability_veteran.png" alt = "Veteran ability" />
 						</div>
@@ -1814,74 +1553,6 @@
 								</p>
 								<p>
 									Veteran units grow stronger the longer they remain on the battlefield. The bonus is cumulative: after the first turn they gain +1, after the second turn they have +3 total (+1+2), and after the third turn they have +6 total (+1+2+3). This makes Veteran units valuable for long-term board presence and rewards protecting them. The ability is particularly effective in Northern Realms decks that focus on maintaining board control.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_bribe.png" alt = "Bribe ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Bribe</div>
-							<div class = "ability-list-description">
-								<p>
-									When this unit enters play, take a random non-hero, non-modified unit card strength 6 or less from your opponent's deck, and place it on your board in their appropriate row. Your opponent draws a card into their hand.
-								</p>
-								<p>
-									Bribe allows you to steal a unit from your opponent's deck and play it on your side of the board. The stolen unit must be non-hero, non-strength-modified, and have base strength 6 or less. Your opponent then draws a card to compensate. This ability disrupts your opponent's deck while giving you additional board presence, though the opponent gets card advantage in return.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_curse.png" alt = "Curse ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Curse</div>
-							<div class = "ability-list-description">
-								<p>
-									Place this card on your opponent's battlefield on the corresponding row. The next non-hero unit card placed on this row will be destroyed.
-								</p>
-								<p>
-									Curse is placed on the opponent's side (like a Spy) and counts towards their score. When the opponent plays the next non-hero unit on that row, the Curse card is removed and the unit is destroyed. This ability requires prediction of where your opponent will play units, making it a strategic tool for controlling the board and forcing suboptimal plays.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_ability_immortal.png" alt = "Immortal ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Immortal</div>
-							<div class = "ability-list-description">
-								<p>
-									The card will remain on the battlefield for two rounds instead of one. Cannot die from any other effect.
-								</p>
-								<p>
-									Immortal units are extremely resilient. They stay on the board for two rounds instead of one, and cannot be destroyed by any effect (Scorch, Execute, etc.). This makes them powerful defensive units that can provide consistent value across multiple rounds. However, they still count towards the round total and can be affected by weather and other non-destructive effects.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class = "pure-g">
-						<div class = "pure-u-1-8">
-							<img class = "pure-img-responsive" src = "images/icons/card_special_treaty.png" alt = "Peace Treaty special ability" />
-						</div>
-						<div class = "pure-u-7-8">
-							<div class = "ability-list-name">Peace Treaty</div>
-							<div class = "ability-list-description">
-								<p>
-									This card stays on the board until the start of your next turn. Prevents any damaging effects (execution, scorch, et al) to your units until the start of your next turn.
-								</p>
-								<p>
-									This special card provides temporary protection for all your units. It's placed in a special position on the board (between the decks) and has a blue glowing outline.
-									<br />
-									While active, your units cannot be destroyed by Scorch, Execute, Witch Hunt, or other damaging abilities. The card is automatically removed at the start of your next turn and goes to your discard pile.
-									<br />
-									This is useful for protecting a strong board position or preventing your opponent from removing key units.
 								</p>
 							</div>
 						</div>
@@ -2043,7 +1714,7 @@
 								</p>
 								<p>
 									<b>Unique Abilities:</b>
-									Veterancy, Fortify
+									Peace Treaty, Decree
 								</p>
 								<p>
 									<b>Lore:</b>
@@ -2051,7 +1722,7 @@
 								</p>
 								<p>
 									<b>Gameplay Description:</b>
-									Northern Realms relies on Veterancy and Fortify abilities. Units with Veteran gain increasing strength over time, making them more valuable the longer they stay on the board. Fortify units gain a significant strength bonus when alone on their row, rewarding strategic placement and row control. This faction also has access to Tight Bond units, Spies, and strong Siege units, making it a versatile and powerful faction.
+									Northern Realms has access to Peace Treaty and Decree as unique special cards. Peace Treaty provides temporary protection for all units, preventing damaging effects like Scorch and Execute until the start of your next turn. Decree allows you to use your leader's ability an additional time, even if it was already used. This faction also has access to Tight Bond units, Spies, and strong Siege units, making it a versatile and powerful faction focused on strategic protection and leadership flexibility.
 								</p>
 							</div>
 						</div>

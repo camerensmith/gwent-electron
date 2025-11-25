@@ -2508,10 +2508,9 @@ class Player {
 						await ability_dict["meve_princess"].activated(this.leader, this);
 						if (this.endTurnAfterAbilityUse) this.endTurn();
 					} else if (this.leader.key === "sy_cyrus_hemmelfart") {
-						// Select a random opponent row for Inquisitional Pyres
-						let offset = 3;
-						if (this === player_me) offset = 0;
-						ui.selectRow(board.row[offset+randomInt(3)]);
+						// Cyrus Hemmelfart: automatically plays Inquisitional Pyres on appropriate row
+						await ability_dict["cyrus_hemmelfart"].activated(this.leader, this);
+						if (this.endTurnAfterAbilityUse) this.endTurn();
 					} else if (this.leader.key === "sy_sigi_reuvenleader") {
 						let offset = 3;
 						if (this === player_me) offset = 0;
@@ -5430,12 +5429,12 @@ class UI {
 			holder.endTurn();
 			return;
 		} else if (card.abilities.includes("cyrus_hemmelfart")) {
+			// Cyrus Hemmelfart ability is now handled directly in activated callback
+			// This should not be reached, but if it is, handle it
 			this.hidePreview(card);
 			this.enablePlayer(false);
-			// Play Inquisitional Pyres card
-			let new_card = new Card("nv_inquisitional_pyres", card_dict["nv_inquisitional_pyres"], card.holder);
-			await board.moveTo(new_card, row, null);
-			holder.endTurn();
+			await ability_dict["cyrus_hemmelfart"].activated(card, holder);
+			if (holder.endTurnAfterAbilityUse) holder.endTurn();
 		} else if (card.abilities.includes("sigi_reuven_leader")) {
 			this.hidePreview(card);
 			this.enablePlayer(false);
@@ -5878,20 +5877,6 @@ class UI {
 			// Meve Princess: automatically finds rows with 4+ cards and destroys one
 			// This is handled in selectRow, not here in setSelectable
 			// No row selection needed - ability activates automatically
-			return;
-		}
-		if (card.abilities.includes("cyrus_hemmelfart")) {
-			for (let i = 0; i < 3; ++i) {
-				let r = board.row[i];
-				if (r.containsCardByKey("spe_dimeritium_shackles") || r.isShielded()) {
-					r.elem.classList.add("noclick");
-					r.special.elem.classList.add("noclick");
-					r.elem.classList.remove("card-selectable");
-				} else {
-					r.elem.classList.add("row-selectable");
-					alteraClicavel(r, true);
-				}
-			}
 			return;
 		}
 		let currRows = card.row === "agile" ? [board.getRow(card, "close", card.holder), board.getRow(card, "ranged", card.holder)] : 
@@ -6761,6 +6746,11 @@ class DeckMaker {
 			if (bankCard && bankCard.count > 0) {
 				const cardData = card_dict[bankCard.index];
 				if (cardData) {
+					// Exclude hunger transformation target cards - these are "created" cards that cannot be added to decks
+					if (this.isHungerTransformationTarget(bankCard.index)) {
+						continue;
+					}
+					
 					// Include all special cards (Horn, Scorch, Clear, Cull, Decoy, etc.) and weather cards
 					const isSpecial = cardData.deck.startsWith("special") || cardData.deck.startsWith("weather");
 					if (isSpecial) {
@@ -7027,6 +7017,11 @@ class DeckMaker {
 			const isLeader = card.data.row === "leader";
 			
 			if (isLeader) continue; // Skip leaders
+			
+			// Exclude hunger transformation target cards - these are "created" cards that cannot be added to decks
+			if (this.isHungerTransformationTarget(card.key)) {
+				continue;
+			}
 			
 			if (isSpecial) {
 				availableSpecials.push(card);

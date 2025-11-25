@@ -6,7 +6,7 @@ var default_cards = {
         "strength": "",
         "ability": "decoy",
         "filename": "decoy",
-        "count": "3",
+        "count": "2",
         "quote": "When you run out of peasants, decoys also make decent arrow fodder."
     },
     "spe_frost": {
@@ -32,8 +32,8 @@ var default_cards = {
     "ntr_sunsetwanderers": {
         "name": "Sunset Wanderers",
         "deck": "neutral",
-        "row": "ranged",
-        "strength": "7",
+        "row": "any",
+        "strength": "5",
         "ability": "",
         "filename": "sunsetwanderers",
         "count": "1",
@@ -77,7 +77,7 @@ var default_cards = {
         "strength": "",
         "ability": "horn",
         "filename": "horn",
-        "count": "3",
+        "count": "2",
         "quote": "Plus one to morale, minus three to hearing."
     },
     "spe_fog": {
@@ -97,7 +97,7 @@ var default_cards = {
         "strength": "",
         "ability": "scorch",
         "filename": "scorch",
-        "count": "3",
+        "count": "2",
         "quote": "Pillars of flame turn the mightiest to ash. All others tremble in shock and awe."
     },
     "spe_cull": {
@@ -107,7 +107,7 @@ var default_cards = {
         "strength": "",
         "ability": "cull",
         "filename": "cull",
-        "count": "3",
+        "count": "2",
         "quote": "Not every death's heroic. Most are just… flimsy necks meeting sharp steel."
     },
     "spe_rain": {
@@ -6843,6 +6843,16 @@ var ext_wu_cards = {
         "count": "1",
         "quote": "Monsters weren’t the worst things I met out there"
     },
+        "to_jonathan": {
+        "name": "Jonathan the Black",
+        "deck": "witchers",
+        "row": "ranged",
+        "strength": "10",
+        "ability": "witcher_wolf_school",
+        "filename": "jonathan",
+        "count": "1",
+        "quote": "Jonathan, Jonathan, what a prick."
+    },
     "wu_remus": {
         "name": "Remus",
         "deck": "witchers",
@@ -7371,16 +7381,6 @@ var ext_to_cards = {
         "count": "1",
         "quote": "Your Majesty... The princess has been touched by the curse o' the Black Sun. There's no hope, I'm afraid..."
     },
-    "to_jonathan": {
-        "name": "Jonathan",
-        "deck": "toussaint",
-        "row": "siege",
-        "strength": "10",
-        "ability": "hero",
-        "filename": "jonathan",
-        "count": "1",
-        "quote": "Jonathan, Jonathan, what a prick."
-    },
     "to_fisher_king": {
         "name": "Fisher King",
         "deck": "toussaint",
@@ -7744,11 +7744,11 @@ var ext_to_cards = {
         "quote": "Drinking the blood of the Continent since the Conjunction."
     },
     "to_ducal_guard_1": {
-        "name": "Ducal Guard",
+        "name": "Ducal Gate Guard",
         "id": 1,
         "deck": "toussaint",
         "row": "close",
-        "strength": "3",
+        "strength": "2",
         "ability": "bond",
         "filename": "ducal_guard_1",
         "count": "1",
@@ -7756,16 +7756,38 @@ var ext_to_cards = {
         "quote": "Search your hearts! Do you not see that they are blackened?"
     },
     "to_ducal_guard_2": {
-        "name": "Ducal Guard",
+        "name": "Ducal Vineyard Guard",
         "id": 2,
         "deck": "toussaint",
         "row": "close",
-        "strength": "3",
-        "ability": "bond",
+        "strength": "2",
+        "ability": "bond wine",
         "filename": "ducal_guard_2",
         "count": "1",
         "target": "to_ducal_guard",
         "quote": "Search your hearts! Do you not see that they are blackened?"
+    },
+    "to_ducal_guard_3": {
+        "name": "Ducal City Guard",
+        "id": 3,
+        "deck": "toussaint",
+        "row": "close",
+        "strength": "2",
+        "ability": "bond",
+        "filename": "ducal_guard_3",
+        "count": "1",
+        "target": "to_ducal_guard",
+        "quote": "Search your hearts! Do you not see that they are blackened?"
+    },
+    "to_tournament_knights": {
+        "name": "Tournament Knights",
+        "deck": "toussaint",
+        "row": "melee_siege",
+        "strength": "8",
+        "ability": "",
+        "filename": "tournament_knights",
+        "count": "1",
+        "quote": "A chance to prove your worth, some wine, and call yourself a knight proper."
     },
     "to_bootblack": {
         "name": "Bootblack",
@@ -7845,7 +7867,7 @@ var ext_to_cards = {
         "deck": "toussaint",
         "row": "ranged",
         "strength": "3",
-        "ability": "scorch_c",
+        "ability": "scorch_r",
         "filename": "poisoner",
         "count": "2",
         "quote": "For a courtesan, a single drop. For a rock troll, an entire bottle. And for Nordling scum? Why waste good poison when a rusty dagger will do?"

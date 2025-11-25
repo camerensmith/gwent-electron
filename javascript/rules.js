@@ -87,6 +87,7 @@
 			// Search through all text content
 			const allElements = content.querySelectorAll("h2, h3, p, li, dt, dd");
 			let foundMatch = false;
+			let firstMatch = null;
 			
 			allElements.forEach(element => {
 				const text = element.textContent.toLowerCase();
@@ -95,6 +96,10 @@
 					element.classList.remove("search-hidden");
 					// Highlight the matching text
 					highlightText(element, query);
+					// Track the first visible match for scrolling
+					if (!firstMatch && element.offsetParent !== null) {
+						firstMatch = element;
+					}
 				} else {
 					// Check if element contains matching child elements
 					const hasMatchingChild = element.querySelector(".search-highlight, :not(.search-hidden)");
@@ -115,6 +120,10 @@
 				// Check if section or its content matches
 				if (section.textContent.toLowerCase().includes(query)) {
 					sectionHasMatch = true;
+					// Track first match if it's a section header
+					if (!firstMatch && section.offsetParent !== null) {
+						firstMatch = section;
+					}
 				} else {
 					// Check following elements until next h2
 					while (nextElement && nextElement.tagName !== "H2") {
@@ -130,8 +139,32 @@
 					section.classList.add("search-hidden");
 				} else {
 					section.classList.remove("search-hidden");
+					// Track first match if it's a section header
+					if (!firstMatch && section.offsetParent !== null) {
+						firstMatch = section;
+					}
 				}
 			});
+			
+			// Scroll to first match if found
+			if (firstMatch) {
+				setTimeout(() => {
+					const header = document.querySelector(".header");
+					const headerHeight = header ? header.offsetHeight : 0;
+					
+					// Try to find the highlighted mark element within the first match
+					const highlightMark = firstMatch.querySelector("mark.search-highlight");
+					const targetElement = highlightMark || firstMatch;
+					
+					const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+					const offsetPosition = elementPosition - headerHeight - 20; // 20px padding
+					
+					window.scrollTo({
+						top: offsetPosition,
+						behavior: "smooth"
+					});
+				}, 100); // Small delay to ensure DOM updates are complete
+			}
 		});
 	}
 	
