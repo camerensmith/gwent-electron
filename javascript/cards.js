@@ -3528,7 +3528,7 @@ var ext_nr_cards = {
         "deck": "realms",
         "row": "any",
         "strength": "5",
-        "ability": "hero",
+        "ability": "",
         "filename": "ewald",
         "count": "1",
         "quote": "Family, fortune, and fire — not necessarily in that order."

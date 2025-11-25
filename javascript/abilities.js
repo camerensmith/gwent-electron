@@ -3096,7 +3096,12 @@ var ability_dict = {
 		description: "When this unit enters play, take a random non-hero, non-modified unit card strength 6 or less from your opponent's deck, and place it on your board in their appropriate row. Your opponent draws a card into their hand.",
 		placed: async (card) => {
 			if (card.isLocked()) return;
-			const player = card.holder;
+			// Determine the original player who played this card
+			// If card has spy ability, spy may have already run and changed card.holder to opponent
+			// In that case, the original player is the opponent of the current holder
+			// Otherwise, use card.holder as the original player
+			// Note: Abilities run in order, so if spy is in the abilities list, it likely ran before bribe
+			const player = card.abilities.includes("spy") ? card.holder.opponent() : card.holder;
 			const opponent = player.opponent();
 			
 			// Create animation overlay on opponent's deck
