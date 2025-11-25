@@ -2066,8 +2066,9 @@ var default_cards = {
         "deck": "skellige",
         "row": "any",
         "strength": "1",
-        "ability": "decoy",
+        "ability": "decoy avenger",
         "filename": "effigy",
+        "target": "sk_crowmother",
         "count": "2",
         "quote": "The moment they hear 'effigy', they know they're doomed."
     },
@@ -2361,7 +2362,7 @@ var default_cards = {
     "sk_crow_clan_druid": {
         "name": "Crow Clan Druid",
         "deck": "skellige",
-        "row": "any",
+        "row": "ranged",
         "strength": "4",
         "ability": "medic",
         "filename": "crow_clan_druid",
@@ -2376,13 +2377,13 @@ var default_cards = {
         "ability": "avenger muster",
         "filename": "crow_messenger",
         "count": "3",
-        "target": "crow_messenger",
+        "target": "crow_clan_druid",
         "quote": "They call 'em a murder when they're in packs... shoot one down and you might be next."
     },
     "sk_crowmother": {
         "name": "Crowmother",
         "deck": "skellige",
-        "row": "ranged",
+        "row": "any",
         "strength": "6",
         "ability": "",
         "filename": "crowmother",
