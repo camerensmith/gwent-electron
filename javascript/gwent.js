@@ -1020,14 +1020,14 @@ class ControllerAI {
 		if (roundNumber === 1) {
 			// After playing at least 1 card, be more conservative
 			if (cardsOnBoard > 0) {
-				// If we're ahead or close (within 10 points), strongly consider passing
-				if (dif <= 10 && cardsInHand <= 6) {
-					// More cards played = more weight to pass
-					let passWeight = 40 + (cardsOnBoard * 10);
-					if (dif < 0) passWeight += 20; // Bonus if winning
-					if (!opponent.passed) passWeight += 15; // Can pass first
-					return Math.min(passWeight, 90);
-				}
+			// If we're ahead or close (within 10 points), strongly consider passing
+			if (dif <= 10 && cardsInHand <= 6) {
+				// More cards played = more weight to pass
+				let passWeight = 30 + (cardsOnBoard * 10);
+				if (dif < 0) passWeight += 20; // Bonus if winning
+				if (!opponent.passed) passWeight += 15; // Can pass first
+				return Math.min(passWeight, 90);
+			}
 				// If we're slightly behind (10-20 points) but have played 2+ cards, consider passing
 				if (dif > 10 && dif <= 20 && cardsOnBoard >= 2 && cardsInHand <= 6) {
 					return 30; // Moderate weight to pass and conserve

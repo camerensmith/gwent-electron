@@ -5839,8 +5839,8 @@ var ext_nv_cards = {
         "name": "Novigrad",
         "deck": "novigrad",
         "row": "siege",
-        "strength": "15",
-        "ability": "hero",
+        "strength": "12",
+        "ability": "",
         "filename": "novigrad",
         "count": "1",
         "quote": "Novigrad's taken too kindly to all manner of urchin, shame, really."
@@ -5967,7 +5967,7 @@ var ext_nv_cards = {
         "deck": "novigrad",
         "row": "close",
         "strength": "6",
-        "ability": "",
+        "ability": "hero",
         "filename": "roderick_wett",
         "count": "1",
         "quote": "Count de Wett is exceptionally loathsome and arrogant, but at least he enjoys a little dice poker on the side."
@@ -7968,13 +7968,13 @@ var ext_lr_cards = {
         "count": "1",
         "quote": "Your presence at this tourney is an affront to my honor!"
     },
-    "lr_royal_guard": {
-        "name": "Lyrian Royal Guard",
+    "lr_knight": {
+        "name": "Rivian Knight",
         "deck": "lyria_rivia",
         "row": "close",
         "strength": "9",
         "ability": "",
-        "filename": "royal_guard",
+        "filename": "knight",
         "count": "1",
         "quote": "Each must serve with unconditionnal loyalty and possess a devilishly handsome jawline."
     },
@@ -8398,10 +8398,10 @@ var ext_lr_cards = {
         "quote": "Hold the line, you sods!"
     },
     "lr_siege": {
-        "name": "Siege",
+        "name": "Siege Base",
         "deck": "lyria_rivia",
         "row": "siege",
-        "strength": "12",
+        "strength": "15",
         "ability": "",
         "filename": "siege",
         "count": "1",
@@ -10382,6 +10382,16 @@ var ext_ofir_cards = {
         "filename": "sorceress",
         "count": "2",
         "quote": "Even their mages bargain with destiny."
+    },
+    "ofir_market_guard": {
+        "name": "Market Guard",
+        "deck": "ofir",
+        "row": "siege",
+        "strength": "3",
+        "ability": "",
+        "filename": "market_guard",
+        "count": "2",
+        "quote": "One for the money, two for the show."
     },
     "ofir_war_elephant": {
         "name": "Ofiri War Elephant",
