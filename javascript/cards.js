@@ -448,7 +448,7 @@ var default_cards = {
         "deck": "realms",
         "row": "close",
         "strength": "5",
-        "ability": "spy",
+        "ability": "hero spy",
         "filename": "stennis",
         "count": "1",
         "quote": "He ploughin' wears the golden armor. Golden. 'Course he's an arsehole."
@@ -497,7 +497,7 @@ var default_cards = {
         "name": "Thaler",
         "deck": "realms",
         "row": "siege",
-        "strength": "10",
+        "strength": "9",
         "ability": "spy",
         "filename": "thaler",
         "count": "1",
@@ -1051,6 +1051,16 @@ var default_cards = {
         "count": "1",
         "quote": "The contamination is inevitable."
     },
+    "nv_doppler_1": {
+        "name": "Doppler",
+        "deck": "monsters",
+        "row": "agile",
+        "strength": "12",
+        "ability": "spy",
+        "filename": "doppler_1",
+        "count": "1",
+        "quote": "I'll be on my way and lose myself in the crowd."
+    },
     "mo_uma": {
         "name": "Uma",
         "deck": "monsters",
@@ -1113,7 +1123,7 @@ var default_cards = {
         "name": "Botchling",
         "deck": "monsters",
         "row": "close",
-        "strength": "4",
+        "strength": "2",
         "ability": "avenger",
         "filename": "botchling",
         "count": "1",
@@ -1180,7 +1190,7 @@ var default_cards = {
         "name": "Draug",
         "deck": "monsters",
         "row": "close",
-        "strength": "5",
+        "strength": "6",
         "ability": "",
         "filename": "draug",
         "count": "1",
@@ -1209,8 +1219,8 @@ var default_cards = {
     "mo_fiend": {
         "name": "Fiend",
         "deck": "monsters",
-        "row": "close",
-        "strength": "6",
+        "row": "agile",
+        "strength": "4",
         "ability": "",
         "filename": "fiend",
         "count": "1",
@@ -1283,7 +1293,7 @@ var default_cards = {
         "id": 2,
         "deck": "monsters",
         "row": "close",
-        "strength": "3",
+        "strength": "2",
         "ability": "muster",
         "filename": "ghoul_1",
         "count": "1",
@@ -1302,6 +1312,18 @@ var default_cards = {
         "target": "mo_ghoul",
         "quote": "If ghouls are part of the Circle of Life... then it's a damn vicious circle."
     },
+    "mo_ghoul_3": {
+        "name": "Ghoul",
+        "id": 4,
+        "deck": "monsters",
+        "row": "close",
+        "strength": "2",
+        "ability": "muster",
+        "filename": "ghoul_3",
+        "count": "1",
+        "target": "mo_ghoul",
+        "quote": "If ghouls are part of the Circle of Life... then it's a damn vicious circle."
+    },
     "mo_gravehag": {
         "name": "Grave Hag",
         "deck": "monsters",
@@ -1315,7 +1337,7 @@ var default_cards = {
     "mo_gryffin": {
         "name": "Griffin",
         "deck": "monsters",
-        "row": "close",
+        "row": "ranged_siege",
         "strength": "5",
         "ability": "",
         "filename": "gryffin",
@@ -1336,7 +1358,7 @@ var default_cards = {
         "name": "Ice Giant",
         "deck": "monsters",
         "row": "siege",
-        "strength": "5",
+        "strength": "6",
         "ability": "",
         "filename": "frost_giant",
         "count": "1",
@@ -1356,7 +1378,7 @@ var default_cards = {
         "name": "Kayran",
         "deck": "monsters",
         "row": "agile",
-        "strength": "8",
+        "strength": "5",
         "ability": "morale",
         "filename": "kayran",
         "count": "1",
@@ -1415,7 +1437,7 @@ var default_cards = {
         "strength": "5",
         "ability": "immortal",
         "filename": "mighty_maiden",
-        "count": "2",
+        "count": "1",
         "quote": "The sick rave about a boil-pocked woman surrounded by herds of rabid rats..."
     },
     "mo_bruxa": {
@@ -1423,7 +1445,7 @@ var default_cards = {
         "id": 1,
         "deck": "monsters",
         "row": "close",
-        "strength": "3",
+        "strength": "2",
         "ability": "muster",
         "filename": "bruxa",
         "count": "1",
@@ -1471,7 +1493,7 @@ var default_cards = {
         "id": 5,
         "deck": "monsters",
         "row": "close",
-        "strength": "5",
+        "strength": "4",
         "ability": "muster",
         "filename": "katakan",
         "count": "1",
@@ -2034,7 +2056,7 @@ var default_cards = {
         "deck": "skellige",
         "row": "close",
         "strength": "2",
-        "ability": "medic",
+        "ability": "medic scorch_r",
         "filename": "birna",
         "count": "1",
         "quote": "Skellige must have a strong king. No matter what it takes."
@@ -2519,7 +2541,7 @@ var ext_nr_cards = {
         "name": "Reaver Scout",
         "deck": "realms",
         "row": "ranged",
-        "strength": "6",
+        "strength": "10",
         "ability": "spy",
         "filename": "reaver_scout",
         "count": "1",
@@ -2539,7 +2561,7 @@ var ext_nr_cards = {
         "name": "Blue Stripes Scout",
         "deck": "realms",
         "row": "close",
-        "strength": "5",
+        "strength": "11",
         "ability": "spy",
         "filename": "stripes_scout",
         "count": "1",
@@ -3205,16 +3227,6 @@ var ext_nr_cards = {
         "filename": "mousesack",
         "count": "1",
         "quote": "Only the ignorant dismiss the importance of myths."
-    },
-    "nr_northern_wind": {
-        "name": "Bomb",
-        "deck": "realms",
-        "row": "ranged",
-        "strength": "1",
-        "ability": "scorch",
-        "filename": "northern_wind",
-        "count": "1",
-        "quote": "An unnatural fog enveloped Demavend's ship and his crew turned into icy sculptures."
     },
     "nr_aretuza_adept": {
         "name": "Aretuza Adept",
@@ -3987,7 +3999,7 @@ var ext_ne_cards = {
         "name": "Infiltrator",
         "deck": "nilfgaard",
         "row": "close",
-        "strength": "5",
+        "strength": "8",
         "ability": "scorch spy",
         "filename": "infiltrator",
         "count": "1",
@@ -4007,7 +4019,7 @@ var ext_ne_cards = {
         "name": "Master of Disguise",
         "deck": "nilfgaard",
         "row": "any",
-        "strength": "4",
+        "strength": "5",
         "ability": "spy morale",
         "filename": "master_disguise",
         "count": "1",
@@ -4192,7 +4204,7 @@ var ext_ne_cards = {
         "name": "Traheaern var Vdyffir",
         "deck": "nilfgaard",
         "row": "siege",
-        "strength": "7",
+        "strength": "6",
         "ability": "spy bribe",
         "filename": "traheaern_vdyffir",
         "count": "1",
@@ -4287,7 +4299,7 @@ var ext_mo_cards = {
         "deck": "monsters",
         "row": "siege",
         "strength": "3",
-        "ability": "",
+        "ability": "hero",
         "filename": "geels",
         "count": "1",
         "quote": "Paintings should convey emotion, not words."
@@ -4457,7 +4469,7 @@ var ext_mo_cards = {
         "id": 1,
         "deck": "monsters",
         "row": "ranged",
-        "strength": "4",
+        "strength": "2",
         "ability": "muster",
         "filename": "lamia_1",
         "count": "1",
@@ -4570,7 +4582,7 @@ var ext_mo_cards = {
         "ability": "immortal",
         "filename": "ethereal",
         "count": "1",
-        "quote": ""
+        "quote": "The human mind is as wild and unexplored a place as any land far beyond the seas."
     },
     "mo_archgriffin": {
         "name": "Archgriffin",
@@ -4699,7 +4711,7 @@ var ext_mo_cards = {
         "name": "Vran Warrior",
         "deck": "monsters",
         "row": "close",
-        "strength": "5",
+        "strength": "4",
         "ability": "",
         "filename": "vran_warrior",
         "count": "1",
@@ -4719,7 +4731,7 @@ var ext_mo_cards = {
         "name": "Lubberkin",
         "deck": "monsters",
         "row": "ranged",
-        "strength": "7",
+        "strength": "4",
         "ability": "",
         "filename": "lubberkin",
         "count": "1",
@@ -5333,7 +5345,7 @@ var ext_st_cards = {
         "name": "Vrihedd Saboteur",
         "deck": "scoiatael",
         "row": "siege",
-        "strength": "7",
+        "strength": "9",
         "ability": "spy",
         "filename": "vrihedd_saboteur",
         "count": "1",
@@ -6082,7 +6094,7 @@ var ext_nv_cards = {
         "deck": "novigrad",
         "row": "siege",
         "strength": "3",
-        "ability": "scorch",
+        "ability": "scorch_c",
         "filename": "bomb_heaver",
         "count": "1",
         "quote": "Watch your heads!"
@@ -6247,16 +6259,6 @@ var ext_nv_cards = {
         "count": "0",
         "quote": "If I tell you koshchey is death, you'll go to the creek anyway, right?"
     },
-    "nv_doppler_1": {
-        "name": "Doppler",
-        "deck": "novigrad",
-        "row": "agile",
-        "strength": "11",
-        "ability": "spy",
-        "filename": "doppler_1",
-        "count": "1",
-        "quote": "I'll be on my way and lose myself in the crowd."
-    },
     "nv_idr": {
         "name": "Idr",
         "deck": "novigrad",
@@ -6347,16 +6349,6 @@ var ext_nv_cards = {
         "filename": "nivellen",
         "count": "1",
         "quote": "Flee mortal man! I'll devour you! Tear you to pieces!"
-    },
-    "nv_doppler_2": {
-        "name": "Doppler",
-        "deck": "novigrad",
-        "row": "agile",
-        "strength": "11",
-        "ability": "spy",
-        "filename": "doppler_2",
-        "count": "1",
-        "quote": "I'll be on my way and lose myself in the crowd."
     },
     "nv_pellar": {
         "name": "Pellar",
@@ -8413,7 +8405,7 @@ var ext_lr_cards = {
         "deck": "lyria_rivia",
         "row": "ranged",
         "strength": "2",
-        "ability": "medic",
+        "ability": "medic morale",
         "filename": "artificer",
         "count": "1",
         "quote": "What shall I call it? Perhaps Andúril..."
@@ -9497,7 +9489,7 @@ var ext_ze_cards = {
         "name": "Zerrikanian Heavy Fire Scorpion",
         "deck": "zerrikania",
         "row": "siege",
-        "strength": "6",
+        "strength": "11",
         "ability": "",
         "filename": "fire_scorpion",
         "count": "1",
@@ -9656,7 +9648,7 @@ var ext_ze_cards = {
         "deck": "zerrikania",
         "row": "ranged",
         "strength": "8",
-        "ability": "scorch",
+        "ability": "hero scorch",
         "filename": "azar_javed",
         "count": "1",
         "quote": "The sorcerer not only deftly manipulates the power of fire, it can be said that fire has become a part of his very being."
@@ -9890,16 +9882,6 @@ var ext_ze_cards = {
         "filename": "bomb_maker_2",
         "count": "1",
         "quote": "Business of Zerrikanian bombs is... booming."
-    },
-    "ze_heavy_fire_scorpion": {
-        "name": "Heavy Zerrikanian Fire Scorprion",
-        "deck": "zerrikania",
-        "row": "ranged_siege",
-        "strength": "11",
-        "ability": "",
-        "filename": "heavy_fire_scorpion",
-        "count": "1",
-        "quote": "Not the best for taking cities, but great for razing them to the ground."
     },
     "ze_free_warrior_1": {
         "name": "Free Warrior",
@@ -10371,7 +10353,7 @@ var ext_ofir_cards = {
         "strength": "5",
         "ability": "scorch_r",
         "filename": "backalleychemist",
-        "count": "2",
+        "count": "1",
         "quote": "The best way to get rid of a problem is to slice it into itty bitty indistinguishable pieces."
     },
     "ofir_scribe": {
