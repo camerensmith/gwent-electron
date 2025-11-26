@@ -567,7 +567,35 @@ var ability_dict = {
 				if (card.holder.deck.cards.length > 0) await card.holder.deck.draw(card.holder.hand);
 			}
 		},
-		weight: (card) => 30
+		weight: (card, ai, max) => {
+			const player = ai ? ai.player : card.holder;
+			
+			// Count units with cintra_slaughter ability on the field
+			const cintraUnits = player.getAllRowCards().filter(c => 
+				c.isUnit() && 
+				c.abilities.includes("cintra_slaughter") && 
+				!c.isLocked()
+			);
+			const cintraUnitCount = cintraUnits.length;
+			
+			// Check if there are other options (cards in hand)
+			const cardsInHand = player.hand.cards.length;
+			const hasOtherOptions = cardsInHand > 1; // More than just this card
+			
+			// AI should only play if:
+			// 1. There's at least 1 unit with cintra_slaughter on the field, OR
+			// 2. There are no other options (only this card left or very few cards)
+			if (cintraUnitCount >= 1) {
+				// Has units to slaughter - good value, especially if multiple units
+				return 20 + (cintraUnitCount * 5); // Base 20, +5 per unit
+			} else if (!hasOtherOptions || cardsInHand <= 2) {
+				// No other options - low weight fallback (better than passing)
+				return 1;
+			} else {
+				// Has other options and no units to slaughter - don't play
+				return 0;
+			}
+		}
 	},
 	foltest_king: {
 		description: "Pick an Impenetrable Fog card from your deck and play it instantly.",

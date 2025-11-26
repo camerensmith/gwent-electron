@@ -1550,8 +1550,29 @@ class ControllerAI {
 			);
 			// If no rows with units exist, don't play horn
 			if (!rows.length) return 0;
-			rows = rows.map(r => this.weightHornRow(card, r));
-			return Math.max(...rows) / 2;
+			
+			// Check if there are other options (more cards in hand)
+			const cardsInHand = this.player.hand.cards.length;
+			const hasOtherOptions = cardsInHand > 1; // More than just this card
+			
+			// Count rows with multiple units (preferred)
+			const rowsWithMultipleUnits = rows.filter(r => r.cards.filter(c => c.isUnit()).length > 1);
+			
+			// AI should only play horn if:
+			// 1. There are no other options (fallback), OR
+			// 2. There are rows with multiple units (preferred scenario)
+			if (!hasOtherOptions) {
+				// No other options - allow playing on any row with units (fallback)
+				rows = rows.map(r => this.weightHornRow(card, r));
+				return Math.max(...rows) / 2;
+			} else if (rowsWithMultipleUnits.length > 0) {
+				// Has other options but there are rows with multiple units - prefer those
+				rows = rowsWithMultipleUnits.map(r => this.weightHornRow(card, r));
+				return Math.max(...rows) / 2;
+			} else {
+				// Has other options but only rows with single units - don't play
+				return 0;
+			}
 		}
 		if (abi) {
 			if (abi.includes("scorch")) {
@@ -4197,6 +4218,15 @@ class Board {
 		let isCurse = card.abilities.includes("curse");
 		let isEmissary = card.abilities.includes("emissary");
 		let isWaylay = card.abilities.includes("waylay");
+		
+		// Handle flexible row types - resolve to default row
+		// These should normally be resolved before calling getRow, but handle them here as fallback
+		if (row_name === "agile" || row_name === "any" || row_name === "melee_siege") {
+			row_name = "close"; // Default to close row
+		} else if (row_name === "ranged_siege") {
+			row_name = "ranged"; // Default to ranged row
+		}
+		
 		switch (row_name) {
 			case "weather":
 				return weather;
