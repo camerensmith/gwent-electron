@@ -3682,7 +3682,7 @@ var ext_nr_cards = {
     },
     "ne_catanddog": {
         "name": "Cat and Dog",
-        "deck": "omen_only",
+        "deck": "neutral",
         "row": "any",
         "strength": "0",
         "ability": "",

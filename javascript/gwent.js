@@ -3199,7 +3199,10 @@ class Row extends CardContainer {
 			}
 			tocar("curse", false);
 			await card.animate("scorch", true, false);
-			await board.toGrave(card, this);
+			// Send the killed unit to its original owner's grave (the player who played it)
+			// Ensure card goes to the correct grave by explicitly using card.holder
+			const originalOwner = card.holder;
+			await board.moveTo(card, board.getRow(card, "grave", originalOwner), this);
 			// Remove and destroy the curse card
 			if (curse.isSpecial()) {
 				curse.currentLocation.special.removeCard(curse);

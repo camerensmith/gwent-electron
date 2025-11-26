@@ -2059,10 +2059,8 @@ var ability_dict = {
 				return; // Peace Treaty prevents witch_hunt
 			}
 			
-			// Play scorch animation and sound on the card itself (like scorch_c/r/s)
-			await card.animate("scorch", true, false);
-			
 			let units = row.minUnits();
+			// Play scorch animation only on the units that get killed, not on the witch hunt card
 			await Promise.all(units.map(async c => await c.animate("scorch", true, false)));
 			await Promise.all(units.map(async c => await board.toGrave(c, row)));
 		}
