@@ -74,3 +74,24 @@ gwent-classic-app/
 # Batch files
 **/filenamegetter.bat
 filenamegetter.bat
+
+# Electron builder files
+electron-builder.yml
+builder-effective-config.yaml
+builder-debug.yml
+*.blockmap
+latest.yml
+
+# Electron main process files
+main.js
+preload.js
+
+# Package files
+package.json
+package-lock.json
+
+# Documentation
+README-ELECTRON.md
+
+# Scripts
+export-aidecks.js

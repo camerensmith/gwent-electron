@@ -4259,7 +4259,7 @@ var ext_ne_cards = {
         "ability": "",
         "filename": "vicovaro_novice",
         "count": "1",
-        "quote": ""
+        "quote": "So you think you're worth a shit? Try to escape from the mines, and you'll see how much you're worth."
     },
     "ne_vicovaro_bounty_hunter": {
         "name": "Vicovaro Bounty Hunter",
@@ -5418,7 +5418,7 @@ var ext_sk_cards = {
         "name": "Ambush Unit",
         "deck": "scoiatael",
         "row": "any",
-        "strength": "7",
+        "strength": "8",
         "ability": "waylay",
         "filename": "bandit_camp",
         "count": "2",
