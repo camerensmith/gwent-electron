@@ -1,14 +1,14 @@
-# Gwent Classic v3.1.0
+# Gwent Electron - enhanced and reworked
 
-The original Gwent minigame from The Witcher 3, playable in your browser! Includes cards from Hearts of Stone and Blood & Wine, plus hundreds of new cards, abilities, and balance improvements.
+This is just Gwent 3.1 taken in a completely new direction. Essentially it's Gwent 4.0. It was made for my own enjoyment but hopefully others see some value in it. I took a lot of inspiration from Novigrad Tavern's take on Gwent but still showing a ton of love for original Gwent minigame from The Witcher 3. 
 
-## 🎮 Play Now
+## Play
 
 Play directly in your browser - no installation required! The game runs entirely client-side using HTML, CSS, and JavaScript.
 
-## 📋 Version 3.1.0 Overview
+## 📋 Gwent Electon (Version 4.0) Overview
 
-Version 3.1.0 brings massive changes to Gwent Classic, including two new factions, major reworks to existing factions, new abilities, improved AI, and extensive balance changes. This update features hundreds of new card assets and introduces over 20 new abilities to the game.
+Version 4.0 brings massive changes to Gwent Classic 3.1, including two new factions, major reworks to existing factions, new abilities, improved AI, and extensive balance changes. This update features hundreds of new assets and introduces over 20 new abilities to the game.
 
 ---
 
@@ -18,7 +18,7 @@ Version 3.1.0 brings massive changes to Gwent Classic, including two new faction
 
 Novigrad is a free city that hosts all manner of denizens not particular in allegiance to one faction or another. Previously cards from the Witcher Universe and new Novigrad-specific characters are added here. In some ways, Novigrad is a "catch all" faction.
 
-**Playstyle:** Novigrad doesn't introduce many new mechanics and is fairly basic in their playstyle in classic Gwent faction, except for the addition of **Witch Hunt**, which targets the lowest power cards in the opposite row. This provides a powerful counterbalance to zerg-like deck compositions.
+**Playstyle:** Novigrad doesn't introduce many new mechanics and is fairly basic in their playstyle in classic Gwent fashion, except for the addition of **Witch Hunt**, which targets the lowest power cards in the opposite row. This provides a powerful counterbalance to zerg-like deck compositions.
 
 **Key Features:**
 - Witch Hunt ability - destroys weakest units in opposite row
@@ -110,9 +110,9 @@ Skellige has among the strongest base-strength units, making sense because they'
 
 ---
 
-### Witchers - Complete Rework
+### Witchers - Complete Rework and Faction Change
 
-Added many lore-ful witchers that were not present. This is perhaps the most unique faction.
+Added many lore-ful witchers that were not present. This is, perhaps, the single most unique faction.
 
 **Unique Features:**
 - Unlike other factions, they don't have access to neutrals like Decoy, Scorch, Cull
@@ -145,7 +145,7 @@ Toussaint relies on the dichotomy of their base units transforming into hero vam
 
 ---
 
-### Lyria & Rivia - Changes
+### Lyria & Rivia - Medium amount of changes
 
 Lyria and Rivia was expanded and reworked to be stronger defensively, with a larger siege presence and as a counterplay to siege-heavy strategies.
 
@@ -159,7 +159,7 @@ Lyria and Rivia was expanded and reworked to be stronger defensively, with a lar
 
 ---
 
-### Syndicate - Major Reworks
+### Syndicate - Major Reworks and mechanics
 
 Syndicate is the crime network that operates out of the depths of Novigrad's underbelly and beyond. Illegal brawling, murder, racketeering, et al.
 
@@ -176,7 +176,7 @@ Syndicate is the crime network that operates out of the depths of Novigrad's und
 
 ---
 
-### Zerrikania - Changes
+### Zerrikania - Small changes
 
 Leaning into the exotic theme, they have a menagerie of snakes, hyenas, leopards, and other fauna amidst worshippers that buff powerful units.
 
@@ -212,7 +212,7 @@ Ofir is a completely new faction that benefits from your opponent's aggression.
 
 ---
 
-## 🎯 General Improvements
+## General Improvements
 
 ### Balance Changes
 - Extensive rebalancing across all factions
@@ -246,7 +246,7 @@ Ofir is a completely new faction that benefits from your opponent's aggression.
 
 ---
 
-## 🎲 How to Play
+## How to Play
 
 Gwent Classic is a card game where players take turns playing cards to build strength on three rows: Close Combat, Ranged Combat, and Siege. The player with the highest total strength at the end of a round wins that round. Win two out of three rounds to win the match.
 
@@ -264,7 +264,7 @@ Gwent Classic is a card game where players take turns playing cards to build str
 
 **Original Developers:** Sundaram, Costa & Sylver
 
-**Version 3.1.0 Updates:** Cam Smith
+**Version 4.0 Updates:** Cam Smith
 
 **License:** MIT
 
