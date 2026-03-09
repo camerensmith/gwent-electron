@@ -169,8 +169,12 @@ class ControllerAI {
 				card: c
 			})
 		);
-		if (player.opponent().passed && diff < 16) {
-			let oneshot = weights.filter(w => (w.card.basePower > diff && w.card.basePower < diff + 5) || (w.weight > diff && w.weight > diff + 5));
+		if (player.opponent().passed && diff > 0 && diff < 16) {
+			// Opponent has passed and we're losing by 1-15 points - try to close the gap efficiently
+			let oneshot = weights.filter(w => 
+				(w.card && w.card.basePower > diff && w.card.basePower < diff + 5) ||
+				(w.weight > diff + 5)
+			);
 			if (oneshot.length > 0) {
 				let oneshot_card = oneshot.sort((a, b) => (a.weight - b.weight))[0];
 				await oneshot_card.action();
@@ -1108,6 +1112,15 @@ class ControllerAI {
 			}
 		}
 		
+		// Hand size advantage: if we have significantly more cards than the opponent,
+		// we can afford to play more aggressively rather than passing early
+		const opponentHandSize = opponent.hand.cards.length;
+		const handAdvantage = cardsInHand - opponentHandSize;
+		if (handAdvantage >= 3 && isLosing && roundNumber === 1) {
+			// We have 3+ more cards than opponent - reduce pass incentive, keep fighting
+			return 0;
+		}
+		
 		// Apply difficulty-based randomization to pass decision
 		// Hard = always optimal, Medium/Easy = sometimes suboptimal
 		if (!shouldBeOptimal) {
@@ -1268,24 +1281,14 @@ class ControllerAI {
 			rows[i].score = this.weightRowChange(card, rows[i].row);
 			
 			// WEATHER AVOIDANCE: Penalize weather-affected rows
+			// Use row.effects.weather directly - more accurate than checking special cards,
+			// and correctly covers multi-row weather types like storm and sandstorm
 			if (card.isUnit() && !card.hero && shouldAvoidWeather) {
-				const hasWeather = rows[i].row.special.cards.some(c => 
-					c.row === "weather" || (c.deck && c.deck.startsWith("weather")) ||
-					c.abilities && (c.abilities.includes("frost") || c.abilities.includes("fog") || 
-						c.abilities.includes("rain") || c.abilities.includes("storm") || 
-						c.abilities.includes("sandstorm") || c.abilities.includes("nightfall"))
-				);
+				const hasWeather = rows[i].row.effects.weather;
 				
 				if (hasWeather) {
-					// Check if there are rows without weather
-					const rowsWithoutWeather = rows.filter(r => {
-						return !r.row.special.cards.some(c => 
-							c.row === "weather" || (c.deck && c.deck.startsWith("weather")) ||
-							c.abilities && (c.abilities.includes("frost") || c.abilities.includes("fog") || 
-								c.abilities.includes("rain") || c.abilities.includes("storm") || 
-								c.abilities.includes("sandstorm") || c.abilities.includes("nightfall"))
-						);
-					});
+					// Check if there are alternative rows without active weather
+					const rowsWithoutWeather = rows.filter(r => !r.row.effects.weather);
 					
 					// If there are alternative rows without weather, heavily penalize this row
 					if (rowsWithoutWeather.length > 0) {
@@ -1760,11 +1763,20 @@ class ControllerAI {
 				}
 				return card.power;
 			}
-			
+				
 			// Resilience (stays on board between rounds)
 			if (abi.includes("resilience")) {
-				// Bonus for resilience cards in later rounds
-				let resilienceBonus = (game.roundCount - 1) * 5;
+				// Playing a resilience card early is valuable because the card carries over
+				// into the next round without using an additional card play
+				let resilienceBonus = 0;
+				if (game.roundCount === 1) {
+					// Carrying into round 2 is useful (saves a card play)
+					resilienceBonus = Math.floor(card.power * 0.4);
+				} else if (game.roundCount === 2) {
+					// Carrying into the decisive round 3 is very valuable
+					resilienceBonus = Math.floor(card.power * 0.75);
+				}
+				// In round 3, resilience provides no carry-over benefit
 				return card.power + resilienceBonus;
 			}
 			
@@ -1853,13 +1865,9 @@ class ControllerAI {
 			const difficulty = window.aiDifficultyManager ? window.aiDifficultyManager.getDifficulty() : 'medium';
 			const shouldAvoidWeather = window.aiDifficultyManager ? window.aiDifficultyManager.shouldAvoidWeather() : true;
 			
-			// Check if this row has weather
-			const hasWeather = row.special.cards.some(c => 
-				c.row === "weather" || (c.deck && c.deck.startsWith("weather")) ||
-				c.abilities && (c.abilities.includes("frost") || c.abilities.includes("fog") || 
-					c.abilities.includes("rain") || c.abilities.includes("storm") || 
-					c.abilities.includes("sandstorm") || c.abilities.includes("nightfall"))
-			);
+			// Use row.effects.weather directly - more accurate than checking special cards,
+			// and correctly covers multi-row weather types like storm and sandstorm
+			const hasWeather = row.effects.weather;
 			
 			if (hasWeather && shouldAvoidWeather) {
 				// Check if card can be played on other rows (agile, any, etc.)
@@ -1867,7 +1875,7 @@ class ControllerAI {
 					card.row === "melee_siege" || card.row === "ranged_siege";
 				
 				if (canPlayElsewhere) {
-					// Find alternative rows without weather
+					// Find alternative rows without active weather
 					const allRows = this.player.getAllRows();
 					const alternativeRows = allRows.filter(r => {
 						if (r === row) return false; // Not the current row
@@ -1882,14 +1890,7 @@ class ControllerAI {
 						return false;
 					});
 					
-					const rowsWithoutWeather = alternativeRows.filter(r => {
-						return !r.special.cards.some(c => 
-							c.row === "weather" || (c.deck && c.deck.startsWith("weather")) ||
-							c.abilities && (c.abilities.includes("frost") || c.abilities.includes("fog") || 
-								c.abilities.includes("rain") || c.abilities.includes("storm") || 
-								c.abilities.includes("sandstorm") || c.abilities.includes("nightfall"))
-						);
-					});
+					const rowsWithoutWeather = alternativeRows.filter(r => !r.effects.weather);
 					
 					// If there are alternative rows without weather, heavily penalize this row
 					if (rowsWithoutWeather.length > 0) {
@@ -1989,10 +1990,11 @@ class ControllerAI {
 				const pointDeficit = opponent.total - this.player.total;
 				const cardsInHand = this.player.hand.cards.length;
 				const cardsInDeck = this.player.deck.cards.length;
+				const opponentHandSize = opponent.hand.cards.length;
 				const roundNumber = game.roundCount;
 				const isEarlyRound = roundNumber === 1 && this.player.getAllRowCards().length < 3;
 				
-				let spyBonus = 15; // Base spy value
+				let spyBonus = 15; // Base spy value (2-card draw is always useful)
 				
 				// Boost if losing significantly (20+ points)
 				if (pointDeficit >= 20) {
@@ -2008,6 +2010,12 @@ class ControllerAI {
 					spyBonus += 10; // Moderate boost when getting low
 				}
 				
+				// Reduce spy value if opponent has very few cards left
+				// The 2-card draw is less impactful late in the game when opponent is out of cards
+				if (opponentHandSize <= 2) {
+					spyBonus -= 10; // Less valuable when opponent is almost out of cards
+				}
+				
 				// Boost to open a round (early in round 1)
 				if (isEarlyRound) {
 					spyBonus += 15; // Good to play spy early to get card advantage
@@ -2018,7 +2026,8 @@ class ControllerAI {
 			case "muster":
 				let pred = c => c.target === card.target;
 				let units = card.holder.hand.cards.filter(pred).concat(card.holder.deck.cards.filter(pred));
-				score *= units.length;
+				// +1 to include the card being played itself (total copies on board = units.length + 1)
+				score *= (units.length + 1);
 				break;
 			case "scorch_c":
 				score = Math.max(1, this.weightScorchRow(card, max, "close"));
@@ -3951,8 +3960,8 @@ class Weather extends CardContainer {
 				// Sandstorm affects close and ranged rows (1,2,3,4)
 				this.types[key].rows = [board.row[1], board.row[2], board.row[3], board.row[4]];
 			} else if (key === "storm") {
-				// Storm affects ranged and siege rows (1,2,4,5) - combines rain and fog
-				this.types[key].rows = [board.row[1], board.row[2], board.row[4], board.row[5]];
+				// Storm affects ranged and siege rows (0,1,4,5) - row[0]=AI siege, row[1]=AI ranged, row[4]=player ranged, row[5]=player siege
+				this.types[key].rows = [board.row[0], board.row[1], board.row[4], board.row[5]];
 			} else if (key === "nightfall") {
 				// Nightfall affects all rows (0,1,2,3,4,5)
 				this.types[key].rows = [board.row[0], board.row[1], board.row[2], board.row[3], board.row[4], board.row[5]];
