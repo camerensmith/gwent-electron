@@ -199,7 +199,15 @@ window.BOSS_EFFECTS = [
   { id: 'frost_start',     group: 'weather', name: 'A Bitter Beginning',         desc: 'Battle opens with Biting Frost on Close. Clearable as normal.' },
   { id: 'tempest',         group: 'weather', name: 'The Skellige Tempest',       desc: 'Ranged & Siege reduced to 1/unit for the whole battle.' },
   { id: 'no_specials',     group: 'rules',   name: 'A Silent Council',           desc: 'No Special cards may be played by either side.' },
-  { id: 'no_heroes',       group: 'rules',   name: 'Heroes Forsworn',            desc: 'Hero immunity is suspended this battle.' }
+  { id: 'no_heroes',       group: 'rules',   name: 'Heroes Forsworn',            desc: 'Hero immunity is suspended this battle.' },
+  { id: 'uroboros',        group: 'deck_manipulation', name: 'Mark of Uroboros',  desc: 'From the start of play, when any player draws a card from a deck, another card (or equal amount to the cards drawn) are discarded from the deck.' },
+  { id: 'dampening',       group: 'deck_manipulation', name: 'Dampening',         desc: 'Both players nonunit cards are immediately discarded from their decks at the start of play.' },
+  { id: 'twist_of_fate',   group: 'twist',   name: 'Twist of Fate',              desc: 'On turn 3, both players graveyards and draw decks are swapped.' },
+  { id: 'banishment',      group: 'attrition', name: 'Banishment',               desc: 'At the start of this battle, a random unit is permanently removed from your deck.' },
+  { id: 'warp',            group: 'twist',   name: 'Warp',                        desc: 'At the start of turn 2, each player may choose a card from their deck and play it immediately.' },
+  { id: 'landfall',        group: 'twist',   name: 'Landfall',                    desc: "At the start of turn 3, both players' decks are immediately moved to their graveyards." },
+  { id: 'sorcery',         group: 'twist',   name: 'Sorcery',                     desc: 'At the start of turn 3, a random card is played from your and your opponents decks, starting with you.' },
+  { id: 'gluttony',        group: 'draw',    name: 'Gluttony',                    desc: 'Both players get +1 cards to draw, and they may discard an additional card when redrawing.' }
 ];
 
 // Elite intrinsic effect.
