@@ -5310,6 +5310,13 @@ class UI {
 		
 		console.log("Trying audio paths:", audioPaths);
 		
+		// Save music position before navigating away so it can resume on the next page
+		window.addEventListener('beforeunload', () => {
+			if (this.backgroundMusic && !this.backgroundMusic.paused) {
+				sessionStorage.setItem('musicCurrentTime', this.backgroundMusic.currentTime);
+			}
+		});
+		
 		// Try to load audio with fallback paths
 		this.tryLoadAudio(audioPaths, 0);
 	}
@@ -5339,6 +5346,12 @@ class UI {
 		// Add success handling
 		this.backgroundMusic.addEventListener('canplaythrough', () => {
 			console.log(`Successfully loaded audio from: ${audioPath}`);
+			// Restore saved playback position from a previous page
+			var savedTime = parseFloat(sessionStorage.getItem('musicCurrentTime'));
+			if (savedTime > 0 && isFinite(savedTime)) {
+				this.backgroundMusic.currentTime = savedTime;
+				sessionStorage.removeItem('musicCurrentTime');
+			}
 			// Only try to autoplay if user has interacted
 			if (this.userInteracted) {
 			this.playBackgroundMusic();
