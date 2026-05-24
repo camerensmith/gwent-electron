@@ -219,6 +219,12 @@ function RunSetup({ mode, onBack, onBegin }) {
                   ))}
                 </div>
               </div>
+              {faction.leaders[leaderIdx] && faction.leaders[leaderIdx].ability && window.LEADER_ABILITIES[faction.leaders[leaderIdx].ability] && (
+                <div className="leader-ability">
+                  <div className="la-label">Leader Ability</div>
+                  <div className="la-text">{window.LEADER_ABILITIES[faction.leaders[leaderIdx].ability]}</div>
+                </div>
+              )}
             </div>
 
             <div className="faction-passive">
