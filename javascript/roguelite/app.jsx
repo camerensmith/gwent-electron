@@ -128,7 +128,7 @@ function App() {
     setScreen('map');
   };
 
-  const handlePickNode = (node, assignment) => {
+  const handlePickNode = (node, assignment, mapState) => {
     setRun(r => {
       let newRations = r.rations - window.RATION_TRAVEL_COST;
       let newDeck = r.deck;
@@ -188,7 +188,7 @@ function App() {
       }
       window.alert(`Mystery:\n\n"${out.line}"\n\n\u2014 ${delta}`);
     } else if (node.type === 'battle' || node.type === 'elite' || node.type === 'boss') {
-      resolveBattle(node, assignment);
+      resolveBattle(node, assignment, mapState);
     }
   };
 
@@ -237,7 +237,7 @@ function App() {
     return { gold: 1, rations: 0 };
   };
 
-  const resolveBattle = (node, assignment) => {
+  const resolveBattle = (node, assignment, mapState) => {
     const items = run?.equipped || [];
     const has = (id) => items.some(i => i.id === id);
 
@@ -248,7 +248,10 @@ function App() {
     const isFinalBoss = node.type === 'boss' && node.act === 1;
 
     // Persist run state across the page navigation so we can restore it on return
-    sessionStorage.setItem('rogueliteRunState', JSON.stringify(run));
+    const runToSave = mapState
+      ? { ...run, nodeStates: mapState.nodeStates, currentFloor: mapState.currentFloor }
+      : run;
+    sessionStorage.setItem('rogueliteRunState', JSON.stringify(runToSave));
 
     // Build the battle context that gwent.js will read on index.html load
     const ctx = {

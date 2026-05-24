@@ -4,88 +4,88 @@
 window.FACTIONS = [
   { id: 'realms',     name: 'Northern Realms', motto: 'Steel and standards.',           hue: 38,
     leaders: [
-      { id: 'foltest_siegemaster',  name: 'Foltest — The Siegemaster' },
-      { id: 'foltest_lord',         name: 'Foltest — Lord Commander of the North' },
-      { id: 'foltest_king',         name: 'Foltest — King of Temeria' },
-      { id: 'foltest_steelforged',  name: 'Foltest — The Steel-Forged' },
-      { id: 'radovid_stern',        name: 'Radovid V — the Stern' },
-      { id: 'queen_calanthe',       name: 'Queen Calanthe — Lioness of Cintra' }
+      { id: 'foltest_siegemaster',  name: 'Foltest — The Siegemaster',              image: 'images/sm/realms_foltest_siegemaster.jpg' },
+      { id: 'foltest_lord',         name: 'Foltest — Lord Commander of the North',  image: 'images/sm/realms_foltest_lord.jpg' },
+      { id: 'foltest_king',         name: 'Foltest — King of Temeria',              image: 'images/sm/realms_foltest_king.jpg' },
+      { id: 'foltest_steelforged',  name: 'Foltest — The Steel-Forged',             image: 'images/sm/realms_foltest_steelforged.jpg' },
+      { id: 'radovid_stern',        name: 'Radovid V — the Stern',                  image: 'images/sm/realms_radovid_stern.jpg' },
+      { id: 'queen_calanthe',       name: 'Queen Calanthe — Lioness of Cintra',     image: 'images/sm/realms_queen_calanthe.jpg' }
     ] },
   { id: 'nilfgaard',  name: 'Nilfgaard',       motto: 'A black sun rises.',             hue: 0,
     leaders: [
-      { id: 'emhyr_emperor',   name: 'Emhyr var Emreis — Emperor of Nilfgaard' },
-      { id: 'emhyr_whiteflame', name: 'Emhyr var Emreis — the White Flame' },
-      { id: 'emhyr_relentless', name: 'Emhyr var Emreis — The Relentless' },
-      { id: 'emhyr_imperial',   name: 'Emhyr var Emreis — His Imperial Majesty' },
-      { id: 'emhyr_invader',    name: 'Emhyr var Emreis — Invader of the North' }
+      { id: 'emhyr_emperor',    name: 'Emhyr var Emreis — Emperor of Nilfgaard',  image: 'images/sm/nilfgaard_emhyr_emperor.jpg' },
+      { id: 'emhyr_whiteflame', name: 'Emhyr var Emreis — the White Flame',       image: 'images/sm/nilfgaard_emhyr_whiteflame.jpg' },
+      { id: 'emhyr_relentless', name: 'Emhyr var Emreis — The Relentless',        image: 'images/sm/nilfgaard_emhyr_relentless.jpg' },
+      { id: 'emhyr_imperial',   name: 'Emhyr var Emreis — His Imperial Majesty',  image: 'images/sm/nilfgaard_emhyr_imperial.jpg' },
+      { id: 'emhyr_invader',    name: 'Emhyr var Emreis — Invader of the North',  image: 'images/sm/nilfgaard_emhyr_invader_of_the_north.jpg' }
     ] },
   { id: 'monsters',   name: 'Monsters',        motto: 'From the dark, they come.',      hue: 280,
     leaders: [
-      { id: 'eredin_commander',        name: 'Eredin — Commander of the Red Riders' },
-      { id: 'eredin_bringer_of_death', name: 'Eredin — Bringer of Death' },
-      { id: 'eredin_destroyer',        name: 'Eredin — Destroyer of Worlds' },
-      { id: 'eredin_king',             name: 'Eredin — King of the Wild Hunt' },
-      { id: 'eredin_treacherous',      name: 'Eredin Bréacc Glas — The Treacherous' },
-      { id: 'mo_bloody_baron',         name: 'Phillip Strenger — the Bloody Baron' }
+      { id: 'eredin_commander',        name: 'Eredin — Commander of the Red Riders',    image: 'images/sm/monsters_eredin_commander.jpg' },
+      { id: 'eredin_bringer_of_death', name: 'Eredin — Bringer of Death',               image: 'images/sm/monsters_eredin_bringer_of_death.jpg' },
+      { id: 'eredin_destroyer',        name: 'Eredin — Destroyer of Worlds',            image: 'images/sm/monsters_eredin_destroyer.jpg' },
+      { id: 'eredin_king',             name: 'Eredin — King of the Wild Hunt',          image: 'images/sm/monsters_eredin_king.jpg' },
+      { id: 'eredin_treacherous',      name: 'Eredin Bréacc Glas — The Treacherous',   image: 'images/sm/monsters_eredin_the_treacherous.jpg' },
+      { id: 'mo_bloody_baron',         name: 'Phillip Strenger — the Bloody Baron',     image: 'images/sm/monsters_bloody_baron.jpg' }
     ] },
   { id: 'scoiatael',  name: "Scoia'tael",      motto: 'The forest remembers.',          hue: 130,
     leaders: [
-      { id: 'francesca_queen',     name: 'Francesca Findabair — Queen of Dol Blathanna' },
-      { id: 'francesca_beautiful', name: 'Francesca Findabair — the Beautiful' },
-      { id: 'francesca_daisy',     name: 'Francesca Findabair — Daisy of the Valley' },
-      { id: 'francesca_pureblood', name: 'Francesca Findabair — Pureblood Elf' },
-      { id: 'francesca_hope',      name: 'Francesca Findabair — Hope of the Aen Seidhe' }
+      { id: 'francesca_queen',     name: 'Francesca Findabair — Queen of Dol Blathanna',  image: 'images/sm/scoiatael_francesca_queen.jpg' },
+      { id: 'francesca_beautiful', name: 'Francesca Findabair — the Beautiful',            image: 'images/sm/scoiatael_francesca_beautiful.jpg' },
+      { id: 'francesca_daisy',     name: 'Francesca Findabair — Daisy of the Valley',     image: 'images/sm/scoiatael_francesca_daisy.jpg' },
+      { id: 'francesca_pureblood', name: 'Francesca Findabair — Pureblood Elf',           image: 'images/sm/scoiatael_francesca_pureblood.jpg' },
+      { id: 'francesca_hope',      name: 'Francesca Findabair — Hope of the Aen Seidhe', image: 'images/sm/scoiatael_francesca_hope_of_the_aen_seidhe.jpg' }
     ] },
   { id: 'skellige',   name: 'Skellige',        motto: 'Salt, steel, and storm.',        hue: 200,
     leaders: [
-      { id: 'crach_an_craite', name: 'Crach an Craite' },
-      { id: 'king_bran',       name: 'King Bran' }
+      { id: 'crach_an_craite', name: 'Crach an Craite', image: 'images/sm/skellige_crach_an_craite.jpg' },
+      { id: 'king_bran',       name: 'King Bran',       image: 'images/sm/skellige_king_bran.jpg' }
     ] },
   { id: 'novigrad',   name: 'Free City of Novigrad', motto: 'Coin buys all.',           hue: 50,
     leaders: [
-      { id: 'novigrad_sigismund',  name: 'Sigismund Dijkstra — the Shrewd' },
-      { id: 'novigrad_sigismund2', name: 'Sigismund Dijkstra — the Politician' },
-      { id: 'cyrus_hemmelfart',    name: 'Cyrus Hemmelfart — Hierarch of Novigrad' }
+      { id: 'novigrad_sigismund',  name: 'Sigismund Dijkstra — the Shrewd',       image: 'images/sm/novigrad_sigismund.jpg' },
+      { id: 'novigrad_sigismund2', name: 'Sigismund Dijkstra — the Politician',   image: 'images/sm/novigrad_sigismund2.jpg' },
+      { id: 'cyrus_hemmelfart',    name: 'Cyrus Hemmelfart — Hierarch of Novigrad', image: 'images/sm/novigrad_cyrus_hemmelfart.jpg' }
     ] },
   { id: 'witchers',   name: 'Witchers',        motto: 'Evil is evil.',                  hue: 220,
     leaders: [
-      { id: 'vilgefortz_magician_kovir', name: 'Vilgefortz — Magician of Kovir' },
-      { id: 'vilgefortz_sorcerer',       name: 'Vilgefortz — Sorcerer of Roggeveen' },
-      { id: 'cosimo_malaspina',          name: 'Cosimo Malaspina — Master of Mutations' },
-      { id: 'alzur_maker',               name: 'Alzur — The Maker of Spells' }
+      { id: 'vilgefortz_magician_kovir', name: 'Vilgefortz — Magician of Kovir',          image: 'images/sm/witchers_vilgefortz_magician_kovir.jpg' },
+      { id: 'vilgefortz_sorcerer',       name: 'Vilgefortz — Sorcerer of Roggeveen',      image: 'images/sm/witchers_vilgefortz_sorcerer.jpg' },
+      { id: 'cosimo_malaspina',          name: 'Cosimo Malaspina — Master of Mutations',  image: 'images/sm/witchers_cosimo_malaspina.jpg' },
+      { id: 'alzur_maker',               name: 'Alzur — The Maker of Spells',             image: 'images/sm/witchers_alzur_maker.jpg' }
     ] },
   { id: 'toussaint',  name: 'Toussaint',       motto: 'A toast, and a fang.',           hue: 340,
     leaders: [
-      { id: 'anna_henrietta_duchess',  name: 'Anna Henrietta — Lady Duchess' },
-      { id: 'anna_henrietta_ladyship', name: 'Anna Henrietta — Her Enlightened Ladyship' },
-      { id: 'anna_henrietta_grace',    name: 'Anna Henrietta — Her Grace' }
+      { id: 'anna_henrietta_duchess',  name: 'Anna Henrietta — Lady Duchess',                  image: 'images/sm/toussaint_anna_henrietta_duchess.jpg' },
+      { id: 'anna_henrietta_ladyship', name: 'Anna Henrietta — Her Enlightened Ladyship',      image: 'images/sm/toussaint_anna_henrietta_ladyship.jpg' },
+      { id: 'anna_henrietta_grace',    name: 'Anna Henrietta — Her Grace',                     image: 'images/sm/toussaint_anna_henrietta_grace.jpg' }
     ] },
   { id: 'lyria_rivia', name: 'Lyria & Rivia',  motto: 'Pride before the shield.',       hue: 165,
     leaders: [
-      { id: 'meve_princess',    name: 'Meve — The Princess of Lyria' },
-      { id: 'meve_resolute',    name: 'Meve — The Resolute' },
-      { id: 'meve_white_queen', name: 'Meve — The White Queen' }
+      { id: 'meve_princess',    name: 'Meve — The Princess of Lyria', image: 'images/sm/lyria_rivia_meve_princess.jpg' },
+      { id: 'meve_resolute',    name: 'Meve — The Resolute',          image: 'images/sm/lyria_rivia_meve_resolute.jpg' },
+      { id: 'meve_white_queen', name: 'Meve — The White Queen',       image: 'images/sm/lyria_rivia_meve_white_queen.jpg' }
     ] },
   { id: 'syndicate',  name: 'Syndicate',       motto: 'Every shadow has a price.',      hue: 25,
     leaders: [
-      { id: 'carlo_varese',       name: 'Carlo Varese — Cleaver' },
-      { id: 'francis_bedlam',     name: 'Francis Bedlam — King of Beggars' },
-      { id: 'cyprian_wiley',      name: 'Cyprian Wiley — Whoreson Junior' },
-      { id: 'sigi_reuven_leader', name: 'Sigi Reuven — the Cunning' },
-      { id: 'gudrun_bjornsdottir', name: 'Gudrun Bjornsdottir — Pirate Queen' }
+      { id: 'carlo_varese',        name: 'Carlo Varese — Cleaver',             image: 'images/sm/syndicate_carlo_varese.jpg' },
+      { id: 'francis_bedlam',      name: 'Francis Bedlam — King of Beggars',  image: 'images/sm/syndicate_francis_bedlam.jpg' },
+      { id: 'cyprian_wiley',       name: 'Cyprian Wiley — Whoreson Junior',   image: 'images/sm/syndicate_cyprian_wiley.jpg' },
+      { id: 'sigi_reuven_leader',  name: 'Sigi Reuven — the Cunning',         image: 'images/sm/syndicate_sigi_reuvenleader.jpg' },
+      { id: 'gudrun_bjornsdottir', name: 'Gudrun Bjornsdottir — Pirate Queen', image: 'images/sm/syndicate_gudrun_bjornsdottir.jpg' }
     ] },
   { id: 'zerrikania', name: 'Zerrikania',      motto: 'The serpent watches the sun.',   hue: 60,
     leaders: [
-      { id: 'zerrikanterment', name: 'Zerrikanterment' },
-      { id: 'baal_zebuth',     name: 'Ball-Zebuth' },
-      { id: 'rarog',           name: 'Raróg' },
-      { id: 'azar_javed',      name: 'Azar Javed — Renegade' }
+      { id: 'zerrikanterment', name: 'Zerrikanterment',       image: 'images/sm/zerrikania_zerrikanterment.jpg' },
+      { id: 'baal_zebuth',     name: 'Ball-Zebuth',           image: 'images/sm/zerrikania_baal_zebuth.jpg' },
+      { id: 'rarog',           name: 'Raróg',                 image: 'images/sm/zerrikania_rarog.jpg' },
+      { id: 'azar_javed',      name: 'Azar Javed — Renegade', image: 'images/sm/zerrikania_azar_javedleader.jpg' }
     ] },
   { id: 'ofir',       name: 'Ofir',            motto: 'The desert favours the patient.', hue: 30,
     leaders: [
-      { id: 'ofir_aamad',                name: 'Aamad — the Wise' },
-      { id: 'ofir_aamad_merchant',       name: 'Aamad — The Merchant King' },
-      { id: 'ofir_grand_vizier_saheem',  name: 'Grand Vizier Saheem' }
+      { id: 'ofir_aamad',               name: 'Aamad — the Wise',         image: 'images/sm/ofir_aamad.jpg' },
+      { id: 'ofir_aamad_merchant',      name: 'Aamad — The Merchant King', image: 'images/sm/ofir_aamad1.jpg' },
+      { id: 'ofir_grand_vizier_saheem', name: 'Grand Vizier Saheem',       image: 'images/sm/ofir_grand_vizier_saheem.jpg' }
     ] }
 ];
 

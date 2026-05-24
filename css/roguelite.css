@@ -440,16 +440,26 @@ html, body {
 }
 .leader-portrait {
   width: 100%; aspect-ratio: 3 / 2;
-  background:
+  background-color: #0d0a05;
+  background-image:
     linear-gradient(180deg, rgba(255,210,77,.08) 0%, rgba(0,0,0,.6) 100%),
     repeating-linear-gradient(45deg, #1a1408 0 4px, #0d0a05 4px 8px);
+  background-size: cover;
+  background-position: center top;
   border: 1px solid var(--gold-dim);
   display: grid; place-items: center;
   position: relative;
+  overflow: hidden;
+}
+.leader-portrait.has-image {
+  background-image: linear-gradient(180deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.45) 100%);
 }
 .leader-portrait::after {
   content: '✦'; font-family: 'Cinzel', serif;
   color: var(--gold-dim); font-size: 28px;
+}
+.leader-portrait.has-image::after {
+  content: '';
 }
 .leader-tile .lt-name {
   font-family: 'Cinzel', serif; color: var(--text);
