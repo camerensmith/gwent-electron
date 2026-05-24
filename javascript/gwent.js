@@ -1112,15 +1112,6 @@ class ControllerAI {
 			}
 		}
 		
-		// Hand size advantage: if we have significantly more cards than the opponent,
-		// we can afford to play more aggressively rather than passing early
-		const opponentHandSize = opponent.hand.cards.length;
-		const handAdvantage = cardsInHand - opponentHandSize;
-		if (handAdvantage >= 3 && isLosing && roundNumber === 1) {
-			// We have 3+ more cards than opponent - reduce pass incentive, keep fighting
-			return 0;
-		}
-		
 		// Apply difficulty-based randomization to pass decision
 		// Hard = always optimal, Medium/Easy = sometimes suboptimal
 		if (!shouldBeOptimal) {
@@ -1770,11 +1761,11 @@ class ControllerAI {
 				// into the next round without using an additional card play
 				let resilienceBonus = 0;
 				if (game.roundCount === 1) {
-					// Carrying into round 2 is useful (saves a card play)
-					resilienceBonus = Math.floor(card.power * 0.4);
+					// Carrying into round 2 is mildly useful (saves a card play)
+					resilienceBonus = Math.floor(card.power * 0.15);
 				} else if (game.roundCount === 2) {
-					// Carrying into the decisive round 3 is very valuable
-					resilienceBonus = Math.floor(card.power * 0.75);
+					// Carrying into the decisive round 3 is moderately valuable
+					resilienceBonus = Math.floor(card.power * 0.30);
 				}
 				// In round 3, resilience provides no carry-over benefit
 				return card.power + resilienceBonus;
