@@ -83,6 +83,12 @@
           audio.volume = MUSIC_VOLUME;
           audio.addEventListener('error', function () { tryLoadMusic(paths, idx + 1); });
           audio.addEventListener('canplaythrough', function () {
+            // Restore saved playback position from a previous page
+            var savedTime = parseFloat(sessionStorage.getItem('musicCurrentTime'));
+            if (savedTime > 0 && isFinite(savedTime)) {
+              audio.currentTime = savedTime;
+              sessionStorage.removeItem('musicCurrentTime');
+            }
             if (rlMusicEnabled) audio.play().catch(function () {});
           });
           rlMusic = audio;
@@ -151,6 +157,13 @@
           if (sessionStorage.getItem('musicEnabled') === 'true') {
             started = true;
             initMusic();
+          }
+        });
+
+        // Save music position before navigating away so it can resume on the next page
+        window.addEventListener('beforeunload', function () {
+          if (rlMusic && !rlMusic.paused) {
+            sessionStorage.setItem('musicCurrentTime', rlMusic.currentTime);
           }
         });
       })();
