@@ -122,8 +122,16 @@ html, body {
 /* ───────── Main Menu ───────── */
 .menu-root { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; }
 .menu-title-wrap {
-  margin-top: 110px; text-align: center;
+  margin-top: 60px; text-align: center;
   position: relative;
+}
+.menu-logo-img {
+  max-width: 720px;
+  width: 37.5vw;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 0 24px rgba(255,210,77,.28));
 }
 .menu-title {
   font-family: 'Cinzel', serif;
@@ -145,8 +153,27 @@ html, body {
   background: linear-gradient(90deg, transparent 0%, var(--gold-soft) 50%, transparent 100%);
 }
 
+/* Music toggle button — fixed top-right corner */
+#rl-music-toggle {
+  position: fixed;
+  top: 14px; right: 18px;
+  z-index: 9999;
+  background: rgba(15, 12, 6, 0.72);
+  border: 1.5px solid var(--gold-soft);
+  color: var(--gold);
+  font-size: 22px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .2s, color .2s, opacity .2s;
+  padding: 0;
+}
+#rl-music-toggle:hover { border-color: var(--gold); color: var(--gold); }
+#rl-music-toggle.muted { opacity: 0.35; }
+
 .menu-buttons {
-  margin-top: 70px;
+  margin-top: 40px;
   display: flex; flex-direction: column; gap: 18px; align-items: center;
 }
 .menu-btn {

@@ -84,6 +84,8 @@ function App() {
   const navigate = (target) => {
     if (target === 'quick') {
       // Hand off to the existing Gwent Electron deck builder and game.
+      // Flag tells index.html to skip the splash screen.
+      sessionStorage.setItem('fromMainMenu', '1');
       window.location.href = 'index.html';
     } else if (target === 'roguelite') {
       setRun({ mode: 'roguelite' });

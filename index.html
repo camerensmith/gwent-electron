@@ -314,19 +314,9 @@
 					es.style.zIndex = 0;
 					es.classList.add("hide");
 				} catch (e) {}
-				var mainEl = document.getElementsByTagName("main")[0];
-				if (mainEl) mainEl.style.display = "none";
-				var deckEl = document.getElementById("deck-customization");
-				if (deckEl) {
-					deckEl.style.display = "block";
-					// Ensure table.jpg background is set
-					deckEl.style.backgroundImage = "url('images/table.jpg')";
-					deckEl.style.backgroundSize = "cover";
-					deckEl.style.backgroundPosition = "center";
-					deckEl.style.backgroundRepeat = "no-repeat";
-				}
-				var clickBg = document.getElementById("click-background");
-				if (clickBg) clickBg.classList.remove("noclick");
+				// Navigate back to the Main Menu screen.
+				sessionStorage.setItem('musicEnabled', 'true');
+				window.location.href = 'roguelite.html';
 			}
 		</script>
 
