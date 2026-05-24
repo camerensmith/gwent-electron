@@ -164,8 +164,26 @@ window.RATION_COSTS = {
 window.STARTING_RATIONS_MIN = 22;
 window.STARTING_RATIONS_MAX = 32;
 window.RATION_TRAVEL_COST = 1;
-window.LOSS_GOLD_COST = { battle: 1, elite: 2, boss: 4 };
 window.BATTLE_RATION_DRAIN = { battle: [4, 6], elite: [5, 8], boss: [7, 10] };
+
+// Reward ranges per act (0-indexed) and node type.
+// battle:  always gold, potentially rations (rationChance = probability of getting any rations).
+// elite:   Act 1 — gold OR rations (not both); Act 2 — gold, rations, or combination ≤ comboMax.
+//          goldChance = probability of pure-gold outcome when not in combo mode (Act 1 only).
+// boss:    always both gold AND rations.
+// Losing any encounter forfeits the exact gold the player stood to win (goldLoss = goldReward).
+window.BATTLE_REWARDS = {
+  act1: {
+    battle: { goldMin: 1, goldMax: 2, rationChance: 0.5, rationMin: 1, rationMax: 3 },
+    elite:  { goldMin: 2, goldMax: 3, goldChance: 0.65, rationMin: 3, rationMax: 5 },
+    boss:   { goldMin: 3, goldMax: 5, rationMin: 3, rationMax: 7 }
+  },
+  act2: {
+    battle: { goldMin: 2, goldMax: 3, rationChance: 0.5, rationMin: 1, rationMax: 5 },
+    elite:  { goldMin: 3, goldMax: 5, rationMin: 5, rationMax: 7, comboMax: 7 },
+    boss:   { goldMin: 3, goldMax: 6, rationMin: 3, rationMax: 7 }
+  }
+};
 
 // Items — meta-progression.
 window.ITEMS = [
@@ -207,13 +225,13 @@ window.MYSTERY_OUTCOMES = [
 
 // Node-type metadata.
 window.NODE_TYPES = {
-  battle:   { glyph: '\u2694',  label: 'Skirmish',   flavour: 'A skirmish. Spoils await.',                  reward: '+1 gold',           weight: 0.50 },
-  elite:    { glyph: '\u2726',  label: 'Elite',      flavour: 'A champion stands in your road.',           reward: '+2 gold \u00b7 cache', weight: 0.12 },
-  shop:     { glyph: '\u2696',  label: 'Merchant',   flavour: 'Coin changes hands in a quiet tent.',        reward: 'buy / sell',         weight: 0.13 },
-  rest:     { glyph: '\u2617',  label: 'Camp',       flavour: 'A fire, a flask, a song half-remembered.',   reward: 'rest',               weight: 0.13 },
-  cache:    { glyph: '\u25c8',  label: 'Cache',      flavour: 'A buried strongbox, half-forgotten.',        reward: '+2 gold',            weight: 0.07 },
-  mystery:  { glyph: '?',       label: 'Mystery',    flavour: 'The road bends into something unseen.',      reward: '???',                weight: 0.05 },
-  boss:     { glyph: '\u25c6',  label: 'Endbringer', flavour: 'The road ends here. So might you.',          reward: '+5 gold \u00b7 trophy', weight: 0 }
+  battle:   { glyph: '\u2694',  label: 'Skirmish',   flavour: 'A skirmish. Spoils await.',                  reward: '1\u20132 gold \u00b7 rations possible', weight: 0.50 },
+  elite:    { glyph: '\u2726',  label: 'Elite',      flavour: 'A champion stands in your road.',           reward: '2\u20133 gold or rations',             weight: 0.12 },
+  shop:     { glyph: '\u2696',  label: 'Merchant',   flavour: 'Coin changes hands in a quiet tent.',        reward: 'buy / sell',                           weight: 0.13 },
+  rest:     { glyph: '\u2617',  label: 'Camp',       flavour: 'A fire, a flask, a song half-remembered.',   reward: 'rest',                                 weight: 0.13 },
+  cache:    { glyph: '\u25c8',  label: 'Cache',      flavour: 'A buried strongbox, half-forgotten.',        reward: '+2 gold',                              weight: 0.07 },
+  mystery:  { glyph: '?',       label: 'Mystery',    flavour: 'The road bends into something unseen.',      reward: '???',                                  weight: 0.05 },
+  boss:     { glyph: '\u25c6',  label: 'Endbringer', flavour: 'The road ends here. So might you.',          reward: 'gold + rations \u00b7 trophy',          weight: 0 }
 };
 
 // Faction-themed merchant flavour.

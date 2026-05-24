@@ -40,14 +40,14 @@ function App() {
     let savedRun;
     try { savedRun = JSON.parse(rawRun); } catch(e) { return; }
 
-    const { won, rationDrain, goldReward, goldLoss, nodeType, isFinalBoss } = result;
+    const { won, rationDrain, goldReward, rationReward, goldLoss, nodeType, isFinalBoss } = result;
     const clampedDrain = Math.min(rationDrain, Math.max(0, savedRun.rations));
 
     if (won) {
       const newRun = {
         ...savedRun,
         gold: savedRun.gold + goldReward,
-        rations: savedRun.rations - clampedDrain,
+        rations: Math.min(savedRun.maxRations || 40, savedRun.rations - clampedDrain + (rationReward || 0)),
         wins: (savedRun.wins || 0) + 1,
         elites: (savedRun.elites || 0) + (nodeType === 'elite' ? 1 : 0),
         bosses: (savedRun.bosses || 0) + (nodeType === 'boss' ? 1 : 0),
@@ -192,12 +192,59 @@ function App() {
     }
   };
 
+  const rollBattleReward = (nodeType, actIndex, hasKingsBounty) => {
+    const rand = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+    const key = 'act' + (actIndex + 1);
+    const cfg = (window.BATTLE_REWARDS[key] || window.BATTLE_REWARDS.act1)[nodeType];
+    if (!cfg) return { gold: 1, rations: 0 };
+    const kb = hasKingsBounty ? 1 : 0;
+
+    if (nodeType === 'battle') {
+      const gold = rand(cfg.goldMin, cfg.goldMax) + kb;
+      const rations = Math.random() < cfg.rationChance ? rand(cfg.rationMin, cfg.rationMax) : 0;
+      return { gold, rations };
+    }
+
+    if (nodeType === 'elite') {
+      if (actIndex === 0) {
+        // Act 1: gold OR rations (not both)
+        if (Math.random() < cfg.goldChance) {
+          return { gold: rand(cfg.goldMin, cfg.goldMax) + kb, rations: 0 };
+        }
+        return { gold: 0, rations: rand(cfg.rationMin, cfg.rationMax) };
+      }
+      // Act 2: gold only, rations only, or combination where gold+rations ≤ comboMax
+      const roll = Math.random();
+      if (roll < 0.33) {
+        return { gold: rand(cfg.goldMin, cfg.goldMax) + kb, rations: 0 };
+      }
+      if (roll < 0.66) {
+        return { gold: 0, rations: rand(cfg.rationMin, cfg.rationMax) };
+      }
+      // Combination: pick a total budget then split it
+      const total = rand(3, cfg.comboMax);
+      const gold = rand(1, total - 1);
+      return { gold: gold + kb, rations: total - gold };
+    }
+
+    if (nodeType === 'boss') {
+      return {
+        gold: rand(cfg.goldMin, cfg.goldMax) + kb,
+        rations: rand(cfg.rationMin, cfg.rationMax),
+      };
+    }
+
+    return { gold: 1, rations: 0 };
+  };
+
   const resolveBattle = (node, assignment) => {
     const items = run?.equipped || [];
     const has = (id) => items.some(i => i.id === id);
 
-    const goldReward = (node.type === 'elite' ? 2 : node.type === 'boss' ? 5 : 1) + (has('kings_bounty') ? 1 : 0);
-    const goldLoss = window.LOSS_GOLD_COST[node.type] || 1;
+    const actIndex = node.act || 0;
+    const { gold: goldReward, rations: rationReward } = rollBattleReward(node.type, actIndex, has('kings_bounty'));
+    // Losing forfeits the exact gold the player stood to win
+    const goldLoss = goldReward;
     const isFinalBoss = node.type === 'boss' && node.act === 1;
 
     // Persist run state across the page navigation so we can restore it on return
@@ -212,6 +259,7 @@ function App() {
       oppLeaderName:  assignment?.oppLeader?.name  || 'Opponent',
       nodeType:       node.type,
       goldReward,
+      rationReward,
       goldLoss,
       currentRations: run.rations,
       leanProvision:  has('lean_provision'),
