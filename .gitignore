@@ -75,19 +75,13 @@ gwent-classic-app/
 **/filenamegetter.bat
 filenamegetter.bat
 
-# Electron builder files
-electron-builder.yml
+# Electron builder generated files
 builder-effective-config.yaml
 builder-debug.yml
 *.blockmap
 latest.yml
 
-# Electron main process files
-main.js
-preload.js
-
-# Package files
-package.json
+# Package lock (committed separately via npm ci in CI)
 package-lock.json
 
 # Documentation

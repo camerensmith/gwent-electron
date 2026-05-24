@@ -1,0 +1,16 @@
+{
+  "name": "gwent-electron",
+  "version": "1.0.0",
+  "description": "Play the original Gwent minigame from The Witcher 3 on desktop",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "author": "Cam Smith",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^41.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}

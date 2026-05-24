@@ -1,0 +1,43 @@
+appId: com.camerensmith.gwent-electron
+productName: Gwent
+copyright: Copyright © 2024 Cam Smith
+
+directories:
+  output: dist
+
+files:
+  - "**/*"
+  - "!dist/**"
+  - "!.github/**"
+  - "!*.md"
+  - "!.gitignore"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: images/favicon.ico
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: images/favicon.ico
+  category: public.app-category.games
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  icon: images/favicon.ico
+  category: Game
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+publish: null
