@@ -4603,12 +4603,13 @@ class Game {
 		if (rogueliteCtx) {
 			var rlWon = cond === 0; // player_op health 0 and player_me health > 0
 			var rlResult = {
-				won:        rlWon,
-				rationDrain: rogueliteTotalRationDrain,
-				goldReward:  rogueliteCtx.goldReward,
-				goldLoss:    rogueliteCtx.goldLoss,
-				nodeType:    rogueliteCtx.nodeType,
-				isFinalBoss: rogueliteCtx.isFinalBoss
+				won:          rlWon,
+				rationDrain:  rogueliteTotalRationDrain,
+				goldReward:   rogueliteCtx.goldReward,
+				rationReward: rogueliteCtx.rationReward || 0,
+				goldLoss:     rogueliteCtx.goldLoss,
+				nodeType:     rogueliteCtx.nodeType,
+				isFinalBoss:  rogueliteCtx.isFinalBoss
 			};
 			sessionStorage.setItem('rogueliteBattleResult', JSON.stringify(rlResult));
 			// Override buttons: both lead back to the roguelite map
