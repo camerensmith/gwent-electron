@@ -271,6 +271,7 @@ function App() {
       hardtack:       has('hardtack'),
       isFinalBoss,
       nextEncounterBuff: run?.nextEncounterBuff || null,
+      bossEffects: assignment?.effects || [],
     };
 
     sessionStorage.setItem('rogueliteBattle', JSON.stringify(ctx));
