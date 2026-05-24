@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gwent Electron — Roguelite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+    <link rel="stylesheet" href="css/roguelite.css" />
+    <!-- React + Babel via CDN (development build is fine for this prototype) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      /* The letterbox host / stage scaling system */
+      .stage-host {
+        position: fixed; inset: 0;
+        background: #000;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .stage-wrap { position: relative; }
+      .stage {
+        position: relative;
+        width: 1920px; height: 1080px;
+        transform-origin: top left;
+        background: #0a0a0a;
+        overflow: hidden;
+      }
+      #root { width: 100%; height: 100%; }
+    </style>
+  </head>
+  <body>
+    <div class="stage-host">
+      <div class="stage-wrap" id="stage-wrap">
+        <div class="stage accent-gold" id="stage">
+          <div id="root"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Letterbox scaling: keep 1920×1080 stage centred and scaled to fit the viewport -->
+    <script>
+      (function () {
+        var W = 1920, H = 1080;
+        function scale() {
+          var vw = window.innerWidth, vh = window.innerHeight;
+          var ratio = Math.min(vw / W, vh / H);
+          var stage = document.getElementById('stage');
+          var wrap  = document.getElementById('stage-wrap');
+          if (!stage || !wrap) return;
+          stage.style.transform = 'scale(' + ratio + ')';
+          wrap.style.width  = Math.round(W * ratio) + 'px';
+          wrap.style.height = Math.round(H * ratio) + 'px';
+        }
+        window.addEventListener('resize', scale);
+        scale();
+      })();
+    </script>
+
+    <!-- Roguelite data (plain JS — no JSX, no React) -->
+    <script src="javascript/roguelite/data.js"></script>
+
+    <!-- Roguelite components (JSX — transpiled by Babel standalone) -->
+    <script type="text/babel" data-type="module" src="javascript/roguelite/tweaks-panel.jsx"></script>
+    <script type="text/babel" data-type="module" src="javascript/roguelite/components-menu.jsx"></script>
+    <script type="text/babel" data-type="module" src="javascript/roguelite/components-map.jsx"></script>
+    <script type="text/babel" data-type="module" src="javascript/roguelite/components-shop.jsx"></script>
+    <script type="text/babel" data-type="module" src="javascript/roguelite/components-extras.jsx"></script>
+    <script type="text/babel" data-type="module" src="javascript/roguelite/app.jsx"></script>
+  </body>
+</html>
