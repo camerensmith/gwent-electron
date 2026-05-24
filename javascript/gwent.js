@@ -2417,6 +2417,20 @@ class Player {
 		await sleep(1000);
 		ui.hidePreview(card);
 		await action();
+		// Roguelite: accumulate ration drain for every card the human player plays
+		if (this === player_me && rogueliteCtx) {
+			var cost = 0;
+			if (card.hero) {
+				// Hero cards cost 2 rations (or 1 with hardtack item)
+				cost = rogueliteCtx.hardtack ? 1 : 2;
+			} else if (card.isUnit()) {
+				// Unit cards cost 1 ration (or 0 with lean_provision item)
+				cost = rogueliteCtx.leanProvision ? 0 : 1;
+			}
+			// special / weather cards cost 0
+			rogueliteTotalRationDrain += cost;
+			updateRogueliteHUD();
+		}
 		this.endTurn();
 	}
 
@@ -4299,6 +4313,7 @@ class Game {
 			op: new Set()
 		};
 		this.embargoActive = null;
+		this.isRoguelite = false;
 		if (board) {
 			if (board.row) {
 				board.row.forEach(r => {
@@ -4583,9 +4598,38 @@ class Game {
 		// Ensure buttons are clickable
 		if (this.customize_elem) this.customize_elem.style.pointerEvents = "auto";
 		if (this.replay_elem) this.replay_elem.style.pointerEvents = "auto";
+
+		// Roguelite: write battle result and redirect end-screen buttons
+		if (rogueliteCtx) {
+			var rlWon = cond === 0; // player_op health 0 and player_me health > 0
+			var rlResult = {
+				won:        rlWon,
+				rationDrain: rogueliteTotalRationDrain,
+				goldReward:  rogueliteCtx.goldReward,
+				goldLoss:    rogueliteCtx.goldLoss,
+				nodeType:    rogueliteCtx.nodeType,
+				isFinalBoss: rogueliteCtx.isFinalBoss
+			};
+			sessionStorage.setItem('rogueliteBattleResult', JSON.stringify(rlResult));
+			// Override buttons: both lead back to the roguelite map
+			if (this.customize_elem) {
+				this.customize_elem.textContent = 'Return to Map';
+			}
+			if (this.replay_elem) {
+				this.replay_elem.style.display = 'none';
+			}
+			// Hide HUD
+			var rlHud = document.getElementById('roguelite-hud');
+			if (rlHud) rlHud.style.display = 'none';
+		}
 	}
 
 	returnToCustomization() {
+		// Roguelite: redirect to the roguelite map instead of the deck builder
+		if (this.isRoguelite) {
+			window.location.href = 'roguelite.html';
+			return;
+		}
 		iniciarMusica();
 		this.reset();
 		player_me.reset();
@@ -4613,6 +4657,11 @@ class Game {
 	}
 
 	restartGame() {
+		// Roguelite: replay not available; redirect back to map
+		if (this.isRoguelite) {
+			window.location.href = 'roguelite.html';
+			return;
+		}
 		iniciarMusica();
 		limpar();
 		this.reset();
@@ -8331,6 +8380,185 @@ function initLocalMusicSystem() {
 	ui.initLocalMusic();
 }
 
+// ── Roguelite battle bridge ────────────────────────────────────────────────
+
+/** Context written by roguelite.html before navigating here; null during normal play. */
+var rogueliteCtx = null;
+
+/** Cumulative ration cost of cards played by the human player this battle. */
+var rogueliteTotalRationDrain = 0;
+
+/**
+ * Find the card_dict leader entry for a faction that best matches a roguelite
+ * leader ID (e.g. 'foltest_siegemaster' → 'nr_foltest_siegemaster').
+ */
+function findRogueliteLeader(faction, rogueliteLeaderId) {
+	var leaders = Object.keys(card_dict)
+		.filter(function(k) {
+			var c = card_dict[k];
+			return c && c.row === 'leader' && c.deck === faction;
+		})
+		.map(function(k) { return { index: k, card: card_dict[k] }; });
+
+	if (!leaders.length) return null;
+	if (!rogueliteLeaderId) return leaders[0];
+
+	// Exact key match
+	if (card_dict[rogueliteLeaderId] && card_dict[rogueliteLeaderId].row === 'leader')
+		return { index: rogueliteLeaderId, card: card_dict[rogueliteLeaderId] };
+
+	var id = rogueliteLeaderId;
+
+	// Suffix / contains match
+	var match = leaders.find(function(l) {
+		return l.index === id ||
+			l.index.endsWith('_' + id) ||
+			l.index.replace(/^[a-z]+_/, '') === id ||
+			l.index.includes(id);
+	});
+	if (match) return match;
+
+	// Partial: every underscore-segment of the roguelite ID appears in the card key
+	var parts = id.split('_');
+	var partial = leaders.find(function(l) {
+		return parts.every(function(p) { return l.index.includes(p); });
+	});
+	return partial || leaders[0];
+}
+
+/**
+ * Build a game-compatible deck object for a given faction.
+ * Prefers a random premade deck; falls back to card_dict card selection.
+ */
+function buildRogueliteDeck(factionId, rogueliteLeaderId) {
+	var factionDecks = (window.premade_deck || []).filter(function(d) { return d.faction === factionId; });
+	var cards;
+
+	if (factionDecks.length) {
+		var template = factionDecks[Math.floor(Math.random() * factionDecks.length)];
+		cards = template.cards
+			.map(function(c) {
+				return { index: Array.isArray(c) ? c[0] : c.index, count: Array.isArray(c) ? c[1] : c.count };
+			})
+			.filter(function(c) { return c.index && card_dict[c.index]; });
+	} else {
+		// Generate from card_dict (covers novigrad / zerrikania / any unlisted faction)
+		var unitKeys = [], specialKeys = [];
+		for (var k in card_dict) {
+			var c = card_dict[k];
+			if (!c || c.row === 'leader') continue;
+			var deck = c.deck;
+			var inFaction = deck === factionId || deck === 'neutral' ||
+				deck === 'special' || deck === 'weather' ||
+				(deck.startsWith('special') && deck.includes(factionId)) ||
+				(deck.startsWith('weather') && deck.includes(factionId));
+			if (!inFaction) continue;
+			if (deck.startsWith('special') || deck.startsWith('weather')) specialKeys.push(k);
+			else unitKeys.push(k);
+		}
+		unitKeys.sort(function() { return Math.random() - 0.5; });
+		specialKeys.sort(function() { return Math.random() - 0.5; });
+		cards = [];
+		var total = 0;
+		for (var i = 0; i < unitKeys.length; i++) {
+			if (total >= 26) break;
+			var maxCount = parseInt(card_dict[unitKeys[i]].count || '1', 10);
+			var cnt = Math.min(maxCount, 1 + Math.floor(Math.random() * Math.min(maxCount, 26 - total)));
+			cards.push({ index: unitKeys[i], count: cnt });
+			total += cnt;
+		}
+		for (var j = 0; j < Math.min(6, specialKeys.length); j++) {
+			cards.push({ index: specialKeys[j], count: 1 });
+		}
+	}
+
+	var leader = findRogueliteLeader(factionId, rogueliteLeaderId);
+	return {
+		faction: factionId,
+		leader: leader || { index: null, card: null },
+		cards: cards,
+		title: factionId
+	};
+}
+
+/** Create or update the in-game roguelite HUD overlay. */
+function updateRogueliteHUD() {
+	var hud = document.getElementById('roguelite-hud');
+	if (!hud || !rogueliteCtx) return;
+	var remaining = rogueliteCtx.currentRations - rogueliteTotalRationDrain;
+	hud.innerHTML =
+		'<span class="rl-hud-pill rl-hud-rations">&#x2697; Rations\u00a0' + remaining + '</span>' +
+		'<span class="rl-hud-pill rl-hud-drain">Drain\u00a0\u2212' + rogueliteTotalRationDrain + '</span>';
+}
+
+/**
+ * Auto-start a roguelite battle from a stored context object.
+ * Called from window.onload when sessionStorage.rogueliteBattle is present.
+ */
+async function startRogueliteBattle(ctx) {
+	rogueliteCtx = ctx;
+	rogueliteTotalRationDrain = 0;
+
+	// Mark game as roguelite so returnToCustomization / restartGame redirect properly
+	game.isRoguelite = true;
+
+	// Run the normal "inicio" flow so music / fullscreen etc. are initialised
+	inicio();
+
+	// Immediately override what inicio() shows: hide deck builder, reveal game board
+	var deckEl = document.getElementById('deck-customization');
+	if (deckEl) deckEl.style.display = 'none';
+	var mainEl = document.getElementsByTagName('main')[0];
+	if (mainEl) mainEl.style.display = '';
+
+	// Wait for deck-loader if still initialising
+	if (window.deckLoader && !window.deckLoader.isReady()) {
+		await window.deckLoader.initialize();
+	}
+
+	// Build decks
+	var playerFaction = ctx.playerFaction || 'realms';
+	var oppFaction    = ctx.oppFaction    || 'monsters';
+	var meDeck  = buildRogueliteDeck(playerFaction, ctx.playerLeaderId);
+	var opDeck  = buildRogueliteDeck(oppFaction,    ctx.oppLeaderId);
+
+	// Validate: ensure leader entries are complete
+	if (!meDeck.leader || !meDeck.leader.index || !meDeck.leader.card) {
+		console.error('[ROGUELITE] Could not find player leader for faction:', playerFaction);
+		meDeck.leader = findRogueliteLeader(playerFaction, null);
+		if (!meDeck.leader) {
+			window.alert('Roguelite: no leader found for faction ' + playerFaction + '. Returning to map.');
+			window.location.href = 'roguelite.html';
+			return;
+		}
+	}
+	if (!opDeck.leader || !opDeck.leader.index || !opDeck.leader.card) {
+		opDeck.leader = findRogueliteLeader(oppFaction, null);
+		if (!opDeck.leader) {
+			opDeck.faction = 'realms';
+			opDeck.leader = findRogueliteLeader('realms', null);
+		}
+	}
+
+	// Create players
+	player_me = new Player(0, 'Traveller', meDeck, false);
+	player_op = new Player(1, ctx.oppLeaderName || 'Opponent', opDeck, true);
+
+	// Create HUD overlay
+	var hud = document.getElementById('roguelite-hud');
+	if (!hud) {
+		hud = document.createElement('div');
+		hud.id = 'roguelite-hud';
+		document.body.appendChild(hud);
+	}
+	updateRogueliteHUD();
+
+	tocar('game_opening', false);
+	game.startGame();
+}
+
+// ── End roguelite bridge ───────────────────────────────────────────────────
+
 var ui = new UI();
 var board = new Board();
 var weather = new Weather();
@@ -8432,6 +8660,20 @@ window.onload = function() {
 	});
 	document.getElementById("pLoad").innerHTML = "* {cursor: url('images/icons/cursor.png'), default}"
 	isLoaded = true;
+
+	// Roguelite bridge: if a battle context was stored by roguelite.html, auto-start
+	var rogueliteRaw = sessionStorage.getItem('rogueliteBattle');
+	if (rogueliteRaw) {
+		try {
+			var rogueliteCtxLoad = JSON.parse(rogueliteRaw);
+			sessionStorage.removeItem('rogueliteBattle');
+			// Hide the splash-screen start button and start the battle after a tick
+			document.getElementById("button_start").style.display = "none";
+			setTimeout(function() { startRogueliteBattle(rogueliteCtxLoad); }, 0);
+		} catch(e) {
+			console.error('[ROGUELITE] Failed to parse battle context:', e);
+		}
+	}
 }
 
 window.onresize = function() {
