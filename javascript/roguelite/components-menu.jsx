@@ -209,7 +209,11 @@ function RunSetup({ mode, onBack, onBegin }) {
                       className={`leader-tile ${i === leaderIdx ? 'active' : ''}`}
                       onClick={() => setLeaderIdx(i)}
                     >
-                      <div className="leader-portrait" data-card-id={ldr.id} />
+                      <div
+                        className={`leader-portrait${ldr.image ? ' has-image' : ''}`}
+                        data-card-id={ldr.id}
+                        style={ldr.image ? { backgroundImage: `url('${ldr.image}')` } : undefined}
+                      />
                       <div className="lt-name">{ldr.name}</div>
                     </div>
                   ))}
