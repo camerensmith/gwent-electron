@@ -393,9 +393,18 @@ html, body {
   border: 3px solid var(--gold-deep);
   box-shadow: 0 0 14px rgba(255,210,77,.3);
 }
+.fb-name-row {
+  display: flex; align-items: center; gap: 16px;
+}
 .faction-banner .fb-name {
   font-family: 'Cinzel', serif; font-size: 36px; color: var(--gold);
   letter-spacing: 0.1em; margin: 0;
+}
+.faction-shield {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.7));
 }
 .faction-banner .fb-motto {
   font-family: 'IM Fell English', serif; font-style: italic;

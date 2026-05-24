@@ -194,7 +194,14 @@ function RunSetup({ mode, onBack, onBegin }) {
             <div className="faction-banner">
               <FactionSigil faction={faction} size={82} />
               <div>
-                <h3 className="fb-name">{faction.name}</h3>
+                <div className="fb-name-row">
+                  <h3 className="fb-name">{faction.name}</h3>
+                  <img
+                    className="faction-shield"
+                    src={`images/icons/deck_shield_${faction.id}.png`}
+                    alt={`${faction.name} shield`}
+                  />
+                </div>
                 <div className="fb-motto">{faction.motto}</div>
               </div>
             </div>
