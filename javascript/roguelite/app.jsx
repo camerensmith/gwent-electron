@@ -104,7 +104,7 @@ function App() {
     const hasQM = items.some(i => i.id === 'quartermaster');
     const rollStart = window.STARTING_RATIONS_MIN +
       Math.floor(Math.random() * (window.STARTING_RATIONS_MAX - window.STARTING_RATIONS_MIN + 1));
-    const start = rollStart + (hasQM ? 5 : 0);
+    const start = rollStart + (hasQM ? 15 : 0);
     setRun({
       mode: 'roguelite',
       factionId,
@@ -114,7 +114,7 @@ function App() {
       gold: 0,
       rations: start,
       startRations: start,
-      maxRations: 40,
+      maxRations: 150,
       wins: 0,
       losses: 0,
       elites: 0,
@@ -132,7 +132,8 @@ function App() {
 
   const handlePickNode = (node, assignment, mapState) => {
     setRun(r => {
-      let newRations = r.rations - window.RATION_TRAVEL_COST;
+      const travelCost = window.calcTravelCost(r.deck, r.equipped);
+      let newRations = r.rations - travelCost;
       let newDeck = r.deck;
       let starveDiscarded = null;
       if (newRations < 0 && newDeck.length > 0) {
@@ -162,7 +163,7 @@ function App() {
     if (node.type === 'shop') {
       setScreen('shop');
     } else if (node.type === 'rest') {
-      const gain = has('foragers_eye') ? 6 : 4;
+      const gain = has('foragers_eye') ? 28 : 20;
       setRun(r => ({
         ...r,
         rests: (r.rests || 0) + 1,
@@ -371,7 +372,7 @@ function App() {
               deck: window.generateStartingDeck(f.id),
               gold: 8, wins: 2, losses: 1, elites: 0, bosses: 0,
               bought: 1, sold: 0, rests: 1, floorsReached: 3,
-              rations: 18, startRations: 26, maxRations: 40,
+              rations: 18, startRations: 125, maxRations: 150,
               equipped: [], seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
             });
             setScreen('map');
@@ -384,7 +385,7 @@ function App() {
               deck: window.generateStartingDeck(f.id),
               gold: 4, wins: 5, losses: 3, elites: 1, bosses: 0,
               bought: 2, sold: 2, rests: 1, floorsReached: 9,
-              rations: -2, startRations: 24, maxRations: 40,
+              rations: -2, startRations: 120, maxRations: 150,
               equipped: [], seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
             });
             setScreen('map');
@@ -396,7 +397,7 @@ function App() {
               factionId: f.id, leader: f.leaders[0],
               deck: window.generateStartingDeck(f.id),
               gold: 6, wins: 3, bought: 0, sold: 0,
-              rations: 14, startRations: 26, maxRations: 40,
+              rations: 14, startRations: 125, maxRations: 150,
               equipped: [], seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
             });
             setScreen('shop');
@@ -408,7 +409,7 @@ function App() {
               factionId: f.id, leader: f.leaders[0],
               deck: window.generateStartingDeck(f.id),
               gold: 4, wins: 2,
-              rations: 6, startRations: 26, maxRations: 40,
+              rations: 6, startRations: 125, maxRations: 150,
               equipped: [], seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
             });
             setScreen('rest');
@@ -421,7 +422,7 @@ function App() {
               deck: window.generateStartingDeck(f.id),
               gold: 14, wins: 12, losses: 3, elites: 2, bosses: 2,
               bought: 6, sold: 3, rests: 2, floorsReached: 16,
-              rations: 11, startRations: 28, maxRations: 40,
+              rations: 11, startRations: 130, maxRations: 150,
               equipped: [window.ITEMS[0], window.ITEMS[1]],
               seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
             });
@@ -437,7 +438,7 @@ function App() {
               deck: window.generateStartingDeck(f.id),
               gold: 0, wins: 4, losses: 4, elites: 1, bosses: 0,
               bought: 2, sold: 1, rests: 1, floorsReached: 9,
-              rations: 0, startRations: 24, maxRations: 40,
+              rations: 0, startRations: 120, maxRations: 150,
               equipped: [window.ITEMS[0]],
               seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
             });

@@ -325,7 +325,7 @@ function RestArea({ run, onLeave }) {
   const flavour = useMemo(() => rand(window.REST_LINES), []);
   const items = run.equipped || [];
   const hasForagers = items.some(i => i.id === 'foragers_eye');
-  const rationsGained = hasForagers ? 6 : 4;
+  const rationsGained = hasForagers ? 28 : 20;
   return (
     <div className="screen bg-stone bg-vignette" data-screen-label="06 Rest Area">
       <div className="topnav">

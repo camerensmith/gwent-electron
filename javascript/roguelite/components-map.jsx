@@ -312,8 +312,8 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
             </div>
           </div>
 
-          <div className={`rations-bar ${run.rations < 0 ? 'starving' : run.rations <= 5 ? 'low' : ''}`}>
-            <div className="rations-glyph">{run.rations < 0 ? '\u2620' : '\u25c8'}</div>
+          <div className={`rations-bar ${run.rations < 0 ? 'starving' : run.rations <= 30 ? 'low' : ''}`}>
+            <div className="rations-glyph">{run.rations < 0 ? '\u2920' : '\u25c8'}</div>
             <div style={{ flex: 1 }}>
               <div className="rations-row">
                 <span className="rations-amt">{run.rations ?? 0}</span>
@@ -321,14 +321,14 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
               </div>
               <div className="rations-fill">
                 <div className="rations-fill-inner" style={{
-                  width: Math.max(0, Math.min(100, (run.rations || 0) / (run.maxRations || 40) * 100)) + '%'
+                  width: Math.max(0, Math.min(100, (run.rations || 0) / (run.maxRations || 150) * 100)) + '%'
                 }} />
               </div>
             </div>
           </div>
           {run.rations < 0 ? (
             <div className="rations-warn starving">"The stores are bare. The saddlebags spill at every step."</div>
-          ) : run.rations <= 5 ? (
+          ) : run.rations <= 30 ? (
             <div className="rations-warn">"The stores grow lean. Find a camp."</div>
           ) : null}
 
