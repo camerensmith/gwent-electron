@@ -40,6 +40,9 @@
       </div>
     </div>
 
+    <!-- Music toggle button (outside the React stage so it's always available) -->
+    <button id="rl-music-toggle" title="Toggle music">♫</button>
+
     <!-- Letterbox scaling: keep 1920×1080 stage centred and scaled to fit the viewport -->
     <script>
       (function () {
@@ -61,6 +64,97 @@
 
     <!-- Roguelite data (plain JS — no JSX, no React) -->
     <script src="javascript/roguelite/data.js"></script>
+
+    <!-- Music & UI sound system -->
+    <script>
+      (function () {
+        var rlMusic = null;
+        var rlMusicEnabled = true;
+        var rlLastSfx = '';
+
+        var MUSIC_PATHS = ['gwent.mp3', './gwent.mp3', '../gwent.mp3', 'resources/gwent.mp3'];
+        var SFX_VOLUME = 0.35;
+        var MUSIC_VOLUME = 0.6;
+
+        function tryLoadMusic(paths, idx) {
+          if (idx >= paths.length) return;
+          var audio = new Audio(paths[idx]);
+          audio.loop = true;
+          audio.volume = MUSIC_VOLUME;
+          audio.addEventListener('error', function () { tryLoadMusic(paths, idx + 1); });
+          audio.addEventListener('canplaythrough', function () {
+            if (rlMusicEnabled) audio.play().catch(function () {});
+          });
+          rlMusic = audio;
+          if (rlMusicEnabled) audio.play().catch(function () {});
+        }
+
+        function initMusic() {
+          // Check if the previous page asked us to keep music on.
+          var stored = sessionStorage.getItem('musicEnabled');
+          if (stored === 'false') { rlMusicEnabled = false; }
+
+          var paths = MUSIC_PATHS.slice();
+          try {
+            if (window.electronAPI && window.electronAPI.getResourcePath) {
+              paths.unshift(window.electronAPI.getResourcePath('gwent.mp3'));
+            }
+          } catch (e) {}
+          tryLoadMusic(paths, 0);
+
+          var btn = document.getElementById('rl-music-toggle');
+          if (btn) {
+            if (!rlMusicEnabled) btn.classList.add('muted');
+            btn.addEventListener('click', function () {
+              rlMusicEnabled = !rlMusicEnabled;
+              sessionStorage.setItem('musicEnabled', rlMusicEnabled ? 'true' : 'false');
+              if (rlMusic) {
+                if (rlMusicEnabled) { rlMusic.play().catch(function () {}); btn.classList.remove('muted'); }
+                else { rlMusic.pause(); btn.classList.add('muted'); }
+              }
+            });
+          }
+        }
+
+        // Expose a global SFX helper so React components can use it.
+        window.rlTocar = function (name) {
+          if (name === rlLastSfx) return;
+          try {
+            var src = 'sfx/' + name + '.mp3';
+            try {
+              if (window.electronAPI && window.electronAPI.getResourcePath) {
+                src = window.electronAPI.getResourcePath(src);
+              }
+            } catch (e) {}
+            var s = new Audio(src);
+            s.volume = SFX_VOLUME;
+            s.play().catch(function () {});
+            rlLastSfx = name;
+            setTimeout(function () { rlLastSfx = ''; }, 60);
+          } catch (e) {}
+        };
+
+        // Start after first user gesture (needed for autoplay policy).
+        var started = false;
+        function onFirstInteraction() {
+          if (started) return;
+          started = true;
+          initMusic();
+          document.removeEventListener('click', onFirstInteraction);
+          document.removeEventListener('keydown', onFirstInteraction);
+        }
+        document.addEventListener('click', onFirstInteraction);
+        document.addEventListener('keydown', onFirstInteraction);
+
+        // If music was already enabled from a previous page, start immediately on load.
+        window.addEventListener('load', function () {
+          if (sessionStorage.getItem('musicEnabled') === 'true') {
+            started = true;
+            initMusic();
+          }
+        });
+      })();
+    </script>
 
     <!-- Roguelite components (JSX — transpiled by Babel standalone) -->
     <script type="text/babel" data-type="module" src="javascript/roguelite/tweaks-panel.jsx"></script>

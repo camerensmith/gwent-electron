@@ -8657,7 +8657,20 @@ window.onload = function() {
     try { document.getElementById("toggle-music").style.display = "none"; } catch(e) {}
     try { document.getElementsByTagName("main")[0].style.display = "none"; } catch(e) {}
 	document.getElementById("button_start").addEventListener("click", function() {
-		inicio();
+		// Play the menu-opening SFX, persist music preference, then hand off to the Main Menu.
+		try {
+			var sfxSrc = 'sfx/menu_opening.mp3';
+			try {
+				if (window.electronAPI && window.electronAPI.getResourcePath) {
+					sfxSrc = window.electronAPI.getResourcePath(sfxSrc);
+				}
+			} catch (e) {}
+			var sfx = new Audio(sfxSrc);
+			sfx.volume = 0.5;
+			sfx.play().catch(function(){});
+		} catch (e) {}
+		sessionStorage.setItem('musicEnabled', 'true');
+		window.location.href = 'roguelite.html';
 	});
 	document.getElementById("pLoad").innerHTML = "* {cursor: url('images/icons/cursor.png'), default}"
 	isLoaded = true;
@@ -8674,6 +8687,15 @@ window.onload = function() {
 		} catch(e) {
 			console.error('[ROGUELITE] Failed to parse battle context:', e);
 		}
+		return;
+	}
+
+	// Quick Match bridge: if coming from the roguelite Main Menu, skip the splash
+	// and go directly to deck customisation.
+	if (sessionStorage.getItem('fromMainMenu')) {
+		sessionStorage.removeItem('fromMainMenu');
+		document.getElementById("button_start").style.display = "none";
+		setTimeout(function() { inicio(); }, 0);
 	}
 }
 

@@ -57,29 +57,53 @@ function MainMenu({ onNavigate }) {
       <Embers count={28} />
       <div className="menu-root">
         <div className="menu-title-wrap">
-          <h1 className="menu-title">Gwent Electron</h1>
+          <img
+            src="images/gwent-roguelite-logo.png"
+            className="menu-logo-img"
+            alt="Gwent — The Legendary Card Game: Roguelite"
+            onError={function(e){
+              // Fall back to the external hosted version if local asset is missing.
+              if (e.target.src.indexOf('gwent-roguelite-logo.png') !== -1) {
+                e.target.src = 'https://github.com/user-attachments/assets/71b16cba-24a9-4abf-9831-768859a3b208';
+              } else {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = '';
+              }
+            }}
+          />
+          <h1 className="menu-title" style={{display:'none'}}>Gwent Electron</h1>
           <div className="menu-sub">— a card game in the old style —</div>
           <div className="menu-rule" />
         </div>
 
         <div className="menu-buttons">
-          <button className="menu-btn primary" onClick={() => onNavigate('quick')}>
+          <button className="menu-btn primary"
+            onClick={() => { if(window.rlTocar) window.rlTocar('menu_buy'); onNavigate('quick'); }}
+            onMouseEnter={() => { if(window.rlTocar) window.rlTocar('card'); }}>
             <span><span className="menu-glyph">&#9876;</span>Quick Match</span>
             <span className="arrow">&#9656;</span>
           </button>
-          <button className="menu-btn primary" onClick={() => onNavigate('roguelite')}>
+          <button className="menu-btn primary"
+            onClick={() => { if(window.rlTocar) window.rlTocar('menu_buy'); onNavigate('roguelite'); }}
+            onMouseEnter={() => { if(window.rlTocar) window.rlTocar('card'); }}>
             <span><span className="menu-glyph">&#10022;</span>Roguelite</span>
             <span className="arrow">&#9656;</span>
           </button>
-          <button className="menu-btn" onClick={() => onNavigate('stats')}>
+          <button className="menu-btn"
+            onClick={() => { if(window.rlTocar) window.rlTocar('menu_buy'); onNavigate('stats'); }}
+            onMouseEnter={() => { if(window.rlTocar) window.rlTocar('card'); }}>
             <span><span className="menu-glyph">&#9672;</span>Statistics</span>
             <span className="arrow">&#9656;</span>
           </button>
-          <button className="menu-btn" onClick={() => onNavigate('rules')}>
+          <button className="menu-btn"
+            onClick={() => { if(window.rlTocar) window.rlTocar('menu_buy'); onNavigate('rules'); }}
+            onMouseEnter={() => { if(window.rlTocar) window.rlTocar('card'); }}>
             <span><span className="menu-glyph">&#9623;</span>Rulebook</span>
             <span className="arrow">&#9656;</span>
           </button>
-          <button className="menu-btn" onClick={() => onNavigate('quit')}>
+          <button className="menu-btn"
+            onClick={() => { if(window.rlTocar) window.rlTocar('menu_buy'); onNavigate('quit'); }}
+            onMouseEnter={() => { if(window.rlTocar) window.rlTocar('card'); }}>
             <span><span className="menu-glyph">&#10005;</span>Quit</span>
             <span className="arrow">&#9656;</span>
           </button>
