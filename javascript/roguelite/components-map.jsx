@@ -171,11 +171,12 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
   }), [run.seed]);
 
   const [nodeStates, setNodeStates] = useStateMap(() => {
+    if (run.nodeStates) return run.nodeStates;
     const s = {};
     map.nodes.forEach(n => { s[n.id] = n.floor === 0 ? 'available' : 'locked'; });
     return s;
   });
-  const [currentFloor, setCurrentFloor] = useStateMap(0);
+  const [currentFloor, setCurrentFloor] = useStateMap(run.currentFloor ?? 0);
 
   const battleAssignments = useMemoMap(() => {
     let s = Math.floor(run.seed * 9301 + 1) >>> 0;
@@ -258,19 +259,18 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
 
   const handleNodeClick = (node) => {
     if (nodeStates[node.id] !== 'available') return;
-    setNodeStates(prev => {
-      const next = { ...prev };
-      next[node.id] = 'visited';
-      map.nodes.filter(n => n.floor === node.floor && n.id !== node.id).forEach(n => {
-        next[n.id] = 'locked';
-      });
-      map.edges.filter(e => e.from === node.id).forEach(e => {
-        next[e.to] = 'available';
-      });
-      return next;
+    const nextNodeStates = { ...nodeStates };
+    nextNodeStates[node.id] = 'visited';
+    map.nodes.filter(n => n.floor === node.floor && n.id !== node.id).forEach(n => {
+      nextNodeStates[n.id] = 'locked';
     });
-    setCurrentFloor(node.floor + 1);
-    onPickNode(node, battleAssignments[node.id]);
+    map.edges.filter(e => e.from === node.id).forEach(e => {
+      nextNodeStates[e.to] = 'available';
+    });
+    const nextFloor = node.floor + 1;
+    setNodeStates(nextNodeStates);
+    setCurrentFloor(nextFloor);
+    onPickNode(node, battleAssignments[node.id], { nodeStates: nextNodeStates, currentFloor: nextFloor });
   };
 
   const NODE_COLORS = {
