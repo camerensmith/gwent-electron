@@ -24,6 +24,63 @@ function App() {
     stage.classList.add('accent-' + (tweaks.accent || 'gold'));
   }, [tweaks.accent]);
 
+  // On mount: apply any roguelite battle result returned from index.html
+  useEffect(() => {
+    const rawResult = sessionStorage.getItem('rogueliteBattleResult');
+    if (!rawResult) return;
+    sessionStorage.removeItem('rogueliteBattleResult');
+
+    let result;
+    try { result = JSON.parse(rawResult); } catch(e) { return; }
+
+    const rawRun = sessionStorage.getItem('rogueliteRunState');
+    if (!rawRun) return;
+    sessionStorage.removeItem('rogueliteRunState');
+
+    let savedRun;
+    try { savedRun = JSON.parse(rawRun); } catch(e) { return; }
+
+    const { won, rationDrain, goldReward, goldLoss, nodeType, isFinalBoss } = result;
+    const clampedDrain = Math.min(rationDrain, Math.max(0, savedRun.rations));
+
+    if (won) {
+      const newRun = {
+        ...savedRun,
+        gold: savedRun.gold + goldReward,
+        rations: savedRun.rations - clampedDrain,
+        wins: (savedRun.wins || 0) + 1,
+        elites: (savedRun.elites || 0) + (nodeType === 'elite' ? 1 : 0),
+        bosses: (savedRun.bosses || 0) + (nodeType === 'boss' ? 1 : 0),
+        nextEncounterBuff: null,
+      };
+      setRun(newRun);
+      if (isFinalBoss) {
+        const candidate = window.ITEMS[Math.floor(Math.random() * window.ITEMS.length)];
+        setLastUnlocked(candidate);
+        setRunOutcome('win');
+        setScreen('summary');
+      } else {
+        setScreen('map');
+      }
+    } else {
+      const bankrupt = savedRun.gold < goldLoss;
+      const newRun = {
+        ...savedRun,
+        gold: Math.max(0, savedRun.gold - goldLoss),
+        rations: savedRun.rations - clampedDrain,
+        losses: (savedRun.losses || 0) + 1,
+        nextEncounterBuff: null,
+      };
+      setRun(newRun);
+      if (bankrupt) {
+        setRunOutcome('bankrupt');
+        setScreen('summary');
+      } else {
+        setScreen('map');
+      }
+    }
+  }, []);
+
   const navigate = (target) => {
     if (target === 'quick') {
       // Hand off to the existing Gwent Electron deck builder and game.
@@ -138,59 +195,33 @@ function App() {
   const resolveBattle = (node, assignment) => {
     const items = run?.equipped || [];
     const has = (id) => items.some(i => i.id === id);
-    const kind = node.type === 'boss' ? 'BOSS BATTLE' : node.type === 'elite' ? 'ELITE BATTLE' : 'Skirmish';
-    const opp = assignment ? `\n\nOpponent: ${assignment.oppFaction.name}\nLeader: ${assignment.oppLeader.name}` : '';
-    const effects = assignment?.effects || [];
-    const effText = effects.length ? `\n\n${effects.map(e => `\u25c6 ${e.name} \u2014 ${e.desc}`).join('\n')}` : '';
-    const buff = run?.nextEncounterBuff ? `\n\nActive Boon: ${run.nextEncounterBuff}` : '';
 
     const goldReward = (node.type === 'elite' ? 2 : node.type === 'boss' ? 5 : 1) + (has('kings_bounty') ? 1 : 0);
     const goldLoss = window.LOSS_GOLD_COST[node.type] || 1;
-    const drainRange = window.BATTLE_RATION_DRAIN[node.type] || [4, 6];
-    const rationDrain = drainRange[0] + Math.floor(Math.random() * (drainRange[1] - drainRange[0] + 1));
-    const adjustedDrain = has('lean_provision') ? Math.max(1, rationDrain - 2) : rationDrain;
+    const isFinalBoss = node.type === 'boss' && node.act === 1;
 
-    const message = `${kind}${opp}${effText}${buff}\n\nOK \u2192 Auto-resolve WIN (+${goldReward} gold)\nCancel \u2192 Auto-resolve LOSS (\u2212${goldLoss} gold)\n\nBoth outcomes deplete \u2248${adjustedDrain} Rations from cards played.`;
+    // Persist run state across the page navigation so we can restore it on return
+    sessionStorage.setItem('rogueliteRunState', JSON.stringify(run));
 
-    const won = window.confirm(message);
+    // Build the battle context that gwent.js will read on index.html load
+    const ctx = {
+      playerFaction:  run.factionId,
+      playerLeaderId: run.leader?.id || null,
+      oppFaction:     assignment?.oppFaction?.id   || null,
+      oppLeaderId:    assignment?.oppLeader?.id    || null,
+      oppLeaderName:  assignment?.oppLeader?.name  || 'Opponent',
+      nodeType:       node.type,
+      goldReward,
+      goldLoss,
+      currentRations: run.rations,
+      leanProvision:  has('lean_provision'),
+      hardtack:       has('hardtack'),
+      isFinalBoss,
+      nextEncounterBuff: run?.nextEncounterBuff || null,
+    };
 
-    setRun(r => {
-      const newRations = r.rations - adjustedDrain;
-      if (won) {
-        const isFinalBoss = node.type === 'boss' && node.act === 1;
-        if (isFinalBoss) {
-          setTimeout(() => {
-            const candidate = window.ITEMS[Math.floor(Math.random() * window.ITEMS.length)];
-            setLastUnlocked(candidate);
-            setRunOutcome('win');
-            setScreen('summary');
-          }, 200);
-        }
-        return {
-          ...r,
-          gold: r.gold + goldReward,
-          rations: newRations,
-          wins: r.wins + 1,
-          elites: r.elites + (node.type === 'elite' ? 1 : 0),
-          bosses: r.bosses + (node.type === 'boss' ? 1 : 0),
-          nextEncounterBuff: null,
-        };
-      }
-      const bankrupt = r.gold < goldLoss;
-      if (bankrupt) {
-        setTimeout(() => {
-          setRunOutcome('bankrupt');
-          setScreen('summary');
-        }, 200);
-      }
-      return {
-        ...r,
-        gold: Math.max(0, r.gold - goldLoss),
-        rations: newRations,
-        losses: (r.losses || 0) + 1,
-        nextEncounterBuff: null,
-      };
-    });
+    sessionStorage.setItem('rogueliteBattle', JSON.stringify(ctx));
+    window.location.href = 'index.html';
   };
 
   return (
