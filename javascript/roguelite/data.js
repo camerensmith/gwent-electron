@@ -193,8 +193,8 @@ window.BOSS_EFFECTS = [
   { id: 'decimation',   group: 'attrition', name: 'Decimation',       desc: 'At the start of round 3, 3 random cards are removed from your deck.' },
   { id: 'marked_round', group: 'power',     name: 'A Marked Round',   desc: 'The boss gains +3 strength to all units on a random round (revealed at round start).' },
   { id: 'champion',     name: 'Champion of the Realm',                desc: "The boss's Leader ability triggers twice this battle." },
-  { id: 'ransack',      group: 'rations',   name: 'Ransack',          desc: 'The boss plunders your supplies. \u20133 Rations on battle start.' },
-  { id: 'feast',        group: 'rations',   name: 'A Feast Demanded', desc: 'You pay 1 extra Ration each turn this battle.' },
+  { id: 'ransack',      group: 'rations',   name: 'Ransack',          desc: 'The boss plunders your supplies. \u201310 Rations on battle start.' },
+  { id: 'feast',        group: 'rations',   name: 'A Feast Demanded', desc: 'You pay 3 extra Rations each turn this battle.' },
   { id: 'persistent_rain', group: 'weather', name: 'A Sky That Will Not Clear', desc: 'Persistent Torrential Rain on Ranged \u2014 Clear Skies cannot lift it.' },
   { id: 'frost_start',     group: 'weather', name: 'A Bitter Beginning',         desc: 'Battle opens with Biting Frost on Close. Clearable as normal.' },
   { id: 'tempest',         group: 'weather', name: 'The Skellige Tempest',       desc: 'Ranged & Siege reduced to 1/unit for the whole battle.' },
@@ -218,14 +218,39 @@ window.ELITE_EFFECTS = {
 };
 
 window.RATION_COSTS = {
-  default: { unit: 1, hero: 2, special: 0 },
-  witchers: { unit: 1, hero: 2, special: 0, sign: 0, castle: 0 }
+  hero: 3,
+  siege: 2,
+  ranged: 1,
+  close: 1,
+  agile: 2,   // "any" or multi-position units
+  special: 0,
 };
 
-window.STARTING_RATIONS_MIN = 22;
-window.STARTING_RATIONS_MAX = 32;
-window.RATION_TRAVEL_COST = 1;
-window.BATTLE_RATION_DRAIN = { battle: [4, 6], elite: [5, 8], boss: [7, 10] };
+window.STARTING_RATIONS_MIN = 115;
+window.STARTING_RATIONS_MAX = 135;
+window.BATTLE_RATION_DRAIN = { battle: [8, 12], elite: [12, 18], boss: [15, 25] };
+
+// Compute travel cost based on deck composition
+window.calcTravelCost = function(deck, equipped) {
+  const hasLean = (equipped || []).some(i => i.id === 'lean_provision');
+  const hasHardtack = (equipped || []).some(i => i.id === 'hardtack');
+  let cost = 0;
+  for (const card of deck) {
+    if (card.type === 'special') continue;
+    let unitCost;
+    if (card.hero) {
+      unitCost = hasHardtack ? 1 : window.RATION_COSTS.hero;
+    } else {
+      const row = (card.row || '').toLowerCase();
+      if (row === 'siege') unitCost = window.RATION_COSTS.siege;
+      else if (row === 'agile' || row === 'any') unitCost = window.RATION_COSTS.agile;
+      else unitCost = window.RATION_COSTS.close; // close or ranged = 1
+    }
+    if (hasLean) unitCost = Math.max(0, unitCost - 1);
+    cost += unitCost;
+  }
+  return cost;
+};
 
 // Reward ranges per act (0-indexed) and node type.
 // battle:  always gold, potentially rations (rationChance = probability of getting any rations).
@@ -235,26 +260,26 @@ window.BATTLE_RATION_DRAIN = { battle: [4, 6], elite: [5, 8], boss: [7, 10] };
 // Losing any encounter forfeits the exact gold the player stood to win (goldLoss = goldReward).
 window.BATTLE_REWARDS = {
   act1: {
-    battle: { goldMin: 1, goldMax: 2, rationChance: 0.5, rationMin: 1, rationMax: 3 },
-    elite:  { goldMin: 2, goldMax: 3, goldChance: 0.65, rationMin: 3, rationMax: 5 },
-    boss:   { goldMin: 3, goldMax: 5, rationMin: 3, rationMax: 7 }
+    battle: { goldMin: 1, goldMax: 2, rationChance: 0.5, rationMin: 5, rationMax: 15 },
+    elite:  { goldMin: 2, goldMax: 3, goldChance: 0.65, rationMin: 10, rationMax: 20 },
+    boss:   { goldMin: 3, goldMax: 5, rationMin: 15, rationMax: 30 }
   },
   act2: {
-    battle: { goldMin: 2, goldMax: 3, rationChance: 0.5, rationMin: 1, rationMax: 5 },
-    elite:  { goldMin: 3, goldMax: 5, rationMin: 5, rationMax: 7, comboMax: 7 },
-    boss:   { goldMin: 3, goldMax: 6, rationMin: 3, rationMax: 7 }
+    battle: { goldMin: 2, goldMax: 3, rationChance: 0.5, rationMin: 5, rationMax: 20 },
+    elite:  { goldMin: 3, goldMax: 5, rationMin: 15, rationMax: 25, comboMax: 7 },
+    boss:   { goldMin: 3, goldMax: 6, rationMin: 15, rationMax: 30 }
   }
 };
 
 // Items — meta-progression.
 window.ITEMS = [
   { id: 'kings_bounty',    name: "King's Bounty",        glyph: '\u2014',  rarity: 'common',   desc: '+1 gold from every battle won.' },
-  { id: 'quartermaster',   name: "Quartermaster's Ledger", glyph: '\u2752', rarity: 'common',   desc: '+5 Rations at the start of the run.' },
+  { id: 'quartermaster',   name: "Quartermaster's Ledger", glyph: '\u2752', rarity: 'common',   desc: '+15 Rations at the start of the run.' },
   { id: 'lean_provision',  name: 'Lean Provisioning',     glyph: '\u25cb', rarity: 'uncommon', desc: 'All Unit ration costs reduced by 1 (minimum 0).' },
-  { id: 'foragers_eye',    name: "Forager's Eye",         glyph: '\u25c8', rarity: 'uncommon', desc: 'Camps grant +2 additional Rations.' },
+  { id: 'foragers_eye',    name: "Forager's Eye",         glyph: '\u25c8', rarity: 'uncommon', desc: 'Camps grant +8 additional Rations.' },
   { id: 'black_market',    name: 'Black Market Ledger',   glyph: '\u2756', rarity: 'rare',     desc: 'Shops offer 2 additional cards per visit.' },
   { id: 'travelling_merch',name: 'Travelling Merchant',   glyph: '\u2696', rarity: 'rare',     desc: '30% chance per Shop visit: all prices reduced by 1.' },
-  { id: 'hardtack',        name: 'Hardtack',              glyph: '\u25c6', rarity: 'rare',     desc: 'Heroes cost 1 Ration instead of 2.' },
+  { id: 'hardtack',        name: 'Hardtack',              glyph: '\u25c6', rarity: 'rare',     desc: 'Heroes cost 1 Ration instead of 3.' },
   { id: 'map_etcher',      name: 'Map Etcher',            glyph: '\u2734', rarity: 'rare',     desc: 'Mystery node contents are revealed before clicking.' },
   { id: 'lucky_coin',      name: 'Lucky Coin',            glyph: '\u25c9', rarity: 'common',   desc: '10% chance per map node to find +1 gold underfoot.' },
   { id: 'whetstone',       name: 'Whetstone',             glyph: '\u2718', rarity: 'uncommon', desc: 'First battle of each Act, your units gain +1 strength on round 1.' }
@@ -275,8 +300,8 @@ window.MERCENARY_POOL = [
 window.MYSTERY_OUTCOMES = [
   { id: 'find_gold',    kind: 'gold',    amount:  2, line: 'A buried strongbox. Old, but the coin still rings true.' },
   { id: 'lose_gold',    kind: 'gold',    amount: -2, line: 'A patrol stops you and demands tribute. They are larger than your purse.' },
-  { id: 'find_rations', kind: 'rations', amount:  3, line: 'A farmer hails you. She offers bread, salted meat, a flask. "For luck."' },
-  { id: 'lose_rations', kind: 'rations', amount: -2, line: 'Your stores are damp. Half the salt-pork goes into the mud.' },
+  { id: 'find_rations', kind: 'rations', amount:  10, line: 'A farmer hails you. She offers bread, salted meat, a flask. "For luck."' },
+  { id: 'lose_rations', kind: 'rations', amount: -8, line: 'Your stores are damp. Half the salt-pork goes into the mud.' },
   { id: 'mercenary',    kind: 'recruit',             line: 'A masked rider falls in beside you. "I have nothing left to lose," they say.' },
   { id: 'waylay',       kind: 'deck',    amount: -1, line: 'You are ambushed at a ford. A card is lost in the river.' },
   { id: 'boon_draw',    kind: 'buff',    buff: 'draw_plus_one',  line: 'A diviner reads your palm. "You will see more clearly in the next contest." (+1 card draw, next encounter)' },
