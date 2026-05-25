@@ -213,6 +213,22 @@ div.abs {
 	background-image:linear-gradient(rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 1) 100%)
 }
 
+#start-logo-wrap {
+	position:fixed;
+	top:38%;
+	left:50%;
+	transform:translate(-50%, -50%);
+	z-index:4000;
+	text-align:center;
+	pointer-events:none
+}
+
+#start-logo {
+	max-width:min(640px, 60vw);
+	height:auto;
+	filter:drop-shadow(0 0 24px rgba(255,210,77,.35))
+}
+
 /*------------------------------------------------------------------------------------------------------------*/
 
 #popup {
