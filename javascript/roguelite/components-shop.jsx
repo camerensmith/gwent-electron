@@ -1,6 +1,6 @@
 // ─── Shop screen ───
 
-const { useState: useStateShop, useMemo: useMemoShop } = React;
+const { useState: useStateShop, useMemo: useMemoShop, useCallback: useCallbackShop } = React;
 
 function priceFor(card) {
   if (card.type === 'special') return 2;
@@ -42,9 +42,13 @@ function generateWares(factionId, seed, bonus) {
   return wares;
 }
 
-function CardRow({ card, action, actionLabel, actionDisabled, price, sellMode }) {
+function CardRow({ card, action, actionLabel, actionDisabled, price, sellMode, onHover, onHoverOut }) {
   return (
-    <div className={`ware ${card.hero ? 'is-hero' : ''} ${card.type === 'special' ? 'is-special' : ''} ${actionDisabled ? 'unaffordable' : ''}`}>
+    <div
+      className={`ware ${card.hero ? 'is-hero' : ''} ${card.type === 'special' ? 'is-special' : ''} ${actionDisabled ? 'unaffordable' : ''}`}
+      onMouseEnter={onHover ? () => onHover(card) : undefined}
+      onMouseLeave={onHoverOut || undefined}
+    >
       <div className="ware-strength">{card.type === 'special' ? '\u2726' : card.strength}</div>
       <div className="ware-info">
         <div className="ware-name">{card.name}{card.hero ? ' \u25c6' : ''}</div>
@@ -79,6 +83,10 @@ function Shop({ run, onLeave, onTransact }) {
   const [soldIds, setSoldIds] = useStateShop({});
   const [gold, setGold] = useStateShop(run.gold);
   const [localDeck, setLocalDeck] = useStateShop(run.deck);
+  const [hoveredCard, setHoveredCard] = useStateShop(null);
+
+  const handleHover = useCallbackShop((card) => setHoveredCard(card), []);
+  const handleHoverOut = useCallbackShop(() => setHoveredCard(null), []);
 
   const adjustedPrice = (card) => {
     const base = priceFor(card);
@@ -113,7 +121,16 @@ function Shop({ run, onLeave, onTransact }) {
 
       <div className="shop-root">
         <div className="shop-header">
-          <div />
+          <div className="shop-card-viewer">
+            {hoveredCard && window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[hoveredCard.name]
+              ? <img
+                  className="shop-card-viewer-img"
+                  src={window.CARD_IMAGE_MAP[hoveredCard.name]}
+                  alt={hoveredCard.name}
+                />
+              : <div className="shop-card-viewer-empty" />
+            }
+          </div>
           <div>
             <div className="shop-title">The Merchant's Tent</div>
             <div className="shop-merchant" style={{ justifyContent: 'center', marginTop: 6 }}>
@@ -155,6 +172,8 @@ function Shop({ run, onLeave, onTransact }) {
                       action={() => buy(w)}
                       actionLabel={purchased[w.id] ? '\u2713 Sold' : 'Buy'}
                       actionDisabled={gold < p}
+                      onHover={handleHover}
+                      onHoverOut={handleHoverOut}
                     />
                   </div>
                 );
@@ -180,6 +199,8 @@ function Shop({ run, onLeave, onTransact }) {
                     action={() => sell(c)}
                     actionLabel={soldIds[c.id] ? '\u2713 Sold' : 'Sell'}
                     sellMode
+                    onHover={handleHover}
+                    onHoverOut={handleHoverOut}
                   />
                 </div>
               ))}
