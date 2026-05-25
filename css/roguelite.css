@@ -109,7 +109,7 @@ html, body {
 .gw-btn:hover { background: rgba(40, 30, 10, 0.9); box-shadow: 0 0 14px var(--gold-soft), 0 0 18px rgba(0,0,0,.6); }
 .gw-btn:active { transform: translateY(1px); }
 .gw-btn[disabled] { opacity: .4; cursor: not-allowed; }
-.gw-btn.compact { padding: 8px 18px; font-size: 16px; }
+.gw-btn.compact { padding: 8px 18px; font-size: 22px; }
 .gw-btn.ghost { background: transparent; border-color: var(--gold-soft); color: var(--tan); }
 .gw-btn.ghost:hover { color: var(--gold); border-color: var(--gold); }
 .gw-btn.danger { color: var(--danger); border-color: var(--danger); }
@@ -276,7 +276,7 @@ html, body {
 }
 .sis-count {
   font-family: 'Cinzel', serif;
-  color: var(--gold); font-size: 16px;
+  color: var(--gold); font-size: 22px;
 }
 .sis-row {
   display: grid;
@@ -387,7 +387,7 @@ html, body {
 }
 .faction-tile .ft-name {
   font-family: 'Cinzel', serif;
-  font-size: 16px;
+  font-size: 22px;
   color: var(--text);
   letter-spacing: 0.06em;
   line-height: 1.1;
@@ -441,7 +441,7 @@ html, body {
 .leader-pick { margin-top: 22px; }
 .leader-pick h3 {
   font-family: 'Cinzel', serif; color: var(--gold);
-  font-size: 16px; letter-spacing: 0.2em; text-transform: uppercase;
+  font-size: 22px; letter-spacing: 0.2em; text-transform: uppercase;
   margin: 0 0 12px;
 }
 /* legacy .setup-footer is no longer used — footer now lives inside the grid */
@@ -499,7 +499,7 @@ html, body {
 }
 .leader-tile .lt-name {
   font-family: 'Cinzel', serif; color: var(--text);
-  font-size: 16px; letter-spacing: 0.06em;
+  font-size: 22px; letter-spacing: 0.06em;
 }
 
 .faction-passive {
@@ -529,7 +529,7 @@ html, body {
 }
 .leader-ability .la-text {
   font-family: 'IM Fell English', serif; font-style: italic;
-  color: var(--tan); font-size: 16px; line-height: 1.45;
+  color: var(--tan); font-size: 22px; line-height: 1.45;
 }
 
 /* Right column — randomized deck preview */
@@ -564,7 +564,7 @@ html, body {
   display: grid; grid-template-columns: 32px 1fr 36px; gap: 10px; align-items: center;
   padding: 7px 10px;
   border-bottom: 1px solid rgba(255,210,77,.06);
-  font-size: 16px;
+  font-size: 22px;
 }
 .deck-card-row .dc-strength {
   width: 28px; height: 28px;
@@ -870,7 +870,7 @@ html, body {
 }
 .modifier-pill .mp-name {
   font-family: 'IM Fell English', serif; font-style: italic;
-  color: var(--gold); font-size: 16px;
+  color: var(--gold); font-size: 22px;
 }
 .modifier-pill .mp-sign {
   width: 18px; height: 18px;
@@ -1032,7 +1032,7 @@ html, body {
   background: radial-gradient(circle at 30% 30%, #f4e4a2, #b78c1c 70%, #6e4a09 100%);
   color: #000; font-weight: 700;
   display: grid; place-items: center;
-  font-family: 'Cinzel', serif; font-size: 16px;
+  font-family: 'Cinzel', serif; font-size: 22px;
   border: 2px solid #2a1a05;
 }
 .ware.is-hero .ware-strength { background: radial-gradient(circle at 30% 30%, #fff, #cdd 70%, #889 100%); }
@@ -1066,7 +1066,7 @@ html, body {
 .shop-footer { display: flex; justify-content: space-between; align-items: center; }
 .shop-flavour {
   font-family: 'IM Fell English', serif; font-style: italic;
-  color: var(--tan); font-size: 16px;
+  color: var(--tan); font-size: 22px;
 }
 
 /* ───────── Rest ───────── */
@@ -1216,7 +1216,7 @@ html, body {
 }
 .rs-banner-title {
   font-family: 'Cinzel', serif; color: var(--tan);
-  font-size: 16px; letter-spacing: 0.32em; text-transform: uppercase;
+  font-size: 22px; letter-spacing: 0.32em; text-transform: uppercase;
 }
 .rs-outcome {
   font-family: 'Cinzel', serif; font-weight: 700;
@@ -1302,7 +1302,7 @@ html, body {
 }
 .rs-leader-name {
   font-family: 'IM Fell English', serif; font-style: italic;
-  color: var(--tan); font-size: 16px; margin-top: 4px; text-align: center;
+  color: var(--tan); font-size: 22px; margin-top: 4px; text-align: center;
 }
 
 .rs-stats-grid {
