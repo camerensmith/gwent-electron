@@ -5742,6 +5742,8 @@ class UI {
 			"notif-zerrikania": "Zerrikania ability used - Unit restored from discard pile.",
 			"notif-ofir": "Ofir faction ability used - Weather card played from deck.",
 			"notif-novigrad-sigismund": "Sigismund Dijkstra prevented the death of a friendly unit.",
+			"notif-meve_princess_no_target": "No valid target for Meve's ability.",
+			"notif-anna_henrietta_no_horn": "No Commander's Horn on opponent's rows.",
 		}
 		var guia2 = {
 			"me-pass" : "pass",
@@ -5759,9 +5761,9 @@ class UI {
 		if (som != "") tocar(som, false);
 		this.notif_elem.children[0].id = "notif-" + name;
 		this.notif_elem.children[0].style.backgroundImage = name == "op-leader" ? "url('images/icons/notif_" + player_op.deck.faction + ".png')" : "";
-		var caracteres = guia1[this.notif_elem.children[0].id].length;
-		var palavras = guia1[this.notif_elem.children[0].id].split(" ").length;
-		duration = parseInt(0.7454878 * Math.max(parseInt((1e3 / 17) * caracteres), parseInt((6e4 / 300) * palavras)) + 211.653152) + 1;
+		var caracteres = guia1[this.notif_elem.children[0].id] ? guia1[this.notif_elem.children[0].id].length : 0;
+		var palavras = guia1[this.notif_elem.children[0].id] ? guia1[this.notif_elem.children[0].id].split(" ").length : 0;
+		if (caracteres > 0 || palavras > 0) duration = parseInt(0.7454878 * Math.max(parseInt((1e3 / 17) * caracteres), parseInt((6e4 / 300) * palavras)) + 211.653152) + 1;
 		const fadeSpeed = 150;
 		fadeIn(this.notif_elem, fadeSpeed);
 		var ch = playingOnline && duration < 1000 & cache_notif.indexOf(name) == -1 ? 800 : 0;
