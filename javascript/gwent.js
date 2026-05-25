@@ -2431,8 +2431,8 @@ class Player {
 		if (this === player_me && rogueliteCtx) {
 			var cost = 0;
 			if (card.hero) {
-				// Hero cards cost 2 rations (or 1 with hardtack item)
-				cost = rogueliteCtx.hardtack ? 1 : 2;
+				// Hero cards cost 3 rations (or 2 with hardtack item)
+				cost = rogueliteCtx.hardtack ? 2 : 3;
 			} else if (card.isUnit()) {
 				// Unit cards cost 1 ration (or 0 with lean_provision item)
 				cost = rogueliteCtx.leanProvision ? 0 : 1;
@@ -8616,6 +8616,18 @@ async function startRogueliteBattle(ctx) {
 
 	// Apply boss/elite effects before the game starts
 	applyRogueliteBossEffects(ctx);
+
+	// ── Whetstone item: first battle of each act, player hand units gain +1 strength at round 1 ──
+	if (ctx.whetstone) {
+		game.roundStart.push(function() {
+			if (game.roundCount !== 1) return false;
+			player_me.hand.cards.forEach(function(c) {
+				if (c.isUnit()) c.power += 1;
+			});
+			console.log('[WHETSTONE] +1 strength to player hand units at round 1');
+			return true;
+		});
+	}
 
 	tocar('game_opening', false);
 	game.startGame();
