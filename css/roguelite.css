@@ -271,12 +271,12 @@ html, body {
 }
 .sis-eyebrow {
   font-family: 'Cinzel', serif;
-  color: var(--gold); font-size: 12px;
+  color: var(--gold); font-size: 14px;
   letter-spacing: 0.22em; text-transform: uppercase;
 }
 .sis-count {
   font-family: 'Cinzel', serif;
-  color: var(--gold); font-size: 14px;
+  color: var(--gold); font-size: 16px;
 }
 .sis-row {
   display: grid;
@@ -312,16 +312,16 @@ html, body {
 }
 .item-card-name {
   font-family: 'Cinzel', serif; color: var(--text);
-  font-size: 11px; letter-spacing: 0.04em;
+  font-size: 13px; letter-spacing: 0.04em;
   line-height: 1.1;
 }
 .item-card-desc {
-  color: var(--tan); font-size: 10px; line-height: 1.3;
+  color: var(--tan); font-size: 12px; line-height: 1.3;
   flex: 1;
 }
 .item-card-equipped-flag {
   position: absolute; top: 3px; right: 4px;
-  font-family: 'Cinzel', serif; font-size: 8px;
+  font-family: 'Cinzel', serif; font-size: 10px;
   color: var(--gold); letter-spacing: 0.18em;
 }
 .setup-footer-grid {
@@ -350,7 +350,7 @@ html, body {
   text-overflow: ellipsis;
 }
 .setup-header .step {
-  color: var(--tan-dim); font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--tan-dim); font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase;
 }
 
 .faction-grid {
@@ -387,14 +387,14 @@ html, body {
 }
 .faction-tile .ft-name {
   font-family: 'Cinzel', serif;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text);
   letter-spacing: 0.06em;
   line-height: 1.1;
 }
 .faction-tile .ft-motto {
   font-family: 'IM Fell English', serif; font-style: italic;
-  font-size: 12px; color: var(--tan-dim);
+  font-size: 13px; color: var(--tan-dim);
   margin-top: 2px;
 }
 
@@ -441,7 +441,7 @@ html, body {
 .leader-pick { margin-top: 22px; }
 .leader-pick h3 {
   font-family: 'Cinzel', serif; color: var(--gold);
-  font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
+  font-size: 16px; letter-spacing: 0.2em; text-transform: uppercase;
   margin: 0 0 12px;
 }
 /* legacy .setup-footer is no longer used — footer now lives inside the grid */
@@ -499,7 +499,7 @@ html, body {
 }
 .leader-tile .lt-name {
   font-family: 'Cinzel', serif; color: var(--text);
-  font-size: 14px; letter-spacing: 0.06em;
+  font-size: 16px; letter-spacing: 0.06em;
 }
 
 .faction-passive {
@@ -509,12 +509,12 @@ html, body {
   background: rgba(15,12,6,0.5);
 }
 .faction-passive .fp-label {
-  font-family: 'Cinzel', serif; color: var(--gold); font-size: 11px;
+  font-family: 'Cinzel', serif; color: var(--gold); font-size: 13px;
   letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 4px;
 }
 .faction-passive .fp-text {
   font-family: 'IM Fell English', serif; font-style: italic;
-  color: var(--tan); font-size: 15px; line-height: 1.45;
+  color: var(--tan); font-size: 17px; line-height: 1.45;
 }
 
 .leader-ability {
@@ -524,12 +524,12 @@ html, body {
   background: rgba(15,12,6,0.5);
 }
 .leader-ability .la-label {
-  font-family: 'Cinzel', serif; color: var(--gold); font-size: 11px;
+  font-family: 'Cinzel', serif; color: var(--gold); font-size: 13px;
   letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 4px;
 }
 .leader-ability .la-text {
   font-family: 'IM Fell English', serif; font-style: italic;
-  color: var(--tan); font-size: 14px; line-height: 1.45;
+  color: var(--tan); font-size: 16px; line-height: 1.45;
 }
 
 /* Right column — randomized deck preview */
@@ -554,7 +554,7 @@ html, body {
   font-family: 'Cinzel', serif; font-size: 26px; color: var(--gold);
 }
 .deck-stat .label {
-  font-size: 11px; color: var(--tan-dim); letter-spacing: 0.18em; text-transform: uppercase;
+  font-size: 13px; color: var(--tan-dim); letter-spacing: 0.18em; text-transform: uppercase;
 }
 .deck-list {
   flex: 1; overflow-y: auto;
@@ -564,7 +564,7 @@ html, body {
   display: grid; grid-template-columns: 32px 1fr 36px; gap: 10px; align-items: center;
   padding: 7px 10px;
   border-bottom: 1px solid rgba(255,210,77,.06);
-  font-size: 14px;
+  font-size: 16px;
 }
 .deck-card-row .dc-strength {
   width: 28px; height: 28px;
@@ -583,7 +583,7 @@ html, body {
   color: #fff;
 }
 .deck-card-row .dc-name { color: var(--text); }
-.deck-card-row .dc-row { font-size: 11px; color: var(--tan-dim); letter-spacing: 0.12em; text-align: right; }
+.deck-card-row .dc-row { font-size: 13px; color: var(--tan-dim); letter-spacing: 0.12em; text-align: right; }
 
 .setup-footer {
   position: absolute; bottom: 24px; left: 42px; right: 42px;
