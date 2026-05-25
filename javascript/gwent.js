@@ -5742,6 +5742,7 @@ class UI {
 			"notif-zerrikania": "Zerrikania ability used - Unit restored from discard pile.",
 			"notif-ofir": "Ofir faction ability used - Weather card played from deck.",
 			"notif-novigrad-sigismund": "Sigismund Dijkstra prevented the death of a friendly unit.",
+			"notif-meve_princess_no_target": "No valid target for Meve's ability.",
 		}
 		var guia2 = {
 			"me-pass" : "pass",
