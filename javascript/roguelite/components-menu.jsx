@@ -58,17 +58,12 @@ function MainMenu({ onNavigate }) {
       <div className="menu-root">
         <div className="menu-title-wrap">
           <img
-            src="images/gwent-roguelite-logo.png"
+            src="images/gwentroguelite.png"
             className="menu-logo-img"
             alt="Gwent — The Legendary Card Game: Roguelite"
             onError={function(e){
-              // Fall back to the external hosted version if local asset is missing.
-              if (e.target.src.indexOf('gwent-roguelite-logo.png') !== -1) {
-                e.target.src = 'https://github.com/user-attachments/assets/71b16cba-24a9-4abf-9831-768859a3b208';
-              } else {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = '';
-              }
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = '';
             }}
           />
           <h1 className="menu-title" style={{display:'none'}}>Gwent Electron</h1>
