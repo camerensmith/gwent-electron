@@ -123,6 +123,7 @@ function App() {
       sold: 0,
       rests: 0,
       floorsReached: 0,
+      whetstoneUsedActs: [],
       seed: Math.random(),
       shopSeed: Math.random(),
       difficulty: 'medium',
@@ -250,10 +251,15 @@ function App() {
     const goldLoss = goldReward;
     const isFinalBoss = node.type === 'boss' && node.act === 1;
 
+    // Whetstone: applies only to the first battle of each act
+    const whetstoneUsedActs = run.whetstoneUsedActs || [];
+    const whetstoneApplies = has('whetstone') && !whetstoneUsedActs.includes(actIndex);
+    const updatedWhetstoneUsedActs = whetstoneApplies ? [...whetstoneUsedActs, actIndex] : whetstoneUsedActs;
+
     // Persist run state across the page navigation so we can restore it on return
     const runToSave = mapState
-      ? { ...run, nodeStates: mapState.nodeStates, currentFloor: mapState.currentFloor }
-      : run;
+      ? { ...run, whetstoneUsedActs: updatedWhetstoneUsedActs, nodeStates: mapState.nodeStates, currentFloor: mapState.currentFloor }
+      : { ...run, whetstoneUsedActs: updatedWhetstoneUsedActs };
     sessionStorage.setItem('rogueliteRunState', JSON.stringify(runToSave));
 
     // Build the battle context that gwent.js will read on index.html load
@@ -270,6 +276,7 @@ function App() {
       currentRations: run.rations,
       leanProvision:  has('lean_provision'),
       hardtack:       has('hardtack'),
+      whetstone:      whetstoneApplies,
       isFinalBoss,
       nextEncounterBuff: run?.nextEncounterBuff || null,
       bossEffects: assignment?.effects || [],

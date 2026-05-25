@@ -239,7 +239,7 @@ window.calcTravelCost = function(deck, equipped) {
     if (card.type === 'special') continue;
     let unitCost;
     if (card.hero) {
-      unitCost = hasHardtack ? 1 : window.RATION_COSTS.hero;
+      unitCost = hasHardtack ? 2 : window.RATION_COSTS.hero;
     } else {
       const row = (card.row || '').toLowerCase();
       if (row === 'siege') unitCost = window.RATION_COSTS.siege;
@@ -279,7 +279,7 @@ window.ITEMS = [
   { id: 'foragers_eye',    name: "Forager's Eye",         glyph: '\u25c8', rarity: 'uncommon', desc: 'Camps grant +8 additional Rations.' },
   { id: 'black_market',    name: 'Black Market Ledger',   glyph: '\u2756', rarity: 'rare',     desc: 'Shops offer 2 additional cards per visit.' },
   { id: 'travelling_merch',name: 'Travelling Merchant',   glyph: '\u2696', rarity: 'rare',     desc: '30% chance per Shop visit: all prices reduced by 1.' },
-  { id: 'hardtack',        name: 'Hardtack',              glyph: '\u25c6', rarity: 'rare',     desc: 'Heroes cost 1 Ration instead of 3.' },
+  { id: 'hardtack',        name: 'Hardtack',              glyph: '\u25c6', rarity: 'rare',     desc: 'Heroes cost 2 Rations instead of 3.' },
   { id: 'map_etcher',      name: 'Map Etcher',            glyph: '\u2734', rarity: 'rare',     desc: 'Mystery node contents are revealed before clicking.' },
   { id: 'lucky_coin',      name: 'Lucky Coin',            glyph: '\u25c9', rarity: 'common',   desc: '10% chance per map node to find +1 gold underfoot.' },
   { id: 'whetstone',       name: 'Whetstone',             glyph: '\u2718', rarity: 'uncommon', desc: 'First battle of each Act, your units gain +1 strength on round 1.' }
