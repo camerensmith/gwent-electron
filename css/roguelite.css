@@ -998,6 +998,29 @@ html, body {
 .shop-purse .label { color: var(--tan-dim); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; }
 
 .shop-body { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; min-height: 0; }
+
+/* ─── Card viewer (hover preview in shop header) ─── */
+.shop-card-viewer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+}
+.shop-card-viewer-img {
+  height: 120px;
+  width: auto;
+  border: 1.5px solid rgba(255, 210, 77, 0.45);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
+  object-fit: cover;
+  object-position: top center;
+  transition: opacity 0.15s;
+}
+.shop-card-viewer-empty {
+  height: 120px;
+  width: 84px;
+  border: 1.5px dashed rgba(255, 210, 77, 0.15);
+  opacity: 0.4;
+}
 .shop-col {
   background: var(--panel-deep);
   border: 1.5px solid var(--gold-dim);
