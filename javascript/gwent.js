@@ -169,6 +169,10 @@ class ControllerAI {
 				card: c
 			})
 		);
+		// Boss effect: no_specials - filter out special/weather cards from AI options
+		if (game._noSpecials) {
+			weights = weights.filter(w => w.card.faction !== 'special' && w.card.faction !== 'weather');
+		}
 		if (player.opponent().passed && diff > 0 && diff < 16) {
 			// Opponent has passed and we're losing by 1-15 points - try to close the gap efficiently
 			let oneshot = weights.filter(w => 
@@ -2427,6 +2431,8 @@ class Player {
 				// Unit cards cost 1 ration (or 0 with lean_provision item)
 				cost = rogueliteCtx.leanProvision ? 0 : 1;
 			}
+			// Boss effect: feast adds +1 ration cost per card played
+			if (rogueliteCtx.feastActive) cost += 1;
 			// special / weather cards cost 0
 			rogueliteTotalRationDrain += cost;
 			updateRogueliteHUD();
@@ -3060,6 +3066,15 @@ class Deck extends CardContainer {
 			// For player's hand, pass null as source since we already removed it
 			await board.toHand(removedCard, null);
 		}
+
+		// Boss effect: uroboros - discard a card from deck for each card drawn
+		if (game._uroboros && this.cards.length > 0) {
+			var discardIdx = Math.floor(Math.random() * this.cards.length);
+			var discarded = this.cards[discardIdx];
+			this.removeCard(discarded);
+			this.resize();
+			console.log('[BOSS EFFECT] uroboros: discarded', discarded.name, 'from', player.tag, 'deck');
+		}
 	}
 
 	swap(container, card) {
@@ -3673,7 +3688,8 @@ class Row extends CardContainer {
 		const hasBond = card.abilities.includes("bond");
 		
 		// If hero without bond, return early (normal hero behavior - immune to all effects)
-		if (card.hero && !hasBond) return total;
+		// Boss effect: no_heroes suspends hero immunity
+		if (card.hero && !hasBond && !game._noHeroImmunity) return total;
 		
 		// For heroes with bond, they can benefit from bond but are still immune to other effects
 		if (card.hero && hasBond) {
@@ -4031,7 +4047,16 @@ class Weather extends CardContainer {
 	}
 
 	async clearWeather() {
-		await Promise.all(this.cards.map((c, i) => this.cards[this.cards.length - i - 1]).map(c => board.toGrave(c, this)));
+		// Roguelite boss effect: persistent weather cannot be cleared
+		var cardsToRemove = this.cards.slice().reverse();
+		if (this._persistentRain || this._persistentFog) {
+			cardsToRemove = cardsToRemove.filter(c => {
+				if (this._persistentRain && c.abilities.includes('rain')) return false;
+				if (this._persistentFog && c.abilities.includes('fog')) return false;
+				return true;
+			});
+		}
+		await Promise.all(cardsToRemove.map(c => board.toGrave(c, this)));
 	}
 
 	// Override
@@ -4043,6 +4068,9 @@ class Weather extends CardContainer {
 	reset() {
 		super.reset();
 		Object.keys(this.types).map(t => this.types[t].count = 0);
+		// Reset roguelite persistent weather flags
+		this._persistentRain = false;
+		this._persistentFog = false;
 	}
 }
 
@@ -4314,6 +4342,11 @@ class Game {
 		};
 		this.embargoActive = null;
 		this.isRoguelite = false;
+		// Roguelite boss effect flags
+		this._noSpecials = false;
+		this._noHeroImmunity = false;
+		this._uroboros = false;
+		this._gluttony = false;
 		if (board) {
 			if (board.row) {
 				board.row.forEach(r => {
@@ -5426,6 +5459,12 @@ class UI {
 		let row = this.lastRow;
 		let pCard = this.previewCard;
 		if (card === pCard) return;
+		// Boss effect: no_specials blocks playing special/weather cards
+		if (game._noSpecials && card.holder && card.holder.hand.cards.includes(card) &&
+			(card.faction === 'special' || card.faction === 'weather')) {
+			console.log('[BOSS EFFECT] no_specials: blocked', card.name);
+			return;
+		}
 		if (pCard === null || card.holder.hand.cards.includes(card)) {
 			this.setSelectable(null, false);
 			this.showPreview(card);
