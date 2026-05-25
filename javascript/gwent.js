@@ -169,6 +169,10 @@ class ControllerAI {
 				card: c
 			})
 		);
+		// Boss effect: no_specials - filter out special/weather cards from AI options
+		if (game._noSpecials) {
+			weights = weights.filter(w => w.card.faction !== 'special' && w.card.faction !== 'weather');
+		}
 		if (player.opponent().passed && diff > 0 && diff < 16) {
 			// Opponent has passed and we're losing by 1-15 points - try to close the gap efficiently
 			let oneshot = weights.filter(w => 
@@ -2427,6 +2431,8 @@ class Player {
 				// Unit cards cost 1 ration (or 0 with lean_provision item)
 				cost = rogueliteCtx.leanProvision ? 0 : 1;
 			}
+			// Boss effect: feast adds +1 ration cost per card played
+			if (rogueliteCtx.feastActive) cost += 1;
 			// special / weather cards cost 0
 			rogueliteTotalRationDrain += cost;
 			updateRogueliteHUD();
@@ -3060,6 +3066,15 @@ class Deck extends CardContainer {
 			// For player's hand, pass null as source since we already removed it
 			await board.toHand(removedCard, null);
 		}
+
+		// Boss effect: uroboros - discard a card from deck for each card drawn
+		if (game._uroboros && this.cards.length > 0) {
+			var discardIdx = Math.floor(Math.random() * this.cards.length);
+			var discarded = this.cards[discardIdx];
+			this.removeCard(discarded);
+			this.resize();
+			console.log('[BOSS EFFECT] uroboros: discarded', discarded.name, 'from', player.tag, 'deck');
+		}
 	}
 
 	swap(container, card) {
@@ -3673,7 +3688,8 @@ class Row extends CardContainer {
 		const hasBond = card.abilities.includes("bond");
 		
 		// If hero without bond, return early (normal hero behavior - immune to all effects)
-		if (card.hero && !hasBond) return total;
+		// Boss effect: no_heroes suspends hero immunity
+		if (card.hero && !hasBond && !game._noHeroImmunity) return total;
 		
 		// For heroes with bond, they can benefit from bond but are still immune to other effects
 		if (card.hero && hasBond) {
@@ -4031,7 +4047,16 @@ class Weather extends CardContainer {
 	}
 
 	async clearWeather() {
-		await Promise.all(this.cards.map((c, i) => this.cards[this.cards.length - i - 1]).map(c => board.toGrave(c, this)));
+		// Roguelite boss effect: persistent weather cannot be cleared
+		var cardsToRemove = this.cards.slice().reverse();
+		if (this._persistentRain || this._persistentFog) {
+			cardsToRemove = cardsToRemove.filter(c => {
+				if (this._persistentRain && c.abilities.includes('rain')) return false;
+				if (this._persistentFog && c.abilities.includes('fog')) return false;
+				return true;
+			});
+		}
+		await Promise.all(cardsToRemove.map(c => board.toGrave(c, this)));
 	}
 
 	// Override
@@ -4043,6 +4068,9 @@ class Weather extends CardContainer {
 	reset() {
 		super.reset();
 		Object.keys(this.types).map(t => this.types[t].count = 0);
+		// Reset roguelite persistent weather flags
+		this._persistentRain = false;
+		this._persistentFog = false;
 	}
 }
 
@@ -4314,6 +4342,11 @@ class Game {
 		};
 		this.embargoActive = null;
 		this.isRoguelite = false;
+		// Roguelite boss effect flags
+		this._noSpecials = false;
+		this._noHeroImmunity = false;
+		this._uroboros = false;
+		this._gluttony = false;
 		if (board) {
 			if (board.row) {
 				board.row.forEach(r => {
@@ -5439,6 +5472,12 @@ class UI {
 		let row = this.lastRow;
 		let pCard = this.previewCard;
 		if (card === pCard) return;
+		// Boss effect: no_specials blocks playing special/weather cards
+		if (game._noSpecials && card.holder && card.holder.hand.cards.includes(card) &&
+			(card.faction === 'special' || card.faction === 'weather')) {
+			console.log('[BOSS EFFECT] no_specials: blocked', card.name);
+			return;
+		}
 		if (pCard === null || card.holder.hand.cards.includes(card)) {
 			this.setSelectable(null, false);
 			this.showPreview(card);
@@ -8567,8 +8606,331 @@ async function startRogueliteBattle(ctx) {
 	}
 	updateRogueliteHUD();
 
+	// Apply boss/elite effects before the game starts
+	applyRogueliteBossEffects(ctx);
+
 	tocar('game_opening', false);
 	game.startGame();
+}
+
+/**
+ * Register boss/elite effects into the game lifecycle hooks.
+ * Each effect pushes callbacks onto game.gameStart, game.roundStart, game.turnStart, etc.
+ * Effects return false to persist across rounds/turns or true to self-remove.
+ */
+function applyRogueliteBossEffects(ctx) {
+	var effects = ctx.bossEffects;
+	if (!effects || !effects.length) return;
+
+	var effectIds = effects.map(function(e) { return e.id; });
+
+	// ── burn_deck: On battle start, 1 random unit is burnt from your deck ──
+	if (effectIds.indexOf('burn_deck') !== -1) {
+		game.gameStart.push(function() {
+			var units = player_me.deck.cards.filter(function(c) { return c.isUnit(); });
+			if (units.length > 0) {
+				var victim = units[Math.floor(Math.random() * units.length)];
+				player_me.deck.removeCard(victim);
+				player_me.deck.resize();
+				console.log('[BOSS EFFECT] burn_deck: burnt', victim.name, 'from player deck');
+			}
+			return true; // one-shot
+		});
+	}
+
+	// ── decimation: At start of round 3, 3 random cards removed from deck ──
+	if (effectIds.indexOf('decimation') !== -1) {
+		game.roundStart.push(function() {
+			if (game.roundCount !== 3) return false; // persist until round 3
+			for (var i = 0; i < 3; i++) {
+				if (player_me.deck.cards.length === 0) break;
+				var idx = Math.floor(Math.random() * player_me.deck.cards.length);
+				var victim = player_me.deck.cards[idx];
+				player_me.deck.removeCard(victim);
+				player_me.deck.resize();
+				console.log('[BOSS EFFECT] decimation: removed', victim.name);
+			}
+			return true; // done
+		});
+	}
+
+	// ── marked_round: Boss gains +3 to all units on a random round ──
+	if (effectIds.indexOf('marked_round') !== -1) {
+		var markedRound = Math.floor(Math.random() * 3) + 1;
+		game.roundStart.push(function() {
+			if (game.roundCount !== markedRound) return false;
+			// Boost all opponent units currently on field by +3
+			for (var r = 0; r < 3; r++) {
+				board.row[r].cards.forEach(function(c) {
+					if (c.isUnit() && !c.hero) {
+						c.power += 3;
+						c.elem.querySelector('.card-power')?.classList.add('power-morale');
+					}
+				});
+				board.row[r].updateScore();
+			}
+			console.log('[BOSS EFFECT] marked_round: +3 to all opponent units on round', markedRound);
+			return true;
+		});
+	}
+
+	// ── champion: Boss leader ability triggers twice ──
+	if (effectIds.indexOf('champion') !== -1) {
+		game.gameStart.push(function() {
+			// Re-init the opponent's leader ability so it fires again
+			var leaderAbility = ability_dict[player_op.leader.abilities[0]];
+			if (leaderAbility) {
+				Object.keys(leaderAbility).filter(function(key) { return game[key]; }).forEach(function(key) {
+					if (typeof leaderAbility[key] === 'function') {
+						game[key].push(leaderAbility[key]);
+					}
+				});
+			}
+			console.log('[BOSS EFFECT] champion: leader ability doubled');
+			return true;
+		});
+	}
+
+	// ── ransack: −3 rations on battle start ──
+	if (effectIds.indexOf('ransack') !== -1) {
+		game.gameStart.push(function() {
+			rogueliteTotalRationDrain += 3;
+			updateRogueliteHUD();
+			console.log('[BOSS EFFECT] ransack: +3 ration drain');
+			return true;
+		});
+	}
+
+	// ── feast: +1 extra ration cost per card played ──
+	if (effectIds.indexOf('feast') !== -1) {
+		// Override the ration cost calculation via a flag on the context
+		rogueliteCtx.feastActive = true;
+	}
+
+	// ── persistent_rain: Persistent rain on Ranged, Clear Skies cannot lift it ──
+	if (effectIds.indexOf('persistent_rain') !== -1) {
+		game.gameStart.push(function() {
+			// Apply rain effect to ranged rows permanently
+			var rainType = weather.types.rain;
+			if (rainType.count === 0) {
+				rainType.count = 1;
+				rainType.rows.forEach(function(r) { r.addOverlay('rain'); });
+			}
+			// Mark rain as persistent (cannot be cleared)
+			weather._persistentRain = true;
+			console.log('[BOSS EFFECT] persistent_rain: permanent rain on ranged');
+			return true;
+		});
+	}
+
+	// ── frost_start: Battle opens with Biting Frost on Close ──
+	if (effectIds.indexOf('frost_start') !== -1) {
+		game.gameStart.push(function() {
+			var frostType = weather.types.frost;
+			if (frostType.count === 0) {
+				frostType.count = 1;
+				frostType.rows.forEach(function(r) { r.addOverlay('frost'); });
+			}
+			console.log('[BOSS EFFECT] frost_start: frost on close');
+			return true;
+		});
+	}
+
+	// ── tempest: Ranged & Siege reduced to 1/unit for the whole battle ──
+	if (effectIds.indexOf('tempest') !== -1) {
+		game.gameStart.push(function() {
+			// Apply rain (siege) and fog (ranged) permanently
+			var rainType = weather.types.rain;
+			var fogType = weather.types.fog;
+			if (rainType.count === 0) {
+				rainType.count = 1;
+				rainType.rows.forEach(function(r) { r.addOverlay('rain'); });
+			}
+			if (fogType.count === 0) {
+				fogType.count = 1;
+				fogType.rows.forEach(function(r) { r.addOverlay('fog'); });
+			}
+			weather._persistentRain = true;
+			weather._persistentFog = true;
+			console.log('[BOSS EFFECT] tempest: permanent rain+fog');
+			return true;
+		});
+	}
+
+	// ── no_specials: No special cards may be played by either side ──
+	if (effectIds.indexOf('no_specials') !== -1) {
+		game.gameStart.push(function() {
+			game._noSpecials = true;
+			console.log('[BOSS EFFECT] no_specials: special cards disabled');
+			return true;
+		});
+	}
+
+	// ── no_heroes: Hero immunity is suspended ──
+	if (effectIds.indexOf('no_heroes') !== -1) {
+		game.gameStart.push(function() {
+			game._noHeroImmunity = true;
+			console.log('[BOSS EFFECT] no_heroes: hero immunity suspended');
+			return true;
+		});
+	}
+
+	// ── uroboros: When any player draws, equal amount discarded from deck ──
+	if (effectIds.indexOf('uroboros') !== -1) {
+		game.gameStart.push(function() {
+			game._uroboros = true;
+			console.log('[BOSS EFFECT] uroboros: draw = discard from deck');
+			return true;
+		});
+	}
+
+	// ── dampening: Both players' non-unit cards are discarded from decks at start ──
+	if (effectIds.indexOf('dampening') !== -1) {
+		game.gameStart.push(function() {
+			[player_me, player_op].forEach(function(player) {
+				var toRemove = player.deck.cards.filter(function(c) { return !c.isUnit(); });
+				toRemove.forEach(function(c) {
+					player.deck.removeCard(c);
+				});
+				player.deck.resize();
+				console.log('[BOSS EFFECT] dampening: removed', toRemove.length, 'non-unit cards from', player.tag);
+			});
+			return true;
+		});
+	}
+
+	// ── twist_of_fate: On turn 3, both players' graveyards and decks are swapped ──
+	if (effectIds.indexOf('twist_of_fate') !== -1) {
+		var twistTurnCount = 0;
+		game.turnStart.push(function() {
+			twistTurnCount++;
+			if (twistTurnCount !== 3) return false;
+			// Swap deck cards with graveyard cards for both players
+			[player_me, player_op].forEach(function(player) {
+				var deckCards = player.deck.cards.slice();
+				var graveCards = player.grave.cards.slice();
+				// Clear deck
+				deckCards.forEach(function(c) { player.deck.removeCard(c); });
+				// Clear grave
+				graveCards.forEach(function(c) { player.grave.removeCard(c); });
+				// Move grave cards to deck
+				graveCards.forEach(function(c) { player.deck.addCard(c); });
+				// Move deck cards to grave
+				deckCards.forEach(function(c) { player.grave.addCard(c); });
+				player.deck.resize();
+			});
+			console.log('[BOSS EFFECT] twist_of_fate: graveyards and decks swapped');
+			return true;
+		});
+	}
+
+	// ── banishment: At battle start, a random unit is permanently removed from deck ──
+	if (effectIds.indexOf('banishment') !== -1) {
+		game.gameStart.push(function() {
+			var units = player_me.deck.cards.filter(function(c) { return c.isUnit(); });
+			if (units.length > 0) {
+				var victim = units[Math.floor(Math.random() * units.length)];
+				player_me.deck.removeCard(victim);
+				player_me.deck.resize();
+				// Mark for permanent removal in roguelite context
+				if (!rogueliteCtx.permanentlyRemoved) rogueliteCtx.permanentlyRemoved = [];
+				rogueliteCtx.permanentlyRemoved.push(victim.key);
+				console.log('[BOSS EFFECT] banishment: permanently removed', victim.name);
+			}
+			return true;
+		});
+	}
+
+	// ── warp: At start of turn 2, each player may choose a card from deck to play ──
+	if (effectIds.indexOf('warp') !== -1) {
+		var warpTurnCount = 0;
+		game.turnStart.push(function() {
+			warpTurnCount++;
+			if (warpTurnCount !== 2) return false;
+			// AI picks a random unit from deck and plays it
+			var opUnits = player_op.deck.cards.filter(function(c) { return c.isUnit(); });
+			if (opUnits.length > 0) {
+				var pick = opUnits[Math.floor(Math.random() * opUnits.length)];
+				player_op.deck.removeCard(pick);
+				player_op.deck.resize();
+				player_op.hand.addCard(pick);
+			}
+			// For the player, move a random unit to hand (simplified; full UI carousel not feasible here)
+			var meUnits = player_me.deck.cards.filter(function(c) { return c.isUnit(); });
+			if (meUnits.length > 0) {
+				var mePick = meUnits[Math.floor(Math.random() * meUnits.length)];
+				player_me.deck.removeCard(mePick);
+				player_me.deck.resize();
+				player_me.hand.addCard(mePick);
+			}
+			console.log('[BOSS EFFECT] warp: each player drew a card from deck to hand');
+			return true;
+		});
+	}
+
+	// ── landfall: At start of turn 3, both decks moved to graveyards ──
+	if (effectIds.indexOf('landfall') !== -1) {
+		var landfallTurnCount = 0;
+		game.turnStart.push(function() {
+			landfallTurnCount++;
+			if (landfallTurnCount !== 3) return false;
+			[player_me, player_op].forEach(function(player) {
+				var allCards = player.deck.cards.slice();
+				allCards.forEach(function(c) {
+					player.deck.removeCard(c);
+					player.grave.addCard(c);
+				});
+				player.deck.resize();
+			});
+			console.log('[BOSS EFFECT] landfall: all deck cards moved to graveyards');
+			return true;
+		});
+	}
+
+	// ── sorcery: At start of turn 3, a random card played from each deck ──
+	if (effectIds.indexOf('sorcery') !== -1) {
+		var sorceryTurnCount = 0;
+		game.turnStart.push(function() {
+			sorceryTurnCount++;
+			if (sorceryTurnCount !== 3) return false;
+			// Play a random card from player's deck
+			if (player_me.deck.cards.length > 0) {
+				var meCard = player_me.deck.cards[Math.floor(Math.random() * player_me.deck.cards.length)];
+				player_me.deck.removeCard(meCard);
+				player_me.deck.resize();
+				if (meCard.isUnit()) {
+					player_me.hand.addCard(meCard);
+				} else {
+					player_me.grave.addCard(meCard);
+				}
+			}
+			// Play a random card from opponent's deck
+			if (player_op.deck.cards.length > 0) {
+				var opCard = player_op.deck.cards[Math.floor(Math.random() * player_op.deck.cards.length)];
+				player_op.deck.removeCard(opCard);
+				player_op.deck.resize();
+				if (opCard.isUnit()) {
+					player_op.hand.addCard(opCard);
+				} else {
+					player_op.grave.addCard(opCard);
+				}
+			}
+			console.log('[BOSS EFFECT] sorcery: random cards played from decks');
+			return true;
+		});
+	}
+
+	// ── gluttony: Both players get +1 cards to draw, +1 redraw ──
+	if (effectIds.indexOf('gluttony') !== -1) {
+		game.gameStart.push(function() {
+			game._gluttony = true;
+			// Draw 1 extra card for each player
+			if (player_me.deck.cards.length > 0) player_me.deck.draw(player_me.hand);
+			if (player_op.deck.cards.length > 0) player_op.deck.draw(player_op.hand);
+			console.log('[BOSS EFFECT] gluttony: +1 card drawn for each player');
+			return true;
+		});
+	}
 }
 
 // ── End roguelite bridge ───────────────────────────────────────────────────
