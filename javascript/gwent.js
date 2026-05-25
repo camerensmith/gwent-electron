@@ -9066,6 +9066,7 @@ window.onload = function() {
 			sessionStorage.removeItem('rogueliteBattle');
 			// Hide the splash-screen start button and start the battle after a tick
 			document.getElementById("button_start").style.display = "none";
+			try { document.getElementById("start-logo-wrap").style.display = "none"; } catch(e) {}
 			setTimeout(function() { startRogueliteBattle(rogueliteCtxLoad); }, 0);
 		} catch(e) {
 			console.error('[ROGUELITE] Failed to parse battle context:', e);
@@ -9078,6 +9079,7 @@ window.onload = function() {
 	if (sessionStorage.getItem('fromMainMenu')) {
 		sessionStorage.removeItem('fromMainMenu');
 		document.getElementById("button_start").style.display = "none";
+		try { document.getElementById("start-logo-wrap").style.display = "none"; } catch(e) {}
 		setTimeout(function() { inicio(); }, 0);
 	}
 }
