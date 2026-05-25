@@ -173,6 +173,12 @@ class ControllerAI {
 		if (game._noSpecials) {
 			weights = weights.filter(w => w.card.faction !== 'special' && w.card.faction !== 'weather');
 		}
+		// Filter out Decoy cards when there are no valid targets on the field.
+		// Decoy requires a unit already on the board to swap with; without one it cannot be played
+		// and decoy() returns early without playing anything, causing performTurn() to exit silently.
+		if (!player.getAllRowCards().some(c => c.isUnit())) {
+			weights = weights.filter(w => !(w.card && (w.card.key === "spe_decoy" || w.card.abilities.includes("decoy"))));
+		}
 		if (player.opponent().passed && diff > 0 && diff < 16) {
 			// Opponent has passed and we're losing by 1-15 points - try to close the gap efficiently
 			let oneshot = weights.filter(w => 
