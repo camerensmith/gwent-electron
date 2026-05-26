@@ -152,6 +152,8 @@ function App() {
         floorsReached: Math.max(r.floorsReached || 0, node.floor + 1),
         rations: newRations,
         deck: newDeck,
+        nodeStates: mapState?.nodeStates || r.nodeStates,
+        currentFloor: mapState?.currentFloor ?? r.currentFloor,
       };
     });
     const items = run?.equipped || [];
