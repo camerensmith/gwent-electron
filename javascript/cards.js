@@ -8114,7 +8114,7 @@ var ext_lr_cards = {
     },
     "lr_gascon_infiltrator": {
         "name": "Gascon's Infiltrator",
-        "deck": "   ",
+        "deck": "lyria_rivia",
         "row": "ranged",
         "strength": "4",
         "ability": "muster",
