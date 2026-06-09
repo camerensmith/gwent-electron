@@ -2285,8 +2285,10 @@ class Player {
 			game.tradeThresholdsTriggered[this.tag] = new Set();
 		}
 		const triggeredThresholds = game.tradeThresholdsTriggered[this.tag];
-		if (thresholds.includes(this.total) && !triggeredThresholds.has(this.total)) {
-			triggeredThresholds.add(this.total);
+		// Use range-crossing check so thresholds are caught even when the score jumps over them
+		const newlyTriggered = thresholds.filter(t => oldTotal < t && this.total >= t && !triggeredThresholds.has(t));
+		for (const threshold of newlyTriggered) {
+			triggeredThresholds.add(threshold);
 			// Find Trade cards on the opponent's field (the player who owns the Trade cards)
 			const tradeCards = opponent.getAllRowCards().filter(c => c.isUnit() && c.abilities.includes("trade"));
 			if (tradeCards.length > 0 && opponent.deck.cards.length > 0) {
