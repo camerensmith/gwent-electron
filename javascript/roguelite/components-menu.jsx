@@ -131,12 +131,12 @@ function generateStartingDeck(factionId) {
     : [...(window.FACTION_REQUIRED_SPECIALS[factionId] || [])];
 
   // Total nonunit card count varies between 0 and 10; required cards fill first.
+  const specialsPool = window.SPECIALS_POOL;
   const totalSpecialTarget = Math.floor(Math.random() * 11);
   const randomCount = Math.max(0, totalSpecialTarget - requiredSpecials.length);
   const allSpecialNames = [...requiredSpecials];
   for (let i = 0; i < randomCount; i++) {
-    const pool = window.SPECIALS_POOL;
-    allSpecialNames.push(pool[Math.floor(Math.random() * pool.length)]);
+    allSpecialNames.push(specialsPool[Math.floor(Math.random() * specialsPool.length)]);
   }
 
   for (const name of allSpecialNames) {

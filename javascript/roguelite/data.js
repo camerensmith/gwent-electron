@@ -116,7 +116,7 @@ window.FACTION_REQUIRED_SPECIALS = {
   syndicate:  ['Murder', 'Vivaldi Bank'],
 };
 
-// The five Witcher Signs — four random ones are guaranteed in every Witchers starting deck.
+// The five Witcher Signs — four are randomly selected for every Witchers starting deck.
 window.WITCHER_SIGNS = ['Sign: Igni', 'Sign: Aard', 'Sign: Quen', 'Sign: Yrden', 'Sign: Axii'];
 
 // Faction passives.
