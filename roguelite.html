@@ -72,23 +72,47 @@
         var rlMusicEnabled = true;
         var rlLastSfx = '';
 
-        var MUSIC_PATHS = ['gwent.mp3', './gwent.mp3', '../gwent.mp3', 'resources/gwent.mp3'];
+        var MUSIC_TRACKS = [
+          '001.mp3','002.mp3','005.mp3','008.mp3','011.mp3','022.mp3','026.mp3',
+          '027.mp3','037.mp3','039.mp3','040.mp3','042.mp3','044.mp3','046.mp3','062.mp3','067.mp3'
+        ];
+        var rlCurrentTrack = null;
         var SFX_VOLUME = 0.35;
         var MUSIC_VOLUME = 0.6;
 
+        function pickRandomTrack(exclude) {
+          var choices = MUSIC_TRACKS.length > 1 ? MUSIC_TRACKS.filter(function(t) { return t !== exclude; }) : MUSIC_TRACKS;
+          return choices[Math.floor(Math.random() * choices.length)];
+        }
+
+        function resolveTrackPaths(filename) {
+          var paths = ['music/' + filename, './music/' + filename, '../music/' + filename];
+          try {
+            if (window.electronAPI && window.electronAPI.getResourcePath) {
+              paths.unshift(window.electronAPI.getResourcePath('music/' + filename));
+            }
+          } catch (e) {}
+          return paths;
+        }
+
         function tryLoadMusic(paths, idx) {
-          if (idx >= paths.length) return;
+          if (idx >= paths.length) {
+            // All paths failed — move to next random track
+            var next = pickRandomTrack(rlCurrentTrack);
+            rlCurrentTrack = next;
+            tryLoadMusic(resolveTrackPaths(next), 0);
+            return;
+          }
           var audio = new Audio(paths[idx]);
-          audio.loop = true;
+          audio.loop = false;
           audio.volume = MUSIC_VOLUME;
           audio.addEventListener('error', function () { tryLoadMusic(paths, idx + 1); });
+          audio.addEventListener('ended', function () {
+            var next = pickRandomTrack(rlCurrentTrack);
+            rlCurrentTrack = next;
+            tryLoadMusic(resolveTrackPaths(next), 0);
+          });
           audio.addEventListener('canplaythrough', function () {
-            // Restore saved playback position from a previous page
-            var savedTime = parseFloat(sessionStorage.getItem('musicCurrentTime'));
-            if (savedTime > 0 && isFinite(savedTime)) {
-              audio.currentTime = savedTime;
-              sessionStorage.removeItem('musicCurrentTime');
-            }
             if (rlMusicEnabled) audio.play().catch(function () {});
           });
           rlMusic = audio;
@@ -100,13 +124,9 @@
           var stored = sessionStorage.getItem('musicEnabled');
           if (stored === 'false') { rlMusicEnabled = false; }
 
-          var paths = MUSIC_PATHS.slice();
-          try {
-            if (window.electronAPI && window.electronAPI.getResourcePath) {
-              paths.unshift(window.electronAPI.getResourcePath('gwent.mp3'));
-            }
-          } catch (e) {}
-          tryLoadMusic(paths, 0);
+          var track = pickRandomTrack(null);
+          rlCurrentTrack = track;
+          tryLoadMusic(resolveTrackPaths(track), 0);
 
           var btn = document.getElementById('rl-music-toggle');
           if (btn) {

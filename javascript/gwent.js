@@ -5329,99 +5329,91 @@ class UI {
 		else main.add("noclick");
 	}
 
-	initLocalMusic() {
-		// Try multiple paths for audio loading to handle both dev and production
-		let audioPaths = [
-			"gwent.mp3",
-			"./gwent.mp3",
-			"../gwent.mp3",
-			"resources/gwent.mp3"
+	// Music track list from the /music folder
+	static get MUSIC_TRACKS() {
+		return [
+			'001.mp3','002.mp3','005.mp3','008.mp3','011.mp3','022.mp3','026.mp3',
+			'027.mp3','037.mp3','039.mp3','040.mp3','042.mp3','044.mp3','046.mp3','062.mp3','067.mp3'
 		];
-		
-		// Check if we're in Electron and try to use the proper path
+	}
+
+	_pickRandomTrack(exclude) {
+		const tracks = this.constructor.MUSIC_TRACKS;
+		let choices = tracks.length > 1 ? tracks.filter(t => t !== exclude) : tracks;
+		return choices[Math.floor(Math.random() * choices.length)];
+	}
+
+	_resolveTrackPaths(filename) {
+		const paths = [
+			`music/${filename}`,
+			`./music/${filename}`,
+			`../music/${filename}`
+		];
 		if (window.electronAPI && window.electronAPI.getResourcePath) {
-			try {
-				const electronPath = window.electronAPI.getResourcePath("gwent.mp3");
-				audioPaths.unshift(electronPath); // Add to beginning of array
-				console.log("Electron resource path:", electronPath);
-			} catch (e) {
-				console.log("Could not get electron resource path:", e);
-			}
+			try { paths.unshift(window.electronAPI.getResourcePath(`music/${filename}`)); } catch (e) {}
 		}
-		
-		console.log("Trying audio paths:", audioPaths);
-		
+		return paths;
+	}
+
+	initLocalMusic() {
 		// Save music position before navigating away so it can resume on the next page
 		window.addEventListener('beforeunload', () => {
 			if (this.backgroundMusic && !this.backgroundMusic.paused) {
 				sessionStorage.setItem('musicCurrentTime', this.backgroundMusic.currentTime);
 			}
 		});
-		
-		// Try to load audio with fallback paths
-		this.tryLoadAudio(audioPaths, 0);
+
+		const filename = this._pickRandomTrack(null);
+		this._currentMusicTrack = filename;
+		this.tryLoadAudio(this._resolveTrackPaths(filename), 0);
 	}
 	
 	tryLoadAudio(audioPaths, index) {
 		if (index >= audioPaths.length) {
-			console.error("Failed to load audio from all paths:", audioPaths);
+			// All paths failed — try the next random track
+			const next = this._pickRandomTrack(this._currentMusicTrack);
+			this._currentMusicTrack = next;
+			this.tryLoadAudio(this._resolveTrackPaths(next), 0);
 			return;
 		}
-		
+
 		const audioPath = audioPaths[index];
-		console.log(`Attempting to load audio from path ${index + 1}/${audioPaths.length}:`, audioPath);
-		
+
 		this.backgroundMusic = new Audio(audioPath);
-		this.backgroundMusic.loop = true;
+		this.backgroundMusic.loop = false;
 		this.backgroundMusic.volume = 0.6;
 		this.soundEffectsVolume = 0.3;
-		
-		// Add error handling for audio loading
-		this.backgroundMusic.addEventListener('error', (e) => {
-			console.error(`Error loading audio from ${audioPath}:`, e);
-			console.error('Audio error details:', this.backgroundMusic.error);
-			// Try next path
+
+		// On error, try next path in the fallback list
+		this.backgroundMusic.addEventListener('error', () => {
 			this.tryLoadAudio(audioPaths, index + 1);
 		});
-		
-		// Add success handling
+
+		// When the track ends, pick a new random one and play it
+		this.backgroundMusic.addEventListener('ended', () => {
+			const next = this._pickRandomTrack(this._currentMusicTrack);
+			this._currentMusicTrack = next;
+			this.tryLoadAudio(this._resolveTrackPaths(next), 0);
+		});
+
 		this.backgroundMusic.addEventListener('canplaythrough', () => {
-			console.log(`Successfully loaded audio from: ${audioPath}`);
-			// Restore saved playback position from a previous page
-			var savedTime = parseFloat(sessionStorage.getItem('musicCurrentTime'));
-			if (savedTime > 0 && isFinite(savedTime)) {
-				this.backgroundMusic.currentTime = savedTime;
-				sessionStorage.removeItem('musicCurrentTime');
-			}
-			// Only try to autoplay if user has interacted
 			if (this.userInteracted) {
-			this.playBackgroundMusic();
+				this.playBackgroundMusic();
 			}
 		});
-		
+
 		// Initialize music state
-		if (this.ytActive !== undefined) return;
-		this.ytActive = true;
-		
-		// Try to play with error handling
+		if (this.ytActive === undefined) {
+			this.ytActive = true;
+		}
+
 		this.backgroundMusic.play().catch(e => {
-			// Suppress NotAllowedError (autoplay blocked) - this is expected browser behavior
 			if (e.name !== 'NotAllowedError') {
-			console.error('Could not play background music:', e);
-				// Try next path on play error (only for non-autoplay errors)
-				if (e.name !== 'NotAllowedError') {
-			this.tryLoadAudio(audioPaths, index + 1);
-				}
+				this.tryLoadAudio(audioPaths, index + 1);
 			}
 		});
-		
+
 		this.toggleMusic_elem.classList.remove("fade");
-		
-		// Log current volume levels for debugging
-		console.log("Audio levels set:");
-		console.log("- Background music: " + Math.round(this.backgroundMusic.volume * 100) + "%");
-		console.log("- Sound effects: " + Math.round(this.soundEffectsVolume * 100) + "%");
-		console.log("You can adjust these with: ui.setBackgroundMusicVolume(0.5) or ui.setSoundEffectsVolume(0.4)");
 	}
 	
 	playBackgroundMusic() {
