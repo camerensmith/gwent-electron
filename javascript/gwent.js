@@ -5300,6 +5300,16 @@ class UI {
 		this.toggleMusic_elem = document.getElementById("toggle-music");
 		this.toggleMusic_elem.classList.add("fade");
 		this.toggleMusic_elem.addEventListener("click", () => this.toggleMusic(), false);
+		this.nextTrack_elem = document.getElementById("next-track");
+		if (this.nextTrack_elem) {
+			this.nextTrack_elem.classList.add("fade");
+			this.nextTrack_elem.addEventListener("click", () => this.nextMusicTrack(), false);
+		}
+		this.lowerVolume_elem = document.getElementById("lower-volume");
+		if (this.lowerVolume_elem) {
+			this.lowerVolume_elem.classList.add("fade");
+			this.lowerVolume_elem.addEventListener("click", () => this.lowerMusicVolume(), false);
+		}
 	}
 
 	passLoad() {
@@ -5414,6 +5424,8 @@ class UI {
 		});
 
 		this.toggleMusic_elem.classList.remove("fade");
+		if (this.nextTrack_elem) this.nextTrack_elem.classList.remove("fade");
+		if (this.lowerVolume_elem) this.lowerVolume_elem.classList.remove("fade");
 	}
 	
 	playBackgroundMusic() {
@@ -5437,6 +5449,22 @@ class UI {
 			this.backgroundMusic.pause();
 			this.toggleMusic_elem.classList.add("fade");
 		}
+	}
+
+	nextMusicTrack() {
+		if (!this.backgroundMusic) return;
+		this.backgroundMusic.pause();
+		const next = this._pickRandomTrack(this._currentMusicTrack);
+		this._currentMusicTrack = next;
+		this.tryLoadAudio(this._resolveTrackPaths(next), 0);
+	}
+
+	lowerMusicVolume() {
+		if (!this.backgroundMusic) return;
+		const step = 0.2;
+		const current = this.backgroundMusic.volume;
+		const next = Math.round((current - step) * 10) / 10;
+		this.backgroundMusic.volume = next <= 0 ? 1.0 : next;
 	}
 
 	setLocalMusicEnabled(enable) {
@@ -9044,6 +9072,8 @@ window.onload = function() {
     // Keep other UI hidden until start if desired
     try { document.getElementById("deck-customization").style.display = "none"; } catch(e) {}
     try { document.getElementById("toggle-music").style.display = "none"; } catch(e) {}
+    try { document.getElementById("next-track").style.display = "none"; } catch(e) {}
+    try { document.getElementById("lower-volume").style.display = "none"; } catch(e) {}
     try { document.getElementsByTagName("main")[0].style.display = "none"; } catch(e) {}
 	document.getElementById("button_start").addEventListener("click", function() {
 		// Play the menu-opening SFX, persist music preference, then hand off to the Main Menu.
@@ -9120,6 +9150,8 @@ function inicio() {
 		deckEl.style.backgroundRepeat = "no-repeat";
 	} catch(e) {}
     try { document.getElementById("toggle-music").style.display = ""; } catch(e) {}
+    try { document.getElementById("next-track").style.display = ""; } catch(e) {}
+    try { document.getElementById("lower-volume").style.display = ""; } catch(e) {}
     try { document.getElementsByTagName("main")[0].style.display = ""; } catch(e) {}
 }
 
