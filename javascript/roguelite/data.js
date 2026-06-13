@@ -107,6 +107,18 @@ window.CARD_POOL = {
 
 window.SPECIALS_POOL = ['Decoy', 'Scorch', "Commander's Horn", 'Biting Frost', 'Impenetrable Fog', 'Torrential Rain', 'Clear Skies', 'Cull'];
 
+// Nonunit cards that are always guaranteed in a faction's starting deck.
+window.FACTION_REQUIRED_SPECIALS = {
+  toussaint:  ['Nightfall'],
+  ofir:       ['Sandstorm'],
+  realms:     ['Peace Treaty'],
+  skellige:   ['Tempest'],
+  syndicate:  ['Murder', 'Vivaldi Bank'],
+};
+
+// The five Witcher Signs — four random ones are guaranteed in every Witchers starting deck.
+window.WITCHER_SIGNS = ['Sign: Igni', 'Sign: Aard', 'Sign: Quen', 'Sign: Yrden', 'Sign: Axii'];
+
 // Faction passives.
 window.FACTION_PASSIVES = {
   realms:    'Draw a card from your deck whenever you win a round.',
@@ -513,4 +525,11 @@ window.CARD_IMAGE_MAP = {
   'Torrential Rain':        'images/sm/weather_rain.jpg',
   'Clear Skies':            'images/sm/weather_clear.jpg',
   'Cull':                   'images/sm/special_cull.jpg',
+  // ── Faction-guaranteed nonunit cards ──
+  'Nightfall':              'images/sm/weather_nightfall.jpg',
+  'Sandstorm':              'images/sm/weather_sandstorm.jpg',
+  'Peace Treaty':           'images/sm/realms_peace_treaty.jpg',
+  'Tempest':                'images/sm/weather_storm.jpg',
+  'Murder':                 'images/sm/special_murder.jpg',
+  'Vivaldi Bank':           'images/sm/special_vivaldi_bank.jpg',
 };

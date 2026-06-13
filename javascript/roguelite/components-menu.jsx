@@ -115,7 +115,6 @@ function MainMenu({ onNavigate }) {
 
 function generateStartingDeck(factionId) {
   const pool = window.CARD_POOL[factionId] || [];
-  const specials = window.SPECIALS_POOL;
   const deck = [];
   const unitCount = 16 + Math.floor(Math.random() * 5);
   for (let i = 0; i < unitCount; i++) {
@@ -125,11 +124,25 @@ function generateStartingDeck(factionId) {
     const row = rand(['Close', 'Ranged', 'Siege', 'Agile']);
     deck.push({ name, strength, hero: isHero, row, type: 'unit', id: Math.random().toString(36).slice(2) });
   }
-  const specialCount = 4 + Math.floor(Math.random() * 3);
-  for (let i = 0; i < specialCount; i++) {
-    const name = specials[Math.floor(Math.random() * specials.length)];
+
+  // Faction-guaranteed nonunit cards always included in the starting deck.
+  const requiredSpecials = factionId === 'witchers'
+    ? [...window.WITCHER_SIGNS].sort(() => Math.random() - 0.5).slice(0, 4)
+    : [...(window.FACTION_REQUIRED_SPECIALS[factionId] || [])];
+
+  // Total nonunit card count varies between 0 and 10; required cards fill first.
+  const totalSpecialTarget = Math.floor(Math.random() * 11);
+  const randomCount = Math.max(0, totalSpecialTarget - requiredSpecials.length);
+  const allSpecialNames = [...requiredSpecials];
+  for (let i = 0; i < randomCount; i++) {
+    const pool = window.SPECIALS_POOL;
+    allSpecialNames.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+
+  for (const name of allSpecialNames) {
     deck.push({ name, strength: 0, hero: false, row: 'Special', type: 'special', id: Math.random().toString(36).slice(2) });
   }
+
   return deck.sort((a, b) => {
     if (a.type !== b.type) return a.type === 'unit' ? -1 : 1;
     if (a.hero !== b.hero) return a.hero ? -1 : 1;
