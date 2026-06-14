@@ -3503,12 +3503,15 @@ class Row extends CardContainer {
 	}
 
 	removeOverlay(overlay) {
+		const weatherDiv = this.elem_parent.getElementsByClassName("row-weather")[0];
+		weatherDiv.classList.remove(overlay);
 		if (overlay === "nightfall") {
 			this.effects.nightfall = false;
 		} else {
-		this.effects.weather = false;
+			// Only clear the weather effect if no other weather overlays remain on this row
+			const weatherTypes = ["fog", "rain", "frost", "storm", "sandstorm"];
+			this.effects.weather = weatherTypes.some(t => weatherDiv.classList.contains(t));
 		}
-		this.elem_parent.getElementsByClassName("row-weather")[0].classList.remove(overlay);
 		this.updateScore();
 	}
 
