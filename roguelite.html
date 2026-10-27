@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
     <link rel="stylesheet" href="css/roguelite.css" />
-    <!-- React + Babel via CDN (development build is fine for this prototype) -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- React + Babel, bundled locally so the roguelite works offline (see javascript/vendor/) -->
+    <script src="javascript/vendor/react-18.3.1.production.min.js"></script>
+    <script src="javascript/vendor/react-dom-18.3.1.production.min.js"></script>
+    <script src="javascript/vendor/babel-standalone-7.26.4.min.js"></script>
     <style>
       /* The letterbox host / stage scaling system */
       .stage-host {
