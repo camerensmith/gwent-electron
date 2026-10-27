@@ -62,8 +62,12 @@
       })();
     </script>
 
-    <!-- Roguelite data (plain JS — no JSX, no React) -->
+    <!-- Real card data from the main game, then roguelite data + rules (plain JS — no JSX, no React) -->
+    <script src="javascript/cards.js"></script>
+    <script src="javascript/decks.js"></script>
+    <script src="javascript/abilities.js"></script>
     <script src="javascript/roguelite/data.js"></script>
+    <script src="javascript/roguelite/engine.js"></script>
 
     <!-- Music & UI sound system -->
     <script>
@@ -191,6 +195,7 @@
 
     <!-- Roguelite components (JSX — transpiled by Babel standalone) -->
     <script type="text/babel" data-type="module" src="javascript/roguelite/tweaks-panel.jsx"></script>
+    <script type="text/babel" data-type="module" src="javascript/roguelite/components-common.jsx"></script>
     <script type="text/babel" data-type="module" src="javascript/roguelite/components-menu.jsx"></script>
     <script type="text/babel" data-type="module" src="javascript/roguelite/components-map.jsx"></script>
     <script type="text/babel" data-type="module" src="javascript/roguelite/components-shop.jsx"></script>

@@ -2429,20 +2429,9 @@ class Player {
 		await sleep(1000);
 		ui.hidePreview(card);
 		await action();
-		// Roguelite: accumulate ration drain for every card the human player plays
-		if (this === player_me && rogueliteCtx) {
-			var cost = 0;
-			if (card.hero) {
-				// Hero cards cost 3 rations (or 2 with hardtack item)
-				cost = rogueliteCtx.hardtack ? 2 : 3;
-			} else if (card.isUnit()) {
-				// Unit cards cost 1 ration (or 0 with lean_provision item)
-				cost = rogueliteCtx.leanProvision ? 0 : 1;
-			}
-			// Boss effect: feast adds +1 ration cost per card played
-			if (rogueliteCtx.feastActive) cost += 1;
-			// special / weather cards cost 0
-			rogueliteTotalRationDrain += cost;
+		// Roguelite boss effect "feast": every card the human player plays costs 1 ration
+		if (this === player_me && rogueliteCtx && rogueliteCtx.feastActive) {
+			rogueliteTotalRationDrain += 1;
 			updateRogueliteHUD();
 		}
 		this.endTurn();
@@ -4653,7 +4642,8 @@ class Game {
 				rationReward: rogueliteCtx.rationReward || 0,
 				goldLoss:     rogueliteCtx.goldLoss,
 				nodeType:     rogueliteCtx.nodeType,
-				isFinalBoss:  rogueliteCtx.isFinalBoss
+				isFinalBoss:  rogueliteCtx.isFinalBoss,
+				permanentlyRemoved: rogueliteCtx.permanentlyRemoved || []
 			};
 			sessionStorage.setItem('rogueliteBattleResult', JSON.stringify(rlResult));
 			// Override buttons: both lead back to the roguelite map
@@ -8567,14 +8557,77 @@ function buildRogueliteDeck(factionId, rogueliteLeaderId) {
 	};
 }
 
-/** Create or update the in-game roguelite HUD overlay. */
+/** Create or update the in-game roguelite HUD overlay: stakes, rations and active rules. */
 function updateRogueliteHUD() {
 	var hud = document.getElementById('roguelite-hud');
 	if (!hud || !rogueliteCtx) return;
-	var remaining = rogueliteCtx.currentRations - rogueliteTotalRationDrain;
-	hud.innerHTML =
-		'<span class="rl-hud-pill rl-hud-rations">&#x2697; Rations\u00a0' + remaining + '</span>' +
-		'<span class="rl-hud-pill rl-hud-drain">Drain\u00a0\u2212' + rogueliteTotalRationDrain + '</span>';
+	var ctx = rogueliteCtx;
+	var label = ctx.nodeType === 'boss' ? 'Boss' : ctx.nodeType === 'elite' ? 'Elite' : 'Skirmish';
+	var win = '+' + ctx.goldReward + 'g' + (ctx.rationReward ? ' +' + ctx.rationReward + ' rations' : '');
+	var lose = ctx.nodeType === 'boss' ? 'run ends' : '−' + ctx.goldLoss + 'g';
+	var html =
+		'<span class="rl-hud-pill rl-hud-title">' + label + '</span>' +
+		'<span class="rl-hud-pill rl-hud-win">Win: ' + win + '</span>' +
+		'<span class="rl-hud-pill rl-hud-lose">Lose: ' + lose + '</span>';
+	if (rogueliteTotalRationDrain > 0) {
+		html += '<span class="rl-hud-pill rl-hud-drain">Rations −' + rogueliteTotalRationDrain + '</span>';
+	}
+	var rules = (ctx.hudRules || []).map(function(r) {
+		return '<span class="rl-hud-pill rl-hud-rule" title="' + String(r.desc || '').replace(/"/g, '&quot;') + '">' + r.name + '</span>';
+	}).join('');
+	hud.innerHTML = '<div class="rl-hud-row">' + html + '</div>' + (rules ? '<div class="rl-hud-row">' + rules + '</div>' : '');
+}
+
+/** Permanently raise a card's strength for this battle (survives score recalculation). */
+function rogueliteBoostCard(card, amount) {
+	if (!card || !card.isUnit() || !amount) return;
+	card.basePower += amount;
+	card.setPower(card.basePower);
+}
+
+/** Every unit currently in a player's hand gains `amount` strength. */
+function rogueliteBoostHand(player, amount) {
+	player.hand.cards.forEach(function(c) { rogueliteBoostCard(c, amount); });
+}
+
+/** Every unit that newly appears on the opponent's rows gains `amount` (each card once per tag). */
+function rogueliteBoostNewEnemyUnits(tag, amount) {
+	var changed = false;
+	for (var r = 0; r < 3; r++) {
+		board.row[r].cards.forEach(function(c) {
+			if (!c.isUnit() || c.hero || c[tag]) return;
+			c[tag] = true;
+			rogueliteBoostCard(c, amount);
+			changed = true;
+		});
+	}
+	if (changed) board.row.forEach(function(row) { row.updateScore(); });
+}
+
+/** The human player's battle deck: the exact cards of the run deck. */
+function buildRoguelitePlayerDeck(ctx) {
+	if (!ctx.playerDeck || !ctx.playerDeck.length || !window.RL) {
+		return buildRogueliteDeck(ctx.playerFaction || 'realms', ctx.playerLeaderId);
+	}
+	var keys = ctx.playerDeck.map(function(e) { return e.key; }).filter(function(k) { return card_dict[k]; });
+	return {
+		faction: ctx.playerFaction,
+		leader: findRogueliteLeader(ctx.playerFaction, ctx.playerLeaderId) || { index: null, card: null },
+		cards: RL.toIndexCounts(keys),
+		title: 'Your Warband'
+	};
+}
+
+/** The opponent's deck, sized by node type and act (see RL.ENEMY_TIERS). */
+function buildRogueliteEnemyDeck(ctx) {
+	var faction = ctx.oppFaction || 'monsters';
+	if (!window.RL) return buildRogueliteDeck(faction, ctx.oppLeaderId);
+	return {
+		faction: faction,
+		leader: findRogueliteLeader(faction, ctx.oppLeaderId) || { index: null, card: null },
+		cards: RL.enemyDeckCards(faction, ctx.nodeType, ctx.act || 0),
+		title: ctx.oppLeaderName || faction
+	};
 }
 
 /**
@@ -8584,6 +8637,7 @@ function updateRogueliteHUD() {
 async function startRogueliteBattle(ctx) {
 	rogueliteCtx = ctx;
 	rogueliteTotalRationDrain = 0;
+	ctx.hudRules = (ctx.bossEffects || []).slice();
 
 	// Mark game as roguelite so returnToCustomization / restartGame redirect properly
 	game.isRoguelite = true;
@@ -8602,11 +8656,10 @@ async function startRogueliteBattle(ctx) {
 		await window.deckLoader.initialize();
 	}
 
-	// Build decks
 	var playerFaction = ctx.playerFaction || 'realms';
 	var oppFaction    = ctx.oppFaction    || 'monsters';
-	var meDeck  = buildRogueliteDeck(playerFaction, ctx.playerLeaderId);
-	var opDeck  = buildRogueliteDeck(oppFaction,    ctx.oppLeaderId);
+	var meDeck = buildRoguelitePlayerDeck(ctx);
+	var opDeck = buildRogueliteEnemyDeck(ctx);
 
 	// Validate: ensure leader entries are complete
 	if (!meDeck.leader || !meDeck.leader.index || !meDeck.leader.card) {
@@ -8630,6 +8683,17 @@ async function startRogueliteBattle(ctx) {
 	player_me = new Player(0, 'Traveller', meDeck, false);
 	player_op = new Player(1, ctx.oppLeaderName || 'Opponent', opDeck, true);
 
+	// Camp drills: permanent +strength on specific run-deck cards
+	var pendingBonuses = {};
+	(ctx.playerDeck || []).forEach(function(e) {
+		if (!e.bonus) return;
+		(pendingBonuses[e.key] = pendingBonuses[e.key] || []).push(e.bonus);
+	});
+	player_me.deck.cards.forEach(function(c) {
+		var list = pendingBonuses[c.key];
+		if (list && list.length) rogueliteBoostCard(c, list.shift());
+	});
+
 	// Create HUD overlay
 	var hud = document.getElementById('roguelite-hud');
 	if (!hud) {
@@ -8637,22 +8701,42 @@ async function startRogueliteBattle(ctx) {
 		hud.id = 'roguelite-hud';
 		document.body.appendChild(hud);
 	}
-	updateRogueliteHUD();
 
 	// Apply boss/elite effects before the game starts
 	applyRogueliteBossEffects(ctx);
 
-	// ── Whetstone item: first battle of each act, player hand units gain +1 strength at round 1 ──
-	if (ctx.whetstone) {
-		game.roundStart.push(function() {
-			if (game.roundCount !== 1) return false;
-			player_me.hand.cards.forEach(function(c) {
-				if (c.isUnit()) c.power += 1;
-			});
-			console.log('[WHETSTONE] +1 strength to player hand units at round 1');
+	// Elite: Veteran Tactics — every enemy unit enters play with extra strength
+	if (ctx.nodeType === 'elite') {
+		var vet = (ctx.act || 0) >= 1 ? 2 : 1;
+		ctx.hudRules.push({ name: 'Veteran Tactics +' + vet, desc: 'Every enemy unit enters play with +' + vet + ' strength.' });
+		var vetHook = function() { rogueliteBoostNewEnemyUnits('_rlVeteran', vet); return false; };
+		game.turnStart.push(vetHook);
+		game.turnEnd.push(vetHook);
+	}
+
+	// Whetstone item / whet boon: units in the opening hand gain +1 strength
+	var handBoost = (ctx.whetstone ? 1 : 0) + (ctx.nextEncounterBuff === 'whet' ? 1 : 0);
+	if (handBoost) {
+		game.gameStart.push(function() {
+			rogueliteBoostHand(player_me, handBoost);
 			return true;
 		});
 	}
+	if (ctx.nextEncounterBuff === 'draw_plus_one') {
+		ctx.hudRules.push({ name: 'Boon: +1 card', desc: 'You drew 1 extra card.' });
+		game.gameStart.push(function() {
+			if (player_me.deck.cards.length > 0) player_me.deck.draw(player_me.hand);
+			return true;
+		});
+	}
+	if (ctx.nextEncounterBuff === 'clear_skies' && card_dict['spe_clear']) {
+		ctx.hudRules.push({ name: 'Boon: Clear Weather', desc: 'You start with a Clear Weather card in hand.' });
+		game.gameStart.push(function() {
+			player_me.hand.addCard(new Card('spe_clear', card_dict['spe_clear'], player_me));
+			return true;
+		});
+	}
+	updateRogueliteHUD();
 
 	tocar('game_opening', false);
 	game.startGame();
@@ -8699,24 +8783,18 @@ function applyRogueliteBossEffects(ctx) {
 		});
 	}
 
-	// ── marked_round: Boss gains +3 to all units on a random round ──
+	// ── marked_round: on one random round, every enemy unit played gains +3 ──
 	if (effectIds.indexOf('marked_round') !== -1) {
 		var markedRound = Math.floor(Math.random() * 3) + 1;
-		game.roundStart.push(function() {
-			if (game.roundCount !== markedRound) return false;
-			// Boost all opponent units currently on field by +3
-			for (var r = 0; r < 3; r++) {
-				board.row[r].cards.forEach(function(c) {
-					if (c.isUnit() && !c.hero) {
-						c.power += 3;
-						c.elem.querySelector('.card-power')?.classList.add('power-morale');
-					}
-				});
-				board.row[r].updateScore();
-			}
-			console.log('[BOSS EFFECT] marked_round: +3 to all opponent units on round', markedRound);
-			return true;
+		ctx.hudRules = (ctx.hudRules || []).map(function(r) {
+			return r.id === 'marked_round' ? { id: r.id, name: 'Marked Round: ' + markedRound, desc: r.desc } : r;
 		});
+		var markedHook = function() {
+			if (game.roundCount === markedRound) rogueliteBoostNewEnemyUnits('_rlMarked', 3);
+			return false;
+		};
+		game.turnStart.push(markedHook);
+		game.turnEnd.push(markedHook);
 	}
 
 	// ── champion: Boss leader ability triggers twice ──
@@ -8736,14 +8814,9 @@ function applyRogueliteBossEffects(ctx) {
 		});
 	}
 
-	// ── ransack: −3 rations on battle start ──
+	// ── ransack: −10 rations on battle start ──
 	if (effectIds.indexOf('ransack') !== -1) {
-		game.gameStart.push(function() {
-			rogueliteTotalRationDrain += 3;
-			updateRogueliteHUD();
-			console.log('[BOSS EFFECT] ransack: +3 ration drain');
-			return true;
-		});
+		rogueliteTotalRationDrain += 10;
 	}
 
 	// ── feast: +1 extra ration cost per card played ──

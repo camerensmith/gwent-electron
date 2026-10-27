@@ -3,7 +3,6 @@
 const { useState, useMemo, useEffect } = React;
 
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
-const shuffled = (arr) => arr.slice().sort(() => Math.random() - 0.5);
 
 function FactionSigil({ faction, size = 38 }) {
   const letter = faction.name === "Scoia'tael" ? "S" : faction.name[0];
@@ -51,7 +50,7 @@ function Embers({ count = 30 }) {
   );
 }
 
-function MainMenu({ onNavigate }) {
+function MainMenu({ onNavigate, savedRun }) {
   return (
     <div className="screen bg-stone bg-vignette filigree-corners" data-screen-label="01 Main Menu">
       <Embers count={28} />
@@ -72,6 +71,17 @@ function MainMenu({ onNavigate }) {
         </div>
 
         <div className="menu-buttons">
+          {savedRun && (
+            <button className="menu-btn primary continue"
+              onClick={() => { if(window.rlTocar) window.rlTocar('menu_buy'); onNavigate('continue'); }}
+              onMouseEnter={() => { if(window.rlTocar) window.rlTocar('card'); }}>
+              <span>
+                <span className="menu-glyph">&#10148;</span>Continue Run
+                <span className="menu-btn-sub">{(window.FACTIONS.find(f => f.id === savedRun.factionId) || {}).name} &middot; floor {(savedRun.currentFloor || 0) + 1} &middot; {savedRun.gold} gold</span>
+              </span>
+              <span className="arrow">&#9656;</span>
+            </button>
+          )}
           <button className="menu-btn primary"
             onClick={() => { if(window.rlTocar) window.rlTocar('menu_buy'); onNavigate('quick'); }}
             onMouseEnter={() => { if(window.rlTocar) window.rlTocar('card'); }}>
@@ -81,7 +91,7 @@ function MainMenu({ onNavigate }) {
           <button className="menu-btn primary"
             onClick={() => { if(window.rlTocar) window.rlTocar('menu_buy'); onNavigate('roguelite'); }}
             onMouseEnter={() => { if(window.rlTocar) window.rlTocar('card'); }}>
-            <span><span className="menu-glyph">&#10022;</span>Roguelite</span>
+            <span><span className="menu-glyph">&#10022;</span>{savedRun ? 'New Roguelite Run' : 'Roguelite'}</span>
             <span className="arrow">&#9656;</span>
           </button>
           <button className="menu-btn"
@@ -106,84 +116,55 @@ function MainMenu({ onNavigate }) {
 
         <div className="menu-footer">
           <span>v 4.0 &middot; The Roguelite Update</span>
-          <span style={{ letterSpacing: '0.16em' }}>&#9835; ON</span>
         </div>
       </div>
     </div>
   );
 }
 
-function generateStartingDeck(factionId) {
-  const pool = window.CARD_POOL[factionId] || [];
-  const deck = [];
-  const unitCount = 16 + Math.floor(Math.random() * 5);
-  for (let i = 0; i < unitCount; i++) {
-    const name = pool[Math.floor(Math.random() * pool.length)];
-    const isHero = Math.random() < 0.18;
-    const strength = isHero ? 5 + Math.floor(Math.random() * 11) : 1 + Math.floor(Math.random() * 10);
-    const row = rand(['Close', 'Ranged', 'Siege', 'Agile']);
-    deck.push({ name, strength, hero: isHero, row, type: 'unit', id: Math.random().toString(36).slice(2) });
-  }
-
-  // Faction-guaranteed nonunit cards always included in the starting deck.
-  const requiredSpecials = factionId === 'witchers'
-    ? [...window.WITCHER_SIGNS].sort(() => Math.random() - 0.5).slice(0, 4)
-    : [...(window.FACTION_REQUIRED_SPECIALS[factionId] || [])];
-
-  // Total nonunit card count varies between 0 and 10; required cards fill first.
-  const specialsPool = window.SPECIALS_POOL;
-  const totalSpecialTarget = Math.floor(Math.random() * 11);
-  const randomCount = Math.max(0, totalSpecialTarget - requiredSpecials.length);
-  const allSpecialNames = [...requiredSpecials];
-  for (let i = 0; i < randomCount; i++) {
-    allSpecialNames.push(specialsPool[Math.floor(Math.random() * specialsPool.length)]);
-  }
-
-  for (const name of allSpecialNames) {
-    deck.push({ name, strength: 0, hero: false, row: 'Special', type: 'special', id: Math.random().toString(36).slice(2) });
-  }
-
-  return deck.sort((a, b) => {
-    if (a.type !== b.type) return a.type === 'unit' ? -1 : 1;
-    if (a.hero !== b.hero) return a.hero ? -1 : 1;
-    return b.strength - a.strength;
-  });
-}
-
-function DeckPreview({ deck }) {
-  const total = deck.reduce((s, c) => s + c.strength, 0);
-  const heroes = deck.filter(c => c.hero).length;
-  const specials = deck.filter(c => c.type === 'special').length;
-  const units = deck.filter(c => c.type === 'unit').length;
+function DeckPreview({ deck, onHover }) {
+  const RL = window.RL;
+  const stats = RL.deckStats(deck);
   return (
     <div className="deck-preview-wrap">
       <div className="deck-stat-row">
-        <div className="deck-stat"><div className="value">{deck.length}</div><div className="label">Cards</div></div>
-        <div className="deck-stat"><div className="value">{units}</div><div className="label">Units</div></div>
-        <div className="deck-stat"><div className="value">{heroes}</div><div className="label">Heroes</div></div>
-        <div className="deck-stat"><div className="value">{total}</div><div className="label">Strength</div></div>
+        <div className="deck-stat"><div className="value">{stats.cards}</div><div className="label">Cards</div></div>
+        <div className="deck-stat"><div className="value">{stats.units}</div><div className="label">Units</div></div>
+        <div className="deck-stat"><div className="value">{stats.specials}</div><div className="label">Specials</div></div>
+        <div className="deck-stat"><div className="value">{stats.strength}</div><div className="label">Strength</div></div>
       </div>
       <div className="deck-list">
-        {deck.map(c => (
-          <div key={c.id} className={`deck-card-row ${c.hero ? 'is-hero' : ''} ${c.type === 'special' ? 'is-special' : ''}`}>
-            <div className="dc-strength">{c.type === 'special' ? '\u2726' : c.strength}</div>
-            <div className="dc-name">{c.name}</div>
-            <div className="dc-row">{c.row}</div>
-          </div>
-        ))}
+        {deck.map(e => {
+          const info = RL.cardInfo(e.key);
+          if (!info) return null;
+          return (
+            <div key={e.uid}
+              className={`deck-card-row ${info.hero ? 'is-hero' : ''} ${info.special ? 'is-special' : ''}`}
+              onMouseEnter={onHover ? () => onHover(e) : undefined}
+              onMouseLeave={onHover ? () => onHover(null) : undefined}>
+              <div className="dc-strength">{info.special ? '✦' : RL.entryStrength(e)}</div>
+              <div className="dc-name">{info.name}</div>
+              <div className="dc-row">{info.rowLabel}</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function RunSetup({ mode, onBack, onBegin }) {
+function RunSetup({ onBack, onBegin }) {
+  const RL = window.RL;
   const [factionId, setFactionId] = useState(window.FACTIONS[0].id);
   const [leaderIdx, setLeaderIdx] = useState(0);
-  const [deckSeed, setDeckSeed] = useState(0);
+  const [variant, setVariant] = useState(0);
   const [equipped, setEquipped] = useState([]);
+  const [hovered, setHovered] = useState(null);
 
   const faction = window.FACTIONS.find(f => f.id === factionId);
-  const deck = useMemo(() => generateStartingDeck(factionId), [factionId, deckSeed]);
+  const deck = useMemo(() => RL.startingDeck(factionId, variant), [factionId, variant]);
+  const variants = RL.variantCount(factionId);
+  const startRations = RL.START_RATIONS + (equipped.some(i => i.id === 'quartermaster') ? 20 : 0);
 
   const toggleItem = (item) => {
     setEquipped(prev => {
@@ -202,13 +183,13 @@ function RunSetup({ mode, onBack, onBegin }) {
 
       <div className="setup-root">
         <div className="setup-col">
-          <div className="setup-header"><h2>Choose Your Banner</h2><span className="step">1 of 2</span></div>
+          <div className="setup-header"><h2>1 &middot; Choose a Faction</h2></div>
           <div className="faction-grid">
             {window.FACTIONS.map(f => (
               <div
                 key={f.id}
                 className={`faction-tile ${f.id === factionId ? 'active' : ''}`}
-                onClick={() => { setFactionId(f.id); setLeaderIdx(0); setDeckSeed(s => s + 1); }}
+                onClick={() => { setFactionId(f.id); setLeaderIdx(0); setVariant(0); }}
               >
                 <FactionSigil faction={f} size={38} />
                 <div>
@@ -221,25 +202,9 @@ function RunSetup({ mode, onBack, onBegin }) {
         </div>
 
         <div className="setup-col">
-          <div className="setup-header"><h2>Banner &amp; Leader</h2><span className="step">{faction.name}</span></div>
+          <div className="setup-header"><h2>2 &middot; Choose a Leader</h2><span className="step">{faction.name}</span></div>
           <div className="faction-detail">
-            <div className="faction-banner">
-              <FactionSigil faction={faction} size={82} />
-              <div>
-                <div className="fb-name-row">
-                  <h3 className="fb-name">{faction.name}</h3>
-                  <img
-                    className="faction-shield"
-                    src={`images/icons/deck_shield_${faction.id}.png`}
-                    alt={`${faction.name} shield`}
-                  />
-                </div>
-                <div className="fb-motto">{faction.motto}</div>
-              </div>
-            </div>
-
             <div className="leader-pick">
-              <h3>Choose a Leader &mdash; {faction.leaders.length} available</h3>
               <div className="leader-scroll">
                 <div className="leader-row">
                   {faction.leaders.map((ldr, i) => (
@@ -258,7 +223,7 @@ function RunSetup({ mode, onBack, onBegin }) {
                   ))}
                 </div>
               </div>
-              {faction.leaders[leaderIdx] && faction.leaders[leaderIdx].ability && window.LEADER_ABILITIES[faction.leaders[leaderIdx].ability] && (
+              {faction.leaders[leaderIdx] && window.LEADER_ABILITIES[faction.leaders[leaderIdx].ability] && (
                 <div className="leader-ability">
                   <div className="la-label">Leader Ability</div>
                   <div className="la-text">{window.LEADER_ABILITIES[faction.leaders[leaderIdx].ability]}</div>
@@ -270,23 +235,39 @@ function RunSetup({ mode, onBack, onBegin }) {
               <div className="fp-label">Faction Passive</div>
               <div className="fp-text">{window.FACTION_PASSIVES[faction.id]}</div>
             </div>
+
+            <div className="setup-start-card">
+              <div className="fp-label">You start with</div>
+              <div className="ssc-row">
+                <div><b>{RL.START_GOLD}</b> gold</div>
+                <div><b>{startRations}</b> rations</div>
+                <div>march cost <b>{RL.marchCost(deck, equipped)}</b> / step</div>
+              </div>
+              <div className="ssc-note">
+                Your starting deck is your faction's deck without its heroes or best units.
+                Win battles to earn gold, then buy stronger cards from merchants.
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="setup-col">
           <div className="setup-header">
-            <h2>Starting Hand of Fate</h2>
-            <span className="step">2 of 2</span>
+            <h2>3 &middot; Starting Deck</h2>
+            {variants > 1 && <span className="step">version {(variant % variants) + 1} of {variants}</span>}
           </div>
-          <DeckPreview deck={deck} />
-          <button className="gw-btn compact ghost" style={{ marginTop: 12 }} onClick={() => setDeckSeed(s => s + 1)}>
-            &#8635; Reroll Starting Deck
-          </button>
+          <DeckPreview deck={deck} onHover={setHovered} />
+          {hovered && <div className="setup-hover-detail"><window.CardDetail entry={hovered} extra={{ items: equipped }} /></div>}
+          {variants > 1 && (
+            <button className="gw-btn compact ghost" style={{ marginTop: 12 }} onClick={() => setVariant(v => v + 1)}>
+              &#8635; Try Another Starting Deck
+            </button>
+          )}
         </div>
 
         <div className="setup-items-strip">
           <div className="sis-header">
-            <span className="sis-eyebrow">PROVISIONS &middot; Equip up to 2 items for this run</span>
+            <span className="sis-eyebrow">4 &middot; Provisions: pick up to 2 bonuses for this run</span>
             <span className="sis-count">{equipped.length} / 2</span>
           </div>
           <div className="sis-row">
@@ -313,13 +294,13 @@ function RunSetup({ mode, onBack, onBegin }) {
 
         <div className="setup-footer-grid">
           <div className="left">
-            <span className="flavour" style={{ fontSize: 16 }}>
+            <span className="flavour" style={{ fontSize: 18 }}>
               "The road is long. Choose your colours well."
             </span>
           </div>
           <button
             className="gw-btn"
-            onClick={() => onBegin({ factionId, leader: faction.leaders[leaderIdx], deck, mode: 'roguelite', equipped })}
+            onClick={() => onBegin({ factionId, leader: faction.leaders[leaderIdx], deck, equipped, variant })}
           >
             &#9876; Begin Run
           </button>
@@ -329,62 +310,77 @@ function RunSetup({ mode, onBack, onBegin }) {
   );
 }
 
+// Camp: choose ONE — rest (rations) or drill (one unit gets +1 strength for the run).
 function RestArea({ run, onLeave }) {
+  const RL = window.RL;
   const flavour = useMemo(() => rand(window.REST_LINES), []);
   const items = run.equipped || [];
-  const hasForagers = items.some(i => i.id === 'foragers_eye');
-  const rationsGained = hasForagers ? 28 : 20;
+  const gain = RL.CAMP_RATIONS + (RL.hasItem(items, 'foragers_eye') ? 10 : 0);
+  const actualGain = Math.min(run.maxRations, run.rations + gain) - run.rations;
+  const [mode, setMode] = useState(null); // null | 'drill'
+  const [hovered, setHovered] = useState(null);
+  const drillable = useMemo(
+    () => RL.sortDeck(run.deck).filter(e => { const i = RL.cardInfo(e.key); return i && !i.special && !i.hero; }),
+    [run.deck]
+  );
+
+  const rest = () => { window.rlSfx('menu_buy'); onLeave({ kind: 'rest', gain: actualGain }); };
+  const drill = (entry) => { window.rlSfx('menu_buy'); onLeave({ kind: 'drill', uid: entry.uid }); };
+
   return (
     <div className="screen bg-stone bg-vignette" data-screen-label="06 Rest Area">
       <div className="topnav">
-        <button className="back-btn" onClick={onLeave} title="Back to map">&#9666;</button>
         <span className="crumb">Roguelite &middot; Camp</span>
       </div>
 
-      <div className="rest-root">
-        <div className="rest-inner">
-          <h1 className="rest-title">A Quiet Camp</h1>
-          <div className="campfire">
-            <div className="flame f1" />
-            <div className="flame f2" />
-            <div className="flame f3" />
-          </div>
-          <p className="rest-flavour">"{flavour}"</p>
+      {mode !== 'drill' ? (
+        <div className="rest-root">
+          <div className="rest-inner">
+            <h1 className="rest-title">A Quiet Camp</h1>
+            <div className="campfire">
+              <div className="flame f1" />
+              <div className="flame f2" />
+              <div className="flame f3" />
+            </div>
+            <p className="rest-flavour">"{flavour}"</p>
+            <div className="rest-choose">Choose one</div>
 
-          <div className="rest-rations-banner">
-            <span className="rrb-glyph">&#9672;</span>
-            <div>
-              <div className="rrb-amt">+{rationsGained}</div>
-              <div className="rrb-label">Rations restored</div>
-              {hasForagers && <div className="rrb-bonus">Forager's Eye &middot; +2</div>}
-            </div>
-            <div className="rrb-stock">
-              <div className="rrb-stock-amt">{run.rations}</div>
-              <div className="rrb-stock-label">of {run.maxRations} carried</div>
-            </div>
-          </div>
-
-          <div className="rest-options">
-            <div className="rest-option" onClick={onLeave}>
-              <span className="ro-glyph">&#9623;</span>
-              <div className="ro-name">Rest a While</div>
-              <div className="ro-desc">You sit, the fire crackles, the road waits. Rations have been restored.</div>
-            </div>
-            <div className="rest-option disabled" title="Not yet implemented">
-              <span className="ro-glyph">&#9874;</span>
-              <div className="ro-name">Sharpen a Card</div>
-              <div className="ro-desc">Coming later &mdash; upgrade one card in your run deck.</div>
-            </div>
-            <div className="rest-option disabled" title="Not yet implemented">
-              <span className="ro-glyph">&#10022;</span>
-              <div className="ro-name">Remove a Card</div>
-              <div className="ro-desc">Coming later &mdash; purge one card from your run deck.</div>
+            <div className="rest-options">
+              <div className="rest-option" onClick={rest}>
+                <span className="ro-glyph">&#9672;</span>
+                <div className="ro-name">Rest</div>
+                <div className="ro-desc">
+                  Restore <b>+{actualGain}</b> rations ({run.rations} &rarr; {run.rations + actualGain} of {run.maxRations}).
+                  {actualGain < gain && ' Your packs are nearly full.'}
+                </div>
+              </div>
+              <div className={`rest-option ${drillable.length ? '' : 'disabled'}`} onClick={drillable.length ? () => setMode('drill') : undefined}>
+                <span className="ro-glyph">&#9874;</span>
+                <div className="ro-name">Drill</div>
+                <div className="ro-desc">Pick one unit. It gains <b>+1 strength</b> for the rest of the run. Heroes can't be drilled.</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="drill-root">
+          <div className="drill-head">
+            <div>
+              <div className="rest-title" style={{ fontSize: 40 }}>Drill a Unit</div>
+              <div className="flavour">Click the unit that will train tonight. It keeps +1 strength for the rest of the run.</div>
+            </div>
+            <button className="gw-btn compact ghost" onClick={() => setMode(null)}>&#9666; Back</button>
+          </div>
+          <div className="drill-body">
+            <div className="rdv-grid">
+              {drillable.map(e => <window.CardTile key={e.uid} entry={e} size="sm" onHover={setHovered} onClick={() => drill(e)} />)}
+            </div>
+            <div className="rdv-side"><window.CardDetail entry={hovered} extra={{ items }} /></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-Object.assign(window, { MainMenu, RunSetup, RestArea, FactionSigil, generateStartingDeck });
+Object.assign(window, { MainMenu, RunSetup, RestArea, FactionSigil });

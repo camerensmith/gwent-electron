@@ -1,143 +1,67 @@
 // ─── Shop screen ───
 
-const { useState: useStateShop, useMemo: useMemoShop, useCallback: useCallbackShop } = React;
+const { useState: useStateShop, useMemo: useMemoShop } = React;
 
-function priceFor(card) {
-  if (card.type === 'special') return 2;
-  if (card.hero) return 3;
-  if (card.strength >= 8) return 3;
-  if (card.strength >= 4) return 2;
-  return 1;
-}
-
-function generateWares(factionId, seed, bonus) {
-  seed = seed === undefined ? Math.random() : seed;
-  bonus = bonus || 0;
-  const pool = window.CARD_POOL[factionId] || [];
-  const specials = window.SPECIALS_POOL;
-  let s = Math.floor(seed * 7919) >>> 0;
-  const rng = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-  const count = 3 + Math.floor(rng() * 3) + bonus;
-  const wares = [];
-  for (let i = 0; i < count; i++) {
-    const isSpecial = rng() < 0.18;
-    if (isSpecial) {
-      wares.push({
-        id: 'w' + i,
-        name: specials[Math.floor(rng() * specials.length)],
-        strength: 0, hero: false, row: 'Special', type: 'special',
-      });
-    } else {
-      const isHero = rng() < 0.16;
-      const strength = isHero ? 5 + Math.floor(rng() * 11) : 1 + Math.floor(rng() * 10);
-      wares.push({
-        id: 'w' + i,
-        name: pool[Math.floor(rng() * pool.length)],
-        strength, hero: isHero,
-        row: ['Close', 'Ranged', 'Siege', 'Agile'][Math.floor(rng() * 4)],
-        type: 'unit',
-      });
-    }
-  }
-  return wares;
-}
-
-function CardRow({ card, action, actionLabel, actionDisabled, price, sellMode, onHover, onHoverOut }) {
-  return (
-    <div
-      className={`ware ${card.hero ? 'is-hero' : ''} ${card.type === 'special' ? 'is-special' : ''} ${actionDisabled ? 'unaffordable' : ''}`}
-      onMouseEnter={onHover ? () => onHover(card) : undefined}
-      onMouseLeave={onHoverOut || undefined}
-    >
-      <div className="ware-strength">{card.type === 'special' ? '\u2726' : card.strength}</div>
-      <div className="ware-info">
-        <div className="ware-name">{card.name}{card.hero ? ' \u25c6' : ''}</div>
-        <div className="ware-row">
-          {card.row}{card.hero ? ' \u00b7 Hero' : card.type === 'special' ? ' \u00b7 Special' : ''}
-        </div>
-      </div>
-      <div className="ware-price">
-        <span className="coin" />
-        {price}
-      </div>
-      <button
-        className={`ware-action ${sellMode ? 'sell' : ''}`}
-        onClick={actionDisabled ? null : action}
-        disabled={actionDisabled}
-      >
-        {actionLabel}
-      </button>
-    </div>
-  );
-}
+// Selling stops here so a battle never starts with too few cards to draw a hand.
+const MIN_DECK = 10;
 
 function Shop({ run, onLeave, onTransact }) {
+  const RL = window.RL;
   const faction = window.FACTIONS.find(f => f.id === run.factionId);
   const items = run.equipped || [];
-  const hasBlackMarket = items.some(i => i.id === 'black_market');
-  const merchantDiscount = useMemoShop(() => {
-    return items.some(i => i.id === 'travelling_merch') && Math.random() < 0.3;
-  }, []);
-  const [wares] = useStateShop(() => generateWares(run.factionId, run.shopSeed || Math.random(), hasBlackMarket ? 2 : 0));
+  const hasBlackMarket = RL.hasItem(items, 'black_market');
+  const [merchantDiscount] = useStateShop(() => RL.hasItem(items, 'travelling_merch') && Math.random() < 0.3);
+  const [wares] = useStateShop(() => RL.generateWares(run.factionId, run.shopSeed || Math.random(), hasBlackMarket ? 2 : 0));
   const [purchased, setPurchased] = useStateShop({});
-  const [soldIds, setSoldIds] = useStateShop({});
   const [gold, setGold] = useStateShop(run.gold);
   const [localDeck, setLocalDeck] = useStateShop(run.deck);
-  const [hoveredCard, setHoveredCard] = useStateShop(null);
+  const [hovered, setHovered] = useStateShop(null);
 
-  const handleHover = useCallbackShop((card) => setHoveredCard(card), []);
-  const handleHoverOut = useCallbackShop(() => setHoveredCard(null), []);
+  const sortedDeck = useMemoShop(() => RL.sortDeck(localDeck), [localDeck]);
+  const marchNow = RL.marchCost(localDeck, items);
 
-  const adjustedPrice = (card) => {
-    const base = priceFor(card);
+  const priceOf = (key) => {
+    const base = RL.priceFor(key);
     return merchantDiscount ? Math.max(1, base - 1) : base;
   };
+  const marchIfAdded = (key) => RL.marchCost([...localDeck, { key }], items);
 
   const buy = (w) => {
-    const p = adjustedPrice(w);
+    const p = priceOf(w.key);
     if (gold < p || purchased[w.id]) return;
+    window.rlSfx('menu_buy');
     setGold(g => g - p);
     setPurchased(o => ({ ...o, [w.id]: true }));
-    setLocalDeck(d => [...d, { ...w, id: 'b' + Math.random().toString(36).slice(2) }]);
-    onTransact({ type: 'buy', card: w, price: p });
+    setLocalDeck(d => [...d, RL.newEntry(w.key)]);
+    onTransact({ type: 'buy' });
   };
-  const sell = (card) => {
-    if (soldIds[card.id]) return;
-    const p = priceFor(card);
-    setGold(g => g + p);
-    setSoldIds(o => ({ ...o, [card.id]: true }));
-    setLocalDeck(d => d.filter(c => c.id !== card.id));
-    onTransact({ type: 'sell', card, price: p });
+  const canSell = localDeck.length > MIN_DECK;
+  const sell = (entry) => {
+    if (!canSell) return;
+    window.rlSfx('menu_buy');
+    setGold(g => g + RL.sellValue(entry.key));
+    setLocalDeck(d => d.filter(c => c.uid !== entry.uid));
+    if (hovered && hovered.uid === entry.uid) setHovered(null);
+    onTransact({ type: 'sell' });
   };
 
   const merchantLine = window.MERCHANT_LINES[run.factionId] || '"Coin first, friend. Always coin first."';
+  const leave = () => onLeave({ gold, deck: localDeck });
 
   return (
     <div className="screen bg-table bg-vignette" data-screen-label="05 Shop">
       <div className="topnav">
-        <button className="back-btn" onClick={() => onLeave({ gold, deck: localDeck })} title="Leave shop">&#9666;</button>
+        <button className="back-btn" onClick={leave} title="Leave shop">&#9666;</button>
         <span className="crumb">Roguelite &middot; Merchant</span>
       </div>
 
-      <div className="shop-root">
-        <div className="shop-header">
-          <div className="shop-card-viewer">
-            {hoveredCard && window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[hoveredCard.name]
-              ? <img
-                  className="shop-card-viewer-img"
-                  src={window.CARD_IMAGE_MAP[hoveredCard.name]}
-                  alt={hoveredCard.name}
-                />
-              : <div className="shop-card-viewer-empty" />
-            }
-          </div>
+      <div className="shop2-root">
+        <div className="shop2-head">
           <div>
             <div className="shop-title">The Merchant's Tent</div>
-            <div className="shop-merchant" style={{ justifyContent: 'center', marginTop: 6 }}>
-              {merchantLine}
-            </div>
+            <div className="flavour shop2-line">{merchantLine}</div>
           </div>
-          <div className="shop-merchant">
+          <div className="shop2-purse">
             <div className="shop-purse">
               <div className="purse-coin">G</div>
               <div>
@@ -145,36 +69,37 @@ function Shop({ run, onLeave, onTransact }) {
                 <div className="label">Gold</div>
               </div>
             </div>
+            <div className="shop2-purse-note">
+              Gold you spend here is gold you can't lose in battle.<br />
+              Marching costs {marchNow} rations per step with this deck.
+            </div>
           </div>
         </div>
 
-        <div className="shop-body">
-          <div className="shop-col">
-            <div className="shop-col-header">
-              <div>
-                <div className="shop-col-title">Merchant's Wares</div>
-                <div className="shop-col-sub">
-                  {faction.name} requisition &middot; {wares.length} on offer
-                  {hasBlackMarket && <span style={{color:'var(--gold)', marginLeft: 8}}>&middot; Black Market</span>}
-                  {merchantDiscount && <span style={{color:'var(--rest)', marginLeft: 8}}>&middot; Travelling Merchant: &minus;1g</span>}
-                </div>
-              </div>
-              <div className="shop-col-sub" style={{ color: 'var(--tan)' }}>1&ndash;3 gold</div>
+        <div className="shop2-body">
+          <div className="shop2-wares">
+            <div className="shop-col-title">
+              For sale &middot; {faction.name} and neutral cards
+              {hasBlackMarket && <span className="shop2-tag">Black Market +2</span>}
+              {merchantDiscount && <span className="shop2-tag good">Travelling Merchant: &minus;1 gold</span>}
             </div>
-            <div className="wares-list">
+            <div className="shop2-ware-grid">
               {wares.map(w => {
-                const p = adjustedPrice(w);
+                const p = priceOf(w.key);
+                const sold = purchased[w.id];
+                const afford = gold >= p;
+                const newMarch = marchIfAdded(w.key);
                 return (
-                  <div key={w.id} className={purchased[w.id] ? 'purchased' : ''}>
-                    <CardRow
-                      card={w}
-                      price={p}
-                      action={() => buy(w)}
-                      actionLabel={purchased[w.id] ? '\u2713 Sold' : 'Buy'}
-                      actionDisabled={gold < p}
-                      onHover={handleHover}
-                      onHoverOut={handleHoverOut}
-                    />
+                  <div key={w.id} className={`shop2-ware ${sold ? 'sold' : ''}`}>
+                    <window.CardTile entry={{ key: w.key }} size="md" onHover={setHovered} dimmed={sold} />
+                    <button
+                      className={`gw-btn compact shop2-buy ${!afford && !sold ? 'unaffordable' : ''}`}
+                      disabled={sold || !afford}
+                      onClick={() => buy(w)}
+                    >
+                      {sold ? 'Bought' : <>Buy &middot; {p}g</>}
+                    </button>
+                    {!sold && newMarch > marchNow && <div className="shop2-warn">March cost {marchNow} &rarr; {newMarch}</div>}
                   </div>
                 );
               })}
@@ -182,38 +107,37 @@ function Shop({ run, onLeave, onTransact }) {
             </div>
           </div>
 
-          <div className="shop-col">
-            <div className="shop-col-header">
-              <div>
-                <div className="shop-col-title">Your Library</div>
-                <div className="shop-col-sub">Sell from your run deck</div>
-              </div>
-              <div className="shop-col-sub" style={{ color: 'var(--tan)' }}>{localDeck.length} cards</div>
-            </div>
-            <div className="wares-list">
-              {localDeck.map(c => (
-                <div key={c.id} className={soldIds[c.id] ? 'purchased' : ''}>
-                  <CardRow
-                    card={c}
-                    price={priceFor(c)}
-                    action={() => sell(c)}
-                    actionLabel={soldIds[c.id] ? '\u2713 Sold' : 'Sell'}
-                    sellMode
-                    onHover={handleHover}
-                    onHoverOut={handleHoverOut}
-                  />
-                </div>
-              ))}
-              {localDeck.length === 0 && <div className="shop-empty">Your library is empty. A lean traveller, indeed.</div>}
+          <div className="shop2-detail">
+            <window.CardDetail entry={hovered} extra={{ items }} />
+          </div>
+
+          <div className="shop2-deck">
+            <div className="shop-col-title">Your deck &middot; {localDeck.length} cards</div>
+            {!canSell && <div className="shop2-warn">You need at least {MIN_DECK} cards. You can't sell any more.</div>}
+            <div className="shop2-deck-list">
+              {sortedDeck.map(e => {
+                const info = RL.cardInfo(e.key);
+                if (!info) return null;
+                return (
+                  <div
+                    key={e.uid}
+                    className={`deck-card-row ${info.hero ? 'is-hero' : ''} ${info.special ? 'is-special' : ''}`}
+                    onMouseEnter={() => setHovered(e)}
+                    onMouseLeave={() => setHovered(null)}
+                  >
+                    <div className="dc-strength">{info.special ? '✦' : RL.entryStrength(e)}</div>
+                    <div className="dc-name">{info.name}{e.bonus > 0 ? <span className="dc-bonus"> +{e.bonus}</span> : null}</div>
+                    <button className="ware-action sell" disabled={!canSell} onClick={() => sell(e)}>Sell +{RL.sellValue(e.key)}g</button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
 
         <div className="shop-footer">
           <div className="shop-flavour">"The road is long. Coin shortens it, just so."</div>
-          <button className="gw-btn" onClick={() => onLeave({ gold, deck: localDeck })}>
-            &#10230; Leave the Tent
-          </button>
+          <button className="gw-btn" onClick={leave}>&#10230; Leave the Tent</button>
         </div>
       </div>
     </div>
