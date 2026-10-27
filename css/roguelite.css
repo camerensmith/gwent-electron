@@ -2,7 +2,13 @@
    Base font: Arial Narrow (existing app). Display font: Cinzel for fantasy chrome.
    All sizing in vw so the 1920×1080 stage scales without breaking. */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=IM+Fell+English:ital@0;1&display=swap');
+/* Fonts are bundled in css/fonts (SIL Open Font License, see OFL-*.txt) so the roguelite works offline. */
+@font-face { font-family: 'Cinzel'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/cinzel-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Cinzel'; font-style: normal; font-weight: 500; font-display: swap; src: url('fonts/cinzel-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Cinzel'; font-style: normal; font-weight: 600; font-display: swap; src: url('fonts/cinzel-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Cinzel'; font-style: normal; font-weight: 700; font-display: swap; src: url('fonts/cinzel-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'IM Fell English'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/im-fell-english-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'IM Fell English'; font-style: italic; font-weight: 400; font-display: swap; src: url('fonts/im-fell-english-latin-400-italic.woff2') format('woff2'); }
 
 :root {
   --gold: #ffd24d;
