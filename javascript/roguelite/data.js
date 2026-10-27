@@ -1,5 +1,5 @@
-// Static data for roguelite mode — IDs match Gwent Electron's javascript/factions.js + cards.js.
-// Leader entries carry the real internal `card_id` from cards.js so wiring up later is one-line.
+// Static data for roguelite mode: factions, leaders, items, events and flavour text.
+// Cards themselves come from cards.js via engine.js.
 
 window.FACTIONS = [
   { id: 'realms',     name: 'Northern Realms', motto: 'Steel and standards.',           hue: 38,
@@ -89,24 +89,6 @@ window.FACTIONS = [
     ] }
 ];
 
-// Sample card pool per faction (placeholder names — your real card data lives in cards.js).
-window.CARD_POOL = {
-  realms:    ['Foot Soldier', 'Crinfrid Reaver', 'Siege Engineer', 'Blue Stripes Commando', 'Trebuchet', 'Catapult', 'Field Medic', 'Heavy Infantry', 'Banner-Knight', 'Pikeman', 'Dun Banner Cavalry', 'Ballista', 'Kaedweni Sergeant'],
-  nilfgaard: ['Black Infantry', 'Impera Brigade', 'Vrihedd Officer', 'Spy of Cintra', 'Letho of Gulet', 'Albrich', 'Stefan Skellen', 'Etolian Conscript', 'Spotter', 'Vattier de Rideaux', 'Cynthia', 'Nausicaa Brigade'],
-  monsters:  ['Arachas', 'Endrega', 'Nekker', 'Ghoul', 'Drowner', 'Wyvern', 'Werewolf', 'Fiend', 'Foglet', 'Forktail', 'Katakan', 'Bruxa', 'Frightener'],
-  scoiatael: ['Elven Skirmisher', 'Dwarven Skirmisher', 'Vrihedd Brigade', 'Havekar Healer', 'Dol Blathanna Archer', 'Filavandrel', 'Riordain', 'Yaevinn', 'Toruviel', 'Mahakam Defender'],
-  skellige:  ['Clan an Craite Warrior', 'Drummond Shieldmaiden', 'Dimun Pirate', 'Tuirseach Skirmisher', 'Hjalmar', 'Cerys', 'Madman Lugos', 'Olaf', 'Light Longship', 'Heavy Longship', 'War Longship'],
-  novigrad:  ['City Watchman', 'Vigilante', 'Hawker', 'Whoreson', 'Cleaver', 'Bedlam', 'Brawler', 'Cutpurse', 'Yennefer', 'Triss', 'Cyprian Wiley', 'Dudu'],
-  witchers:  ['Wolf Apprentice', 'Cat Adept', 'Griffin Squire', 'Bear Tracker', 'Viper Initiate', 'Sign: Igni', 'Sign: Aard', 'Sign: Quen', 'Sign: Yrden', 'Sign: Axii', 'Geralt', 'Vesemir'],
-  toussaint: ['Knight-Errant', 'Vintner', 'Sommelier', 'Hunger Unit', 'Beauclair Guard', 'Detlaff Acolyte', 'Bruxa', 'Alp', 'Garkain', 'Ekimmara', 'Regis', 'Orianna'],
-  lyria_rivia: ['Lyrian Pikeman', 'Rivian Halberdier', 'Knighthood', 'Mounted Knight', 'Court Sorcerer', 'Standard-Bearer', 'Field Surgeon', 'Crossbowman', 'Light Cavalry', 'Wagenburg', 'Royal Guard', 'Gascon'],
-  syndicate: ['Enforcer', 'Bookkeeper', 'Thief', 'Cutthroat', 'Bagman', 'Fixer', 'Boss', 'Smuggler', 'Witch Hunter', 'Executioner', 'Tax Collector', 'Coin Master'],
-  zerrikania:['Serpent Worshipper', 'Hyena Pack', 'Leopard Stalker', 'Sun Acolyte', 'Sacred Dragon', 'Snake Charmer', 'Fire Dancer', 'Oasis Guard', 'Spice Trader', 'Painted Lion'],
-  ofir:      ['Sand Skirmisher', 'Camel Lancer', 'Dune Reader', 'Spice Caravan', 'Adaptive Scout', 'Mosaic Archer', 'Falconer', 'Mystic', 'Bedouin Raider', 'Runewright', 'Runestone', 'Slave Trader']
-};
-
-window.SPECIALS_POOL = ['Decoy', 'Scorch', "Commander's Horn", 'Biting Frost', 'Impenetrable Fog', 'Torrential Rain', 'Clear Skies', 'Cull'];
-
 // Nonunit cards that are always guaranteed in a faction's starting deck.
 window.FACTION_REQUIRED_SPECIALS = {
   toussaint:  ['Nightfall'],
@@ -188,148 +170,68 @@ window.LEADER_ABILITIES = {
   ofir_grand_vizier_saheem:  'Once per game, you may look at the top 3 cards of your opponent\'s deck, add one to your hand, and discard one.',
 };
 
-// Modifier templates — used ONLY by Boss encounters.
-window.MODIFIERS = [
-  { id: 'persistent_rain', name: 'A Sky That Will Not Clear', desc: 'Torrential Rain on Ranged Combat for the entire battle. Clear Skies cannot lift it.',           sign: 'minus' },
-  { id: 'frost_start',     name: 'A Bitter Beginning',         desc: 'The battle opens with Biting Frost on Close Combat. Weather may be cleared as normal.',       sign: 'minus' },
-  { id: 'close_swarm',     name: 'Iron in the Vanguard',       desc: 'Enemy Close Combat units gain +2 strength.',                                                   sign: 'minus' },
-  { id: 'no_specials',     name: 'A Silent Council',           desc: 'No Special cards may be played by either side this battle.',                                   sign: 'minus' },
-  { id: 'no_heroes',       name: 'Heroes Forsworn',            desc: 'Hero immunity is suspended — Heroes may be killed by abilities this battle.',                  sign: 'minus' },
-  { id: 'tempest',         name: 'The Skellige Tempest',       desc: 'Ranged and Siege rows are reduced to 1 strength per unit for the entire battle.',             sign: 'minus' },
-  { id: 'fog_persistent',  name: 'A Fog That Lingers',         desc: 'Impenetrable Fog on Ranged Combat. Clear Skies cannot lift it.',                                sign: 'minus' }
-];
-
-// Boss-only mechanical effects.
+// Boss-only mechanical effects. Implemented in gwent.js applyRogueliteBossEffects().
 window.BOSS_EFFECTS = [
-  { id: 'burn_deck',    group: 'attrition', name: 'Burn the Stores',  desc: 'On battle start, 1 random Unit is burnt from your deck (not hand).' },
+  { id: 'burn_deck',    group: 'attrition', name: 'Burn the Stores',  desc: 'At the start of the battle, 1 random unit is burnt from your deck.' },
   { id: 'decimation',   group: 'attrition', name: 'Decimation',       desc: 'At the start of round 3, 3 random cards are removed from your deck.' },
-  { id: 'marked_round', group: 'power',     name: 'A Marked Round',   desc: 'The boss gains +3 strength to all units on a random round (revealed at round start).' },
+  { id: 'marked_round', group: 'power',     name: 'A Marked Round',   desc: 'On one random round, every enemy unit played gains +3 strength. The battle HUD shows which round.' },
   { id: 'champion',     name: 'Champion of the Realm',                desc: "The boss's Leader ability triggers twice this battle." },
-  { id: 'ransack',      group: 'rations',   name: 'Ransack',          desc: 'The boss plunders your supplies. \u201310 Rations on battle start.' },
-  { id: 'feast',        group: 'rations',   name: 'A Feast Demanded', desc: 'You pay 3 extra Rations each turn this battle.' },
-  { id: 'persistent_rain', group: 'weather', name: 'A Sky That Will Not Clear', desc: 'Persistent Torrential Rain on Ranged \u2014 Clear Skies cannot lift it.' },
-  { id: 'frost_start',     group: 'weather', name: 'A Bitter Beginning',         desc: 'Battle opens with Biting Frost on Close. Clearable as normal.' },
-  { id: 'tempest',         group: 'weather', name: 'The Skellige Tempest',       desc: 'Ranged & Siege reduced to 1/unit for the whole battle.' },
-  { id: 'no_specials',     group: 'rules',   name: 'A Silent Council',           desc: 'No Special cards may be played by either side.' },
-  { id: 'no_heroes',       group: 'rules',   name: 'Heroes Forsworn',            desc: 'Hero immunity is suspended this battle.' },
-  { id: 'uroboros',        group: 'deck_manipulation', name: 'Mark of Uroboros',  desc: 'From the start of play, when any player draws a card from a deck, another card (or equal amount to the cards drawn) are discarded from the deck.' },
-  { id: 'dampening',       group: 'deck_manipulation', name: 'Dampening',         desc: 'Both players nonunit cards are immediately discarded from their decks at the start of play.' },
-  { id: 'twist_of_fate',   group: 'twist',   name: 'Twist of Fate',              desc: 'On turn 3, both players graveyards and draw decks are swapped.' },
-  { id: 'banishment',      group: 'attrition', name: 'Banishment',               desc: 'At the start of this battle, a random unit is permanently removed from your deck.' },
-  { id: 'warp',            group: 'twist',   name: 'Warp',                        desc: 'At the start of turn 2, each player may choose a card from their deck and play it immediately.' },
-  { id: 'landfall',        group: 'twist',   name: 'Landfall',                    desc: "At the start of turn 3, both players' decks are immediately moved to their graveyards." },
-  { id: 'sorcery',         group: 'twist',   name: 'Sorcery',                     desc: 'At the start of turn 3, a random card is played from your and your opponents decks, starting with you.' },
-  { id: 'gluttony',        group: 'draw',    name: 'Gluttony',                    desc: 'Both players get +1 cards to draw, and they may discard an additional card when redrawing.' }
+  { id: 'ransack',      group: 'rations',   name: 'Ransack',          desc: 'The boss plunders your supplies: −10 Rations, win or lose.' },
+  { id: 'feast',        group: 'rations',   name: 'A Feast Demanded', desc: 'Every card you play this battle costs 1 Ration.' },
+  { id: 'persistent_rain', group: 'weather', name: 'A Sky That Will Not Clear', desc: 'Torrential Rain on Siege for the whole battle. Clear Weather cannot lift it.' },
+  { id: 'frost_start',     group: 'weather', name: 'A Bitter Beginning',         desc: 'The battle opens with Biting Frost on Close Combat. It can be cleared as normal.' },
+  { id: 'tempest',         group: 'weather', name: 'The Skellige Tempest',       desc: 'Ranged and Siege units are reduced to 1 strength for the whole battle.' },
+  { id: 'no_specials',     group: 'rules',   name: 'A Silent Council',           desc: 'Neither side may play Special cards.' },
+  { id: 'no_heroes',       group: 'rules',   name: 'Heroes Forsworn',            desc: 'Hero immunity is suspended: heroes can be affected by weather and abilities.' },
+  { id: 'uroboros',        group: 'deck_manipulation', name: 'Mark of Uroboros',  desc: 'Whenever anyone draws from their deck, the same number of cards from that deck is discarded.' },
+  { id: 'dampening',       group: 'deck_manipulation', name: 'Dampening',         desc: 'At the start of the battle, both players discard every non-unit card from their decks.' },
+  { id: 'twist_of_fate',   group: 'twist',   name: 'Twist of Fate',              desc: "On turn 3, each player's graveyard and deck swap places." },
+  { id: 'banishment',      group: 'attrition', name: 'Banishment',               desc: 'At the start of the battle, a random unit is removed from your run deck for good.' },
+  { id: 'warp',            group: 'twist',   name: 'Warp',                        desc: 'At the start of turn 2, each player pulls a random unit from their deck into hand.' },
+  { id: 'landfall',        group: 'twist',   name: 'Landfall',                    desc: "At the start of turn 3, both players' decks are moved to their graveyards." },
+  { id: 'sorcery',         group: 'twist',   name: 'Sorcery',                     desc: 'At the start of turn 3, a random card leaves each deck: units go to hand, anything else to the graveyard.' },
+  { id: 'gluttony',        group: 'draw',    name: 'Gluttony',                    desc: 'Both players draw 1 extra card at the start of the battle.' }
 ];
 
-// Elite intrinsic effect.
-window.ELITE_EFFECTS = {
-  easy:   { id: 'veteran_e', name: 'Veteran Tactics',   desc: 'The elite gains +1 strength to all its units at the start of each turn.' },
-  medium: { id: 'veteran_m', name: 'Veteran Tactics',   desc: 'The elite gains +2 strength to all its units at the start of each turn.' },
-  hard:   { id: 'veteran_h', name: 'Veteran Tactics',   desc: 'The elite gains +3 strength to all its units at the start of each turn.' }
-};
+// Elite intrinsic effect (strength bonus is +1 in Act 1, +2 in Act 2).
+window.ELITE_EFFECT = { id: 'veteran', name: 'Veteran Tactics', desc: 'Every enemy unit enters play with extra strength: +1 in Act 1, +2 in Act 2.' };
 
-window.RATION_COSTS = {
-  hero: 3,
-  siege: 2,
-  ranged: 1,
-  close: 1,
-  agile: 2,   // "any" or multi-position units
-  special: 0,
-};
-
-window.STARTING_RATIONS_MIN = 115;
-window.STARTING_RATIONS_MAX = 135;
-window.BATTLE_RATION_DRAIN = { battle: [8, 12], elite: [12, 18], boss: [15, 25] };
-
-// Compute travel cost based on deck composition
-window.calcTravelCost = function(deck, equipped) {
-  const hasLean = (equipped || []).some(i => i.id === 'lean_provision');
-  const hasHardtack = (equipped || []).some(i => i.id === 'hardtack');
-  let cost = 0;
-  for (const card of deck) {
-    if (card.type === 'special') continue;
-    let unitCost;
-    if (card.hero) {
-      unitCost = hasHardtack ? 2 : window.RATION_COSTS.hero;
-    } else {
-      const row = (card.row || '').toLowerCase();
-      if (row === 'siege') unitCost = window.RATION_COSTS.siege;
-      else if (row === 'agile' || row === 'any') unitCost = window.RATION_COSTS.agile;
-      else unitCost = window.RATION_COSTS.close; // close or ranged = 1
-    }
-    if (hasLean) unitCost = Math.max(0, unitCost - 1);
-    cost += unitCost;
-  }
-  return cost;
-};
-
-// Reward ranges per act (0-indexed) and node type.
-// battle:  always gold, potentially rations (rationChance = probability of getting any rations).
-// elite:   Act 1 — gold OR rations (not both); Act 2 — gold, rations, or combination ≤ comboMax.
-//          goldChance = probability of pure-gold outcome when not in combo mode (Act 1 only).
-// boss:    always both gold AND rations.
-// Losing any encounter forfeits the exact gold the player stood to win (goldLoss = goldReward).
-window.BATTLE_REWARDS = {
-  act1: {
-    battle: { goldMin: 1, goldMax: 2, rationChance: 0.5, rationMin: 5, rationMax: 15 },
-    elite:  { goldMin: 2, goldMax: 3, goldChance: 0.65, rationMin: 10, rationMax: 20 },
-    boss:   { goldMin: 3, goldMax: 5, rationMin: 15, rationMax: 30 }
-  },
-  act2: {
-    battle: { goldMin: 2, goldMax: 3, rationChance: 0.5, rationMin: 5, rationMax: 20 },
-    elite:  { goldMin: 3, goldMax: 5, rationMin: 15, rationMax: 25, comboMax: 7 },
-    boss:   { goldMin: 3, goldMax: 6, rationMin: 15, rationMax: 30 }
-  }
-};
-
-// Items — meta-progression.
+// Provisions — pick up to 2 at the start of a run.
 window.ITEMS = [
-  { id: 'kings_bounty',    name: "King's Bounty",        glyph: '\u2014',  rarity: 'common',   desc: '+1 gold from every battle won.' },
-  { id: 'quartermaster',   name: "Quartermaster's Ledger", glyph: '\u2752', rarity: 'common',   desc: '+15 Rations at the start of the run.' },
-  { id: 'lean_provision',  name: 'Lean Provisioning',     glyph: '\u25cb', rarity: 'uncommon', desc: 'All Unit ration costs reduced by 1 (minimum 0).' },
-  { id: 'foragers_eye',    name: "Forager's Eye",         glyph: '\u25c8', rarity: 'uncommon', desc: 'Camps grant +8 additional Rations.' },
-  { id: 'black_market',    name: 'Black Market Ledger',   glyph: '\u2756', rarity: 'rare',     desc: 'Shops offer 2 additional cards per visit.' },
-  { id: 'travelling_merch',name: 'Travelling Merchant',   glyph: '\u2696', rarity: 'rare',     desc: '30% chance per Shop visit: all prices reduced by 1.' },
-  { id: 'hardtack',        name: 'Hardtack',              glyph: '\u25c6', rarity: 'rare',     desc: 'Heroes cost 2 Rations instead of 3.' },
-  { id: 'map_etcher',      name: 'Map Etcher',            glyph: '\u2734', rarity: 'rare',     desc: 'Mystery node contents are revealed before clicking.' },
-  { id: 'lucky_coin',      name: 'Lucky Coin',            glyph: '\u25c9', rarity: 'common',   desc: '10% chance per map node to find +1 gold underfoot.' },
-  { id: 'whetstone',       name: 'Whetstone',             glyph: '\u2718', rarity: 'uncommon', desc: 'First battle of each Act, your units gain +1 strength on round 1.' }
-];
-
-// Mercenary pool for Mystery "recruit" outcomes.
-window.MERCENARY_POOL = [
-  { name: 'Hedge-Knight Errant',   strength: 4, type: 'unit', row: 'Close',  hero: false },
-  { name: 'Old Witcher (Retired)', strength: 6, type: 'unit', row: 'Close',  hero: false },
-  { name: 'Bandit Crossbowman',    strength: 3, type: 'unit', row: 'Ranged', hero: false },
-  { name: 'Wandering Bard',        strength: 2, type: 'unit', row: 'Agile',  hero: false },
-  { name: 'Mercenary Surgeon',     strength: 4, type: 'unit', row: 'Close',  hero: false },
-  { name: 'Exiled Sorceress',      strength: 7, type: 'unit', row: 'Ranged', hero: true  },
-  { name: 'Free Sapper Crew',      strength: 4, type: 'unit', row: 'Siege',  hero: false }
+  { id: 'kings_bounty',    name: "King's Bounty",          glyph: '—', rarity: 'common',   desc: '+1 gold from every battle won.' },
+  { id: 'quartermaster',   name: "Quartermaster's Ledger", glyph: '❒', rarity: 'common',   desc: 'Start the run with +20 Rations.' },
+  { id: 'lean_provision',  name: 'Lean Provisioning',      glyph: '○', rarity: 'uncommon', desc: 'Marching costs 1 Ration less per step (minimum 1).' },
+  { id: 'foragers_eye',    name: "Forager's Eye",          glyph: '◈', rarity: 'uncommon', desc: 'Resting at camp restores 10 more Rations.' },
+  { id: 'black_market',    name: 'Black Market Ledger',    glyph: '❖', rarity: 'rare',     desc: 'Merchants stock 2 extra cards.' },
+  { id: 'travelling_merch',name: 'Travelling Merchant',    glyph: '⚖', rarity: 'rare',     desc: '30% chance per Merchant visit: every price is 1 gold lower.' },
+  { id: 'hardtack',        name: 'Hardtack',               glyph: '◆', rarity: 'rare',     desc: 'Heroes count as 1 upkeep instead of 2.' },
+  { id: 'map_etcher',      name: 'Map Etcher',             glyph: '✴', rarity: 'rare',     desc: 'You can see what a Mystery holds before you go there.' },
+  { id: 'lucky_coin',      name: 'Lucky Coin',             glyph: '◉', rarity: 'common',   desc: '10% chance per step to find 1 gold on the road.' },
+  { id: 'whetstone',       name: 'Whetstone',              glyph: '✘', rarity: 'uncommon', desc: 'First battle of each Act: units in your opening hand gain +1 strength.' }
 ];
 
 // Mystery outcomes.
 window.MYSTERY_OUTCOMES = [
   { id: 'find_gold',    kind: 'gold',    amount:  2, line: 'A buried strongbox. Old, but the coin still rings true.' },
   { id: 'lose_gold',    kind: 'gold',    amount: -2, line: 'A patrol stops you and demands tribute. They are larger than your purse.' },
-  { id: 'find_rations', kind: 'rations', amount:  10, line: 'A farmer hails you. She offers bread, salted meat, a flask. "For luck."' },
+  { id: 'find_rations', kind: 'rations', amount: 12, line: 'A farmer hails you. She offers bread, salted meat, a flask. "For luck."' },
   { id: 'lose_rations', kind: 'rations', amount: -8, line: 'Your stores are damp. Half the salt-pork goes into the mud.' },
   { id: 'mercenary',    kind: 'recruit',             line: 'A masked rider falls in beside you. "I have nothing left to lose," they say.' },
   { id: 'waylay',       kind: 'deck',    amount: -1, line: 'You are ambushed at a ford. A card is lost in the river.' },
-  { id: 'boon_draw',    kind: 'buff',    buff: 'draw_plus_one',  line: 'A diviner reads your palm. "You will see more clearly in the next contest." (+1 card draw, next encounter)' },
-  { id: 'boon_peek',    kind: 'buff',    buff: 'peek_enemy',     line: 'A spy in your favour. (Peek 1 enemy card, next encounter)' },
-  { id: 'boon_clear',   kind: 'buff',    buff: 'clear_skies',    line: 'A clear-eyed priest blesses your standard. (Clear Skies primed, next encounter)' }
+  { id: 'boon_draw',    kind: 'buff',    buff: 'draw_plus_one', line: 'A diviner reads your palm. "You will see more clearly in the next contest."', effect: 'Next battle: draw 1 extra card.' },
+  { id: 'boon_whet',    kind: 'buff',    buff: 'whet',          line: 'A smith by the roadside sharpens every blade you carry.',                      effect: 'Next battle: units in your opening hand gain +1 strength.' },
+  { id: 'boon_clear',   kind: 'buff',    buff: 'clear_skies',   line: 'A clear-eyed priest blesses your standard.',                                    effect: 'Next battle: start with a Clear Weather card in hand.' }
 ];
 
-// Node-type metadata.
+// Node-type metadata. `explain` is the plain-language rule shown on the map and in How to Play.
 window.NODE_TYPES = {
-  battle:   { glyph: '\u2694',  label: 'Skirmish',   flavour: 'A skirmish. Spoils await.',                  reward: '1\u20132 gold \u00b7 rations possible', weight: 0.50 },
-  elite:    { glyph: '\u2726',  label: 'Elite',      flavour: 'A champion stands in your road.',           reward: '2\u20133 gold or rations',             weight: 0.12 },
-  shop:     { glyph: '\u2696',  label: 'Merchant',   flavour: 'Coin changes hands in a quiet tent.',        reward: 'buy / sell',                           weight: 0.13 },
-  rest:     { glyph: '\u2617',  label: 'Camp',       flavour: 'A fire, a flask, a song half-remembered.',   reward: 'rest',                                 weight: 0.13 },
-  cache:    { glyph: '\u25c8',  label: 'Cache',      flavour: 'A buried strongbox, half-forgotten.',        reward: '+2 gold',                              weight: 0.07 },
-  mystery:  { glyph: '?',       label: 'Mystery',    flavour: 'The road bends into something unseen.',      reward: '???',                                  weight: 0.05 },
-  boss:     { glyph: '\u25c6',  label: 'Endbringer', flavour: 'The road ends here. So might you.',          reward: 'gold + rations \u00b7 trophy',          weight: 0 }
+  battle:  { glyph: '⚔', label: 'Skirmish',   flavour: 'A skirmish. Spoils await.',                weight: 0.50, explain: 'Fight a weaker enemy deck. Win: gold, sometimes rations. Lose: pay the same gold.' },
+  elite:   { glyph: '✦', label: 'Elite',      flavour: 'A champion stands in your road.',         weight: 0.12, explain: 'A tougher enemy with Veteran Tactics. Better gold and rations if you win.' },
+  shop:    { glyph: '⚖', label: 'Merchant',   flavour: 'Coin changes hands in a quiet tent.',      weight: 0.13, explain: 'Buy cards for your deck, or sell cards for gold.' },
+  rest:    { glyph: '☗', label: 'Camp',       flavour: 'A fire, a flask, a song half-remembered.', weight: 0.13, explain: 'Rest to restore rations, or drill one unit for +1 strength for the rest of the run.' },
+  cache:   { glyph: '◈', label: 'Cache',      flavour: 'A buried strongbox, half-forgotten.',      weight: 0.07, explain: 'Free gold.' },
+  mystery: { glyph: '?',      label: 'Mystery',    flavour: 'The road bends into something unseen.',    weight: 0.05, explain: 'A random event: it may help or hurt.' },
+  boss:    { glyph: '◆', label: 'Boss',       flavour: 'The road ends here. So might you.',        weight: 0,    explain: "The enemy's full deck plus special rules. Losing to a boss ends the run." }
 };
 
 // Faction-themed merchant flavour.
@@ -361,175 +263,3 @@ window.ACT_BOSSES = [
   { actName: 'The Long Road',  title: 'The Pretender King',   flavour: 'A usurper holds the river-crossing. He has been waiting for you.' },
   { actName: 'The Last Mile',  title: 'The Black Sun Itself', flavour: 'The sky darkens. The horizon is full of banners.' }
 ];
-
-// Card image map — maps roguelite card names to sm card artwork paths.
-// Used by the shop screen to show a card art preview on hover.
-window.CARD_IMAGE_MAP = {
-  // ── Northern Realms ──
-  'Foot Soldier':           'images/sm/realms_elite.jpg',
-  'Crinfrid Reaver':        'images/sm/realms_crinfrid_1.jpg',
-  'Siege Engineer':         'images/sm/nilfgaard_combat_engineer.jpg',
-  'Blue Stripes Commando':  'images/sm/realms_blue_stripes_1.jpg',
-  'Trebuchet':              'images/sm/realms_trebuchet.jpg',
-  'Catapult':               'images/sm/realms_catapult_1.jpg',
-  'Field Medic':            'images/sm/toussaint_field_medic.jpg',
-  'Heavy Infantry':         'images/sm/realms_attre_soldier.jpg',
-  'Banner-Knight':          'images/sm/realms_cintrian_knight.jpg',
-  'Pikeman':                'images/sm/lyria_rivia_pikeman.jpg',
-  'Dun Banner Cavalry':     'images/sm/realms_dun_banner_heavy_cavalry_1.jpg',
-  'Ballista':               'images/sm/realms_ballista.jpg',
-  'Kaedweni Sergeant':      'images/sm/realms_kaedweni_sergeant.jpg',
-  // ── Nilfgaard ──
-  'Black Infantry':         'images/sm/nilfgaard_daerlan_soldier.jpg',
-  'Impera Brigade':         'images/sm/nilfgaard_impera_brigade_2.jpg',
-  'Vrihedd Officer':        'images/sm/scoiatael_vrihedd_officer.jpg',
-  'Spy of Cintra':          'images/sm/nilfgaard_emissary.jpg',
-  'Letho of Gulet':         'images/sm/nilfgaard_letho.jpg',
-  'Albrich':                'images/sm/nilfgaard_albrich.jpg',
-  'Stefan Skellen':         'images/sm/nilfgaard_stefan.jpg',
-  'Etolian Conscript':      'images/sm/nilfgaard_daerlan_soldier.jpg',
-  'Spotter':                'images/sm/nilfgaard_spotter.jpg',
-  'Vattier de Rideaux':     'images/sm/nilfgaard_vattier.jpg',
-  'Cynthia':                'images/sm/nilfgaard_cynthia.jpg',
-  'Nausicaa Brigade':       'images/sm/nilfgaard_nausicaa_brigade.jpg',
-  // ── Monsters ──
-  'Arachas':                'images/sm/monsters_arachas.jpg',
-  'Endrega':                'images/sm/monsters_endrega.jpg',
-  'Nekker':                 'images/sm/monsters_nekker.jpg',
-  'Ghoul':                  'images/sm/monsters_ghoul.jpg',
-  'Wyvern':                 'images/sm/monsters_wyvern.jpg',
-  'Werewolf':               'images/sm/monsters_werewolf.jpg',
-  'Fiend':                  'images/sm/monsters_fiend.jpg',
-  'Foglet':                 'images/sm/monsters_fogling.jpg',
-  'Forktail':               'images/sm/monsters_forktail.jpg',
-  'Katakan':                'images/sm/monsters_katakan.jpg',
-  'Bruxa':                  'images/sm/monsters_bruxa.jpg',
-  'Frightener':             'images/sm/monsters_frightener.jpg',
-  // ── Scoia'tael ──
-  'Elven Skirmisher':       'images/sm/scoiatael_elf_skirmisher.jpg',
-  'Dwarven Skirmisher':     'images/sm/scoiatael_dwarf.jpg',
-  'Vrihedd Brigade':        'images/sm/scoiatael_vrihedd_brigade.jpg',
-  'Havekar Healer':         'images/sm/scoiatael_havekar_nurse.jpg',
-  'Dol Blathanna Archer':   'images/sm/scoiatael_dol_archer.jpg',
-  'Filavandrel':            'images/sm/scoiatael_filavandrel.jpg',
-  'Riordain':               'images/sm/scoiatael_riordain.jpg',
-  'Yaevinn':                'images/sm/scoiatael_yaevinn.jpg',
-  'Toruviel':               'images/sm/scoiatael_toruviel.jpg',
-  'Mahakam Defender':       'images/sm/scoiatael_mahakam.jpg',
-  // ── Skellige ──
-  'Clan an Craite Warrior': 'images/sm/skellige_craite_warrior_1.jpg',
-  'Drummond Shieldmaiden':  'images/sm/skellige_drummond_berserker.jpg',
-  'Dimun Pirate':           'images/sm/skellige_dimun_pirate.jpg',
-  'Tuirseach Skirmisher':   'images/sm/skellige_tuirseach_warrior_1.jpg',
-  'Hjalmar':                'images/sm/skellige_hjalmar.jpg',
-  'Cerys':                  'images/sm/skellige_cerys.jpg',
-  'Madman Lugos':           'images/sm/skellige_madman_lugos.jpg',
-  'Olaf':                   'images/sm/skellige_olaf.jpg',
-  'Light Longship':         'images/sm/skellige_light_longship.jpg',
-  'Heavy Longship':         'images/sm/skellige_war_longship_1.jpg',
-  'War Longship':           'images/sm/skellige_war_longship_2.jpg',
-  // ── Novigrad ──
-  'City Watchman':          'images/sm/special_watchman.jpg',
-  'Vigilante':              'images/sm/novigrad_flaming_rose_footman.jpg',
-  'Hawker':                 'images/sm/scoiatael_hawker_smuggler.jpg',
-  'Whoreson':               'images/sm/syndicate_whoreson_senior.jpg',
-  'Cleaver':                'images/sm/syndicate_cleaver.jpg',
-  'Bedlam':                 'images/sm/syndicate_francis_bedlam.jpg',
-  'Brawler':                'images/sm/syndicate_bare_knuckle_brawler.jpg',
-  'Cutpurse':               'images/sm/syndicate_thief.jpg',
-  'Yennefer':               'images/sm/novigrad_yennefer.jpg',
-  'Triss':                  'images/sm/novigrad_triss.jpg',
-  'Cyprian Wiley':          'images/sm/syndicate_cyprian_wiley.jpg',
-  'Dudu':                   'images/sm/syndicate_dudu_biberveldt.jpg',
-  // ── Witchers ──
-  'Wolf Apprentice':        'images/sm/witchers_aiden.jpg',
-  'Cat Adept':              'images/sm/witchers_gaetan.jpg',
-  'Griffin Squire':         'images/sm/witchers_coen.jpg',
-  'Bear Tracker':           'images/sm/witchers_berengar.jpg',
-  'Viper Initiate':         'images/sm/witchers_serrit.jpg',
-  'Sign: Igni':             'images/sm/special_sign_igni.jpg',
-  'Sign: Aard':             'images/sm/special_sign_aard.jpg',
-  'Sign: Quen':             'images/sm/special_sign_quen.jpg',
-  'Sign: Yrden':            'images/sm/special_sign_yrden.jpg',
-  'Sign: Axii':             'images/sm/special_sign_axii.jpg',
-  'Geralt':                 'images/sm/witchers_geralt_1.jpg',
-  'Vesemir':                'images/sm/witchers_vesemir.jpg',
-  // ── Toussaint ──
-  'Knight-Errant':          'images/sm/toussaint_knight_errant_1.jpg',
-  'Vintner':                'images/sm/toussaint_bard.jpg',
-  'Sommelier':              'images/sm/toussaint_bootblack.jpg',
-  'Hunger Unit':            'images/sm/toussaint_barghest_1.jpg',
-  'Beauclair Guard':        'images/sm/toussaint_beauclair_cavalry_1.jpg',
-  'Detlaff Acolyte':        'images/sm/toussaint_dettlaff.jpg',
-  'Alp':                    'images/sm/monsters_alp.jpg',
-  'Garkain':                'images/sm/toussaint_garkain.jpg',
-  'Ekimmara':               'images/sm/toussaint_fleder.jpg',
-  'Regis':                  'images/sm/toussaint_dettlaff_higher_vampire.jpg',
-  'Orianna':                'images/sm/toussaint_orianna.jpg',
-  // ── Lyria & Rivia ──
-  'Lyrian Pikeman':         'images/sm/lyria_rivia_pikeman.jpg',
-  'Rivian Halberdier':      'images/sm/lyria_rivia_rivian_mauler.jpg',
-  'Knighthood':             'images/sm/lyria_rivia_knighthood.jpg',
-  'Mounted Knight':         'images/sm/lyria_rivia_knight.jpg',
-  'Court Sorcerer':         'images/sm/lyria_rivia_spellweaver.jpg',
-  'Standard-Bearer':        'images/sm/lyria_rivia_banner.jpg',
-  'Field Surgeon':          'images/sm/lyria_rivia_physician.jpg',
-  'Crossbowman':            'images/sm/lyria_rivia_arbalest.jpg',
-  'Light Cavalry':          'images/sm/lyria_rivia_light_cavalry.jpg',
-  'Wagenburg':              'images/sm/lyria_rivia_wagenburg.jpg',
-  'Royal Guard':            'images/sm/realms_cintrian_royal_guard.jpg',
-  'Gascon':                 'images/sm/lyria_rivia_gascon.jpg',
-  // ── Syndicate ──
-  'Enforcer':               'images/sm/novigrad_flaming_rose_footman.jpg',
-  'Bookkeeper':             'images/sm/syndicate_fabian_hale.jpg',
-  'Thief':                  'images/sm/syndicate_thief.jpg',
-  'Cutthroat':              'images/sm/syndicate_cutthroat.jpg',
-  'Bagman':                 'images/sm/syndicate_beggar.jpg',
-  'Fixer':                  'images/sm/syndicate_caesar_bilzen.jpg',
-  'Boss':                   'images/sm/syndicate_carlo_varese.jpg',
-  'Smuggler':               'images/sm/syndicate_smuggler1.jpg',
-  'Witch Hunter':           'images/sm/novigrad_caleb_menge.jpg',
-  'Executioner':            'images/sm/syndicate_executioner.jpg',
-  'Tax Collector':          'images/sm/syndicate_bounty_hunter.jpg',
-  'Coin Master':            'images/sm/syndicate_gellert_bleinheim.jpg',
-  // ── Zerrikania ──
-  'Serpent Worshipper':     'images/sm/zerrikania_viper.jpg',
-  'Hyena Pack':             'images/sm/zerrikania_hyenas.jpg',
-  'Leopard Stalker':        'images/sm/zerrikania_leopard_1.jpg',
-  'Sun Acolyte':            'images/sm/zerrikania_dragon_priestess_lua.jpg',
-  'Sacred Dragon':          'images/sm/zerrikania_villentretenmerth.jpg',
-  'Snake Charmer':          'images/sm/zerrikania_boa.jpg',
-  'Fire Dancer':            'images/sm/zerrikania_fire_scorpion.jpg',
-  'Oasis Guard':            'images/sm/zerrikania_steppes_nomad_1.jpg',
-  'Spice Trader':           'images/sm/zerrikania_balladeer.jpg',
-  'Painted Lion':           'images/sm/zerrikania_tiger_1.jpg',
-  // ── Ofir ──
-  'Sand Skirmisher':        'images/sm/ofir_sand_slasher.jpg',
-  'Camel Lancer':           'images/sm/ofir_cataphract.jpg',
-  'Dune Reader':            'images/sm/ofir_fortuneteller.jpg',
-  'Spice Caravan':          'images/sm/ofir_caravan_guard.jpg',
-  'Adaptive Scout':         'images/sm/ofir_envoy.jpg',
-  'Mosaic Archer':          'images/sm/ofir_maraal.jpg',
-  'Falconer':               'images/sm/ofir_raider.jpg',
-  'Mystic':                 'images/sm/ofir_sorceress.jpg',
-  'Bedouin Raider':         'images/sm/ofir_cavalry.jpg',
-  'Runewright':             'images/sm/ofir_runewright.jpg',
-  'Runestone':              'images/sm/ofir_runestone.jpg',
-  'Slave Trader':           'images/sm/ofir_slave_trader.jpg',
-  // ── Special / Weather ──
-  'Decoy':                  'images/sm/special_decoy.jpg',
-  'Scorch':                 'images/sm/special_scorch.jpg',
-  "Commander's Horn":       'images/sm/special_horn.jpg',
-  'Biting Frost':           'images/sm/weather_frost.jpg',
-  'Impenetrable Fog':       'images/sm/weather_fog.jpg',
-  'Torrential Rain':        'images/sm/weather_rain.jpg',
-  'Clear Skies':            'images/sm/weather_clear.jpg',
-  'Cull':                   'images/sm/special_cull.jpg',
-  // ── Faction-guaranteed nonunit cards ──
-  'Nightfall':              'images/sm/weather_nightfall.jpg',
-  'Sandstorm':              'images/sm/weather_sandstorm.jpg',
-  'Peace Treaty':           'images/sm/realms_peace_treaty.jpg',
-  'Tempest':                'images/sm/weather_storm.jpg',
-  'Murder':                 'images/sm/special_murder.jpg',
-  'Vivaldi Bank':           'images/sm/special_vivaldi_bank.jpg',
-};

@@ -2596,19 +2596,31 @@ top: 0.6vw;
 right: 0.6vw;
 z-index: 2000;
 display: flex;
-gap: 0.8vw;
+flex-direction: column;
+align-items: flex-end;
+gap: 0.35vw;
 pointer-events: none;
 }
 
+.rl-hud-row {
+display: flex;
+gap: 0.4vw;
+}
+
 .rl-hud-pill {
-background: rgba(0,0,0,0.72);
+background: rgba(0,0,0,0.78);
 border: 1px solid rgba(180,140,50,0.55);
 border-radius: 0.35vw;
 padding: 0.25vw 0.6vw;
 font-size: 0.85vw;
 font-family: inherit;
 white-space: nowrap;
+color: #e6dfd1;
+pointer-events: auto;
 }
 
-.rl-hud-rations { color: #d4af37; }
-.rl-hud-drain   { color: #c0392b; }
+.rl-hud-title { color: #ffd24d; letter-spacing: 0.08em; text-transform: uppercase; }
+.rl-hud-win   { color: #8fd18f; }
+.rl-hud-lose  { color: #e0806f; }
+.rl-hud-drain { color: #c0392b; }
+.rl-hud-rule  { color: #d9b8ff; border-color: rgba(182,109,255,0.55); cursor: help; }

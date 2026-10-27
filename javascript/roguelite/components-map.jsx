@@ -123,102 +123,178 @@ function curvePath(a, b) {
   return `M ${a.x} ${a.y} C ${a.x} ${midY}, ${b.x} ${midY}, ${b.x} ${b.y}`;
 }
 
-function NodeTooltip({ node, assignment, position, hasMapEtcher }) {
+// Opponents, effects, mystery outcomes and battle stakes for every node, fixed by the run seed
+// so the map can show exactly what each step costs and pays before you commit to it.
+function computeAssignments(map, run) {
+  const rng = window.RL.makeRng((run.seed * 9301 + 0.5) % 1);
+  const otherFactions = window.FACTIONS.filter(f => f.id !== run.factionId);
+  const out = {};
+
+  const pickFromGroups = (n) => {
+    const groups = {};
+    window.BOSS_EFFECTS.forEach(e => {
+      const g = e.group || e.id;
+      (groups[g] = groups[g] || []).push(e);
+    });
+    const groupKeys = window.RL.shuffle(Object.keys(groups), rng);
+    return groupKeys.slice(0, n).map(g => groups[g][Math.floor(rng() * groups[g].length)]);
+  };
+
+  map.nodes.forEach(n => {
+    if (n.type === 'battle' || n.type === 'elite' || n.type === 'boss') {
+      const opp = otherFactions[Math.floor(rng() * otherFactions.length)];
+      const ldr = opp.leaders[Math.floor(rng() * opp.leaders.length)];
+      const assign = { oppFaction: opp, oppLeader: ldr, effects: [], reward: window.RL.rollReward(n.type, n.act, rng) };
+      if (n.type === 'elite') {
+        const vet = n.act >= 1 ? 2 : 1;
+        assign.effects = [{ ...window.ELITE_EFFECT, desc: `Every enemy unit enters play with +${vet} strength.` }];
+      } else if (n.type === 'boss') {
+        assign.effects = pickFromGroups(n.act === 1 ? 3 : 2);
+      }
+      out[n.id] = assign;
+    } else if (n.type === 'mystery') {
+      out[n.id] = { mystery: window.MYSTERY_OUTCOMES[Math.floor(rng() * window.MYSTERY_OUTCOMES.length)] };
+    }
+  });
+  return out;
+}
+
+// Gold a battle pays (King's Bounty adds 1).
+function battleGold(assignment, items) {
+  return assignment.reward.gold + (window.RL.hasItem(items, 'kings_bounty') ? 1 : 0);
+}
+
+const NODE_COLORS = {
+  battle: '#d4ab48', elite: '#b66dff', shop: '#d7b34d',
+  rest: '#6ea99a', cache: '#f0d27e', mystery: '#8a8aff', boss: '#ff6464'
+};
+const NODE_INK = {
+  battle: '#1a1004', elite: '#18002a', shop: '#2a1a05',
+  rest: '#052016', cache: '#2a1a05', mystery: '#060620', boss: '#2a0000'
+};
+
+function NodeTooltip({ node, position }) {
   if (!node) return null;
   const t = window.NODE_TYPES[node.type];
-  const left = Math.min(Math.max(position.x + 36, 8), 880);
-  const top = Math.max(position.y - 100, 8);
+  const left = Math.min(Math.max(position.x + 36, 8), 640);
+  const top = Math.max(position.y - 40, 8);
   return (
     <div className="node-tooltip" style={{ left, top }}>
       <div className="tt-name">{t.label}</div>
-      <div className="tt-flavour">"{t.flavour}"</div>
-      <div className="tt-reward">{t.reward}</div>
-      {assignment?.oppFaction && (
-        <div className="tt-opp">
-          <window.FactionSigil faction={assignment.oppFaction} size={26} />
-          <div>
-            <div className="tt-opp-name">{assignment.oppFaction.name}</div>
-            <div className="tt-opp-leader">{assignment.oppLeader.name}</div>
-          </div>
-        </div>
-      )}
-      {assignment?.effects && assignment.effects.length > 0 && (
-        <div className="tt-mod">
-          {assignment.effects.map((eff, i) => (
-            <div key={i} style={{ marginTop: i > 0 ? 8 : 0 }}>
-              <strong style={{ color: 'var(--gold)', display: 'block', marginBottom: 2 }}>{eff.name}</strong>
-              <span>{eff.desc}</span>
-            </div>
-          ))}
-        </div>
-      )}
-      {assignment?.mystery && hasMapEtcher && (
-        <div className="tt-mod">
-          <strong style={{ color: 'var(--mystery)', display: 'block', marginBottom: 4 }}>Map-Etched Vision</strong>
-          <em>{assignment.mystery.line}</em>
-        </div>
-      )}
+      <div className="tt-reward">{t.explain}</div>
     </div>
   );
 }
 
-function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
+// The panel that answers "what happens if I go there?" before you commit.
+function RouteDetail({ node, assignment, run, marchCost, onMarch, onCancel }) {
+  if (!node) {
+    return (
+      <div className="route-panel empty">
+        <div className="rp-eyebrow">Your next step</div>
+        <div className="rp-empty-text">Click a glowing node to see what it costs and what it pays.</div>
+      </div>
+    );
+  }
+  const t = window.NODE_TYPES[node.type];
+  const items = run.equipped || [];
+  const isFight = ['battle', 'elite', 'boss'].includes(node.type);
+  const starving = run.rations < marchCost;
+  const hasEtcher = window.RL.hasItem(items, 'map_etcher');
+  const isFinal = node.type === 'boss' && node.act === 1;
+
+  let body = null;
+  if (isFight && assignment) {
+    const gold = battleGold(assignment, items);
+    const rations = assignment.reward.rations;
+    const cantCover = node.type !== 'boss' && run.gold < gold;
+    const tier = window.RL.enemyTier(node.type, node.act);
+    body = (
+      <>
+        <div className="rp-opp">
+          <window.FactionSigil faction={assignment.oppFaction} size={44} />
+          <div>
+            <div className="rp-opp-name">{assignment.oppFaction.name}</div>
+            <div className="rp-opp-leader">{assignment.oppLeader.name}</div>
+          </div>
+        </div>
+        <div className="rp-line muted">They field {tier.label}.</div>
+        <div className="rp-stakes">
+          <div className="rp-stake win">
+            <div className="rp-stake-label">If you win</div>
+            <div className="rp-stake-value">+{gold} gold{rations ? ` · +${rations} rations` : ''}</div>
+            {isFinal && <div className="rp-stake-sub">and the run is won</div>}
+          </div>
+          <div className="rp-stake lose">
+            <div className="rp-stake-label">If you lose</div>
+            <div className="rp-stake-value">{node.type === 'boss' ? 'The run ends' : `−${gold} gold`}</div>
+            {cantCover && <div className="rp-stake-sub">You only have {run.gold}, so a loss ends the run</div>}
+          </div>
+        </div>
+        {assignment.effects.length > 0 && (
+          <div className="rp-effects">
+            <div className="rp-eyebrow">{node.type === 'boss' ? 'Boss rules' : 'Elite rule'}</div>
+            {assignment.effects.map((e, i) => (
+              <div key={i} className="rp-effect"><strong>{e.name}.</strong> {e.desc}</div>
+            ))}
+          </div>
+        )}
+      </>
+    );
+  } else if (node.type === 'shop') {
+    body = <div className="rp-line">Buy real cards for your deck or sell cards for gold. You have <b>{run.gold}</b> gold.</div>;
+  } else if (node.type === 'rest') {
+    const gain = window.RL.CAMP_RATIONS + (window.RL.hasItem(items, 'foragers_eye') ? 10 : 0);
+    body = <div className="rp-line">Choose one: <b>rest</b> for +{gain} rations, or <b>drill</b> a unit for +1 strength for the rest of the run.</div>;
+  } else if (node.type === 'cache') {
+    body = <div className="rp-line">A buried strongbox: <b>+2 gold</b>.</div>;
+  } else if (node.type === 'mystery') {
+    body = hasEtcher && assignment && assignment.mystery
+      ? <div className="rp-line"><em>Map-etched:</em> "{assignment.mystery.line}"</div>
+      : <div className="rp-line">Anything could be waiting: gold, food, a recruit, a blessing, or an ambush.</div>;
+  }
+
+  return (
+    <div className={`route-panel type-${node.type}`}>
+      <div className="rp-head">
+        <span className="legend-dot" style={{ background: NODE_COLORS[node.type], color: NODE_INK[node.type] }}>{t.glyph}</span>
+        <div>
+          <div className="rp-title">{isFinal ? 'Final Boss' : t.label}</div>
+          <div className="rp-flavour">"{t.flavour}"</div>
+        </div>
+      </div>
+      {body}
+      <div className={`rp-march ${starving ? 'starving' : ''}`}>
+        {starving
+          ? <>Marching costs {marchCost} rations and you have {run.rations}. <b>You will starve and a random card will desert.</b></>
+          : <>Marching here costs <b>{marchCost}</b> rations ({run.rations} &rarr; {run.rations - marchCost}).</>}
+      </div>
+      <div className="rp-actions">
+        <button className="gw-btn compact ghost" onClick={onCancel}>Back</button>
+        <button className="gw-btn compact" onClick={onMarch}>March &#9656;</button>
+      </div>
+    </div>
+  );
+}
+
+function RogueMap({ run, tweaks, onAbandon, onExit, onPickNode, onShowDeck, onShowHelp }) {
   const faction = window.FACTIONS.find(f => f.id === run.factionId);
   const leader = run.leader;
+  const items = run.equipped || [];
 
   const map = useMemoMap(() => generateMap({
     floorsPerAct: 8, acts: 2, minWidth: 2, maxWidth: 4, seed: run.seed
   }), [run.seed]);
 
-  const [nodeStates, setNodeStates] = useStateMap(() => {
+  const nodeStates = useMemoMap(() => {
     if (run.nodeStates) return run.nodeStates;
     const s = {};
     map.nodes.forEach(n => { s[n.id] = n.floor === 0 ? 'available' : 'locked'; });
     return s;
-  });
-  const [currentFloor, setCurrentFloor] = useStateMap(run.currentFloor ?? 0);
+  }, [run.nodeStates, map]);
+  const currentFloor = run.currentFloor ?? 0;
 
-  const battleAssignments = useMemoMap(() => {
-    let s = Math.floor(run.seed * 9301 + 1) >>> 0;
-    const rng = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-    const otherFactions = window.FACTIONS.filter(f => f.id !== run.factionId);
-    const difficulty = run.difficulty || 'medium';
-    const out = {};
-
-    const pickFromGroups = (n) => {
-      const groups = {};
-      window.BOSS_EFFECTS.forEach(e => {
-        if (!groups[e.group || e.id]) groups[e.group || e.id] = [];
-        groups[e.group || e.id].push(e);
-      });
-      const groupKeys = Object.keys(groups);
-      groupKeys.sort(() => rng() - 0.5);
-      const picked = [];
-      for (let i = 0; i < n && i < groupKeys.length; i++) {
-        const g = groups[groupKeys[i]];
-        picked.push(g[Math.floor(rng() * g.length)]);
-      }
-      return picked;
-    };
-
-    map.nodes.forEach(n => {
-      if (n.type === 'battle' || n.type === 'elite' || n.type === 'boss') {
-        const opp = otherFactions[Math.floor(rng() * otherFactions.length)];
-        const ldr = opp.leaders[Math.floor(rng() * opp.leaders.length)];
-        const assign = { oppFaction: opp, oppLeader: ldr, effects: [] };
-        if (n.type === 'elite') {
-          assign.effects = [window.ELITE_EFFECTS[difficulty] || window.ELITE_EFFECTS.medium];
-        } else if (n.type === 'boss') {
-          const count = n.act === 1 ? 3 : 2;
-          assign.effects = pickFromGroups(count);
-        }
-        out[n.id] = assign;
-      } else if (n.type === 'mystery') {
-        out[n.id] = { mystery: window.MYSTERY_OUTCOMES[Math.floor(rng() * window.MYSTERY_OUTCOMES.length)] };
-      }
-    });
-    return out;
-  }, [map, run.seed, run.factionId, run.difficulty]);
+  const assignments = useMemoMap(() => computeAssignments(map, run), [map, run.seed, run.factionId]);
 
   const MAP_WIDTH = 900;
   const FLOOR_GAP = 100;
@@ -228,37 +304,33 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
   });
 
   const [hovered, setHovered] = useStateMap(null);
+  const [selectedId, setSelectedId] = useStateMap(null);
   const scrollRef = useRefMap(null);
-
-  useEffectMap(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = totalHeight;
-    }
-  }, []);
 
   useEffectMap(() => {
     if (!scrollRef.current) return;
     const targetY = totalHeight - 90 - currentFloor * FLOOR_GAP;
     const halfH = scrollRef.current.clientHeight / 2;
-    scrollRef.current.scrollTo({ top: Math.max(0, targetY - halfH), behavior: 'smooth' });
+    scrollRef.current.scrollTop = Math.max(0, targetY - halfH);
   }, [currentFloor]);
 
-  const currentLayer = map.layers[currentFloor];
+  const currentLayer = map.layers[Math.min(currentFloor, map.layers.length - 1)];
   const currentAct = currentLayer ? currentLayer.act : 0;
+  const selected = selectedId ? map.nodes.find(n => n.id === selectedId) : null;
 
-  const nextEncounter = useMemoMap(() => {
-    const candidates = map.nodes.filter(n =>
-      n.floor === currentFloor &&
-      nodeStates[n.id] === 'available' &&
-      battleAssignments[n.id] &&
-      ['battle','elite','boss'].includes(n.type)
-    );
-    if (!candidates[0]) return null;
-    return { node: candidates[0], ...battleAssignments[candidates[0].id] };
-  }, [currentFloor, map.nodes, nodeStates, battleAssignments]);
+  const marchCost = window.RL.marchCost(run.deck, items);
+  const stepsOfFood = Math.floor(Math.max(0, run.rations) / marchCost);
+  const stats = window.RL.deckStats(run.deck);
 
   const handleNodeClick = (node) => {
     if (nodeStates[node.id] !== 'available') return;
+    window.rlSfx('card');
+    setSelectedId(node.id);
+  };
+
+  const march = () => {
+    const node = selected;
+    if (!node || nodeStates[node.id] !== 'available') return;
     const nextNodeStates = { ...nodeStates };
     nextNodeStates[node.id] = 'visited';
     map.nodes.filter(n => n.floor === node.floor && n.id !== node.id).forEach(n => {
@@ -267,30 +339,15 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
     map.edges.filter(e => e.from === node.id).forEach(e => {
       nextNodeStates[e.to] = 'available';
     });
-    const nextFloor = node.floor + 1;
-    setNodeStates(nextNodeStates);
-    setCurrentFloor(nextFloor);
-    onPickNode(node, battleAssignments[node.id], { nodeStates: nextNodeStates, currentFloor: nextFloor });
-  };
-
-  const NODE_COLORS = {
-    battle: '#d4ab48', elite: '#b66dff', shop: '#d7b34d',
-    rest: '#6ea99a', cache: '#f0d27e', mystery: '#8a8aff', boss: '#ff6464'
-  };
-  const NODE_INK = {
-    battle: '#1a1004', elite: '#18002a', shop: '#2a1a05',
-    rest: '#052016', cache: '#2a1a05', mystery: '#060620', boss: '#2a0000'
+    setSelectedId(null);
+    window.rlSfx('menu_buy');
+    onPickNode(node, assignments[node.id], { nodeStates: nextNodeStates, currentFloor: node.floor + 1 });
   };
 
   return (
     <div className="screen" data-screen-label="04 Roguelite Map">
       <div className="map-root">
         <aside className="map-side">
-          <div className="topnav" style={{ position: 'static', marginBottom: 4 }}>
-            <button className="back-btn" onClick={onMainMenu} title="Abandon run">&#9666;</button>
-            <span className="crumb">Run</span>
-          </div>
-
           <div className="ms-header">
             <window.FactionSigil faction={faction} size={56} />
             <div>
@@ -300,125 +357,85 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
           </div>
 
           <div className="act-banner">
-            <span className="ab-act">Act {currentAct + 1} / 2</span>
+            <span className="ab-act">Act {currentAct + 1} / 2 &middot; Floor {(currentLayer?.floorInAct ?? 0) + 1} / 8</span>
             <span className="ab-title">{window.ACT_BOSSES[currentAct].actName}</span>
           </div>
 
-          <div className="purse">
+          <div className="res-card gold">
             <div className="purse-coin">G</div>
-            <div>
-              <div className="purse-amt">{run.gold}</div>
-              <div className="purse-label">Gold</div>
+            <div className="res-main">
+              <div className="res-amt">{run.gold}</div>
+              <div className="res-label">Gold</div>
+            </div>
+            <div className="res-help">Your purse is your life. Lose a battle and you pay its stake. If you can't pay, the run ends.</div>
+          </div>
+
+          <div className={`res-card rations ${run.rations < marchCost ? 'starving' : stepsOfFood <= 3 ? 'low' : ''}`}>
+            <div className="rations-glyph">{run.rations < marchCost ? '☠' : '◈'}</div>
+            <div className="res-main">
+              <div className="res-amt">{run.rations}<span className="res-max"> / {run.maxRations}</span></div>
+              <div className="res-label">Rations</div>
+            </div>
+            <div className="rations-fill">
+              <div className="rations-fill-inner" style={{ width: Math.max(0, Math.min(100, run.rations / run.maxRations * 100)) + '%' }} />
+            </div>
+            <div className="res-help">
+              Each step costs <b>{marchCost}</b>, which is enough food for <b>{stepsOfFood}</b> more step{stepsOfFood === 1 ? '' : 's'}.
+              {run.rations < marchCost && ' You are starving: every step costs a card.'}
             </div>
           </div>
 
-          <div className={`rations-bar ${run.rations < 0 ? 'starving' : run.rations <= 30 ? 'low' : ''}`}>
-            <div className="rations-glyph">{run.rations < 0 ? '\u2920' : '\u25c8'}</div>
-            <div style={{ flex: 1 }}>
-              <div className="rations-row">
-                <span className="rations-amt">{run.rations ?? 0}</span>
-                <span className="rations-label">{run.rations < 0 ? 'Starving' : 'Rations'}</span>
-              </div>
-              <div className="rations-fill">
-                <div className="rations-fill-inner" style={{
-                  width: Math.max(0, Math.min(100, (run.rations || 0) / (run.maxRations || 150) * 100)) + '%'
-                }} />
-              </div>
+          <div className="res-card deck" onClick={onShowDeck}>
+            <div className="res-main">
+              <div className="res-amt">{stats.cards}</div>
+              <div className="res-label">Cards in deck</div>
             </div>
+            <div className="res-help">{stats.units} units &middot; {stats.heroes} heroes &middot; {stats.specials} specials &middot; upkeep {window.RL.upkeep(run.deck, items)}</div>
+            <button className="gw-btn compact ghost res-btn">View Deck</button>
           </div>
-          {run.rations < 0 ? (
-            <div className="rations-warn starving">"The stores are bare. The saddlebags spill at every step."</div>
-          ) : run.rations <= 30 ? (
-            <div className="rations-warn">"The stores grow lean. Find a camp."</div>
-          ) : null}
 
-          {run.equipped && run.equipped.length > 0 && (
+          {run.nextEncounterBuff && (
+            <div className="boon-chip">
+              <span className="boon-glyph">&#10022;</span>
+              {(window.MYSTERY_OUTCOMES.find(o => o.buff === run.nextEncounterBuff) || {}).effect}
+            </div>
+          )}
+
+          {items.length > 0 && (
             <div>
-              <div className="ms-section-title">Equipped</div>
+              <div className="ms-section-title">Provisions</div>
               <div className="item-chips">
-                {run.equipped.map(it => (
-                  <div className="item-chip" key={it.id} title={it.name + ' \u2014 ' + it.desc}>
+                {items.map(it => (
+                  <div className="item-chip" key={it.id} title={it.desc}>
                     <span className="item-chip-glyph">{it.glyph}</span>
                     <span className="item-chip-name">{it.name}</span>
+                    <span className="item-chip-desc">{it.desc}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div>
-            <div className="ms-section-title">Run Stats</div>
-            <div className="ms-stat"><span className="lab">Floor</span><span className="val">{currentFloor + 1} / {map.layers.length}</span></div>
-            <div className="ms-stat"><span className="lab">Battles Won</span><span className="val">{run.wins}</span></div>
-            <div className="ms-stat"><span className="lab">Battles Lost</span><span className="val" style={{ color: (run.losses || 0) > 0 ? 'var(--danger)' : undefined }}>{run.losses || 0}</span></div>
-            <div className="ms-stat"><span className="lab">Deck Size</span><span className="val">{run.deck.length}</span></div>
-            <div className="ms-stat"><span className="lab">Cards Bought</span><span className="val">{run.bought || 0}</span></div>
-            <div className="ms-stat"><span className="lab">Cards Sold</span><span className="val">{run.sold || 0}</span></div>
+          <div className="ms-record">
+            <span>Won <b>{run.wins || 0}</b></span>
+            <span>Lost <b>{run.losses || 0}</b></span>
           </div>
 
-          {nextEncounter && (
-            <div>
-              <div className="ms-section-title">Next Encounter</div>
-              <div className="next-encounter">
-                <div className="ne-opp">
-                  <window.FactionSigil faction={nextEncounter.oppFaction} size={36} />
-                  <div>
-                    <div className="ne-opp-name">{nextEncounter.oppFaction.name} &middot; <em style={{color: nextEncounter.node.type==='boss'?'var(--boss)':nextEncounter.node.type==='elite'?'var(--elite)':'var(--gold)', fontStyle:'normal'}}>{nextEncounter.node.type === 'boss' ? 'BOSS' : nextEncounter.node.type === 'elite' ? 'ELITE' : 'Skirmish'}</em></div>
-                    <div className="ne-opp-leader">{nextEncounter.oppLeader.name}</div>
-                  </div>
-                </div>
-                {nextEncounter.effects && nextEncounter.effects.length > 0 ? (
-                  <div className="ne-effects">
-                    {nextEncounter.effects.map((eff, i) => (
-                      <div className="ne-effect" key={i}>
-                        <div className="ne-mod-name">{eff.name}</div>
-                        <div className="ne-mod-desc">{eff.desc}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="ne-no-effect">No special effects &mdash; a plain skirmish.</div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <div className="ms-section-title">Path Legend</div>
-            <div className="legend-grid">
-              {Object.entries(window.NODE_TYPES).map(([k, v]) => (
-                <div key={k} className="legend-row">
-                  <span className="legend-dot" style={{
-                    background: NODE_COLORS[k],
-                    color: NODE_INK[k],
-                    borderColor: 'rgba(0,0,0,.4)',
-                  }}>{v.glyph}</span>
-                  {v.label}
-                </div>
-              ))}
-            </div>
+          <div className="ms-foot">
+            <button className="gw-btn compact ghost" onClick={onShowHelp}>? How to Play</button>
+            <button className="gw-btn compact ghost" onClick={onExit} title="Your run is saved. Continue it from the main menu.">Save &amp; Exit</button>
+            <button className="gw-btn compact ghost danger" onClick={onAbandon}>Abandon</button>
           </div>
-
-          <button className="gw-btn compact ghost" onClick={onBack} style={{ marginTop: 'auto' }}>
-            &#8617; Abandon Run
-          </button>
         </aside>
 
         <div className={`map-stage ${tweaks.mapStyle === 'parchment' ? 'is-parchment' : ''}`}>
-          <div className="map-topbar">
-            <div className="floor-counter">
-              <span className="fc-label">Act {currentAct + 1} &middot; Floor</span>
-              <span className="fc-value">{(currentLayer?.floorInAct ?? 0) + 1} / 8</span>
-            </div>
-            {tweaks.modifierAlwaysVisible && nextEncounter && nextEncounter.effects && nextEncounter.effects.length > 0 && (
-              <div className="modifier-pill">
-                <span className="mp-sign">{nextEncounter.node.type === 'boss' ? '\u25c6' : '\u2718'}</span>
-                <div>
-                  <div className="mp-label">{nextEncounter.node.type === 'boss' ? 'Boss Effects' : 'Elite Buff'}</div>
-                  <div className="mp-name">{nextEncounter.effects.map(e => e.name).join(' \u00b7 ')}</div>
-                </div>
+          <div className="map-legend">
+            {Object.entries(window.NODE_TYPES).map(([k, v]) => (
+              <div key={k} className="legend-row">
+                <span className="legend-dot" style={{ background: NODE_COLORS[k], color: NODE_INK[k] }}>{v.glyph}</span>
+                {v.label}
               </div>
-            )}
+            ))}
           </div>
 
           <div className="map-scroll" ref={scrollRef}>
@@ -427,17 +444,15 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
                 {map.edges.map((e, idx) => {
                   const a = positions[e.from], b = positions[e.to];
                   if (!a || !b) return null;
-                  const fromNode = map.nodes.find(n => n.id === e.from);
-                  const toNode = map.nodes.find(n => n.id === e.to);
-                  const traversed = nodeStates[fromNode.id] === 'visited' && nodeStates[toNode.id] === 'visited';
-                  const live = nodeStates[fromNode.id] === 'visited' && nodeStates[toNode.id] === 'available';
+                  const traversed = nodeStates[e.from] === 'visited' && nodeStates[e.to] === 'visited';
+                  const live = nodeStates[e.from] === 'visited' && nodeStates[e.to] === 'available';
                   const stroke = traversed ? 'rgba(255,210,77,.85)' : live ? 'var(--gold)' : 'rgba(255,210,77,.18)';
                   return (
                     <path
                       key={idx}
                       d={curvePath(a, b)}
                       stroke={stroke}
-                      strokeWidth={traversed || live ? 2 : 1.5}
+                      strokeWidth={traversed || live ? 2.5 : 1.5}
                       fill="none"
                       strokeDasharray={live ? '6 6' : traversed ? '0' : '4 8'}
                     />
@@ -450,12 +465,11 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
                 const state = nodeStates[n.id];
                 const isCurrent = n.floor === currentFloor - 1 && state === 'visited';
                 const visualState = isCurrent ? 'current' : state;
-                const layer = map.layers[n.floor];
-                const isAct2Boss = n.type === 'boss' && layer.act === 1;
+                const isFinalBoss = n.type === 'boss' && n.act === 1;
                 return (
                   <div
                     key={n.id}
-                    className="node"
+                    className={`node ${selectedId === n.id ? 'selected' : ''}`}
                     data-type={n.type}
                     data-state={visualState}
                     style={{ left: p.x - 28, top: p.y - 28, color: NODE_COLORS[n.type] }}
@@ -465,7 +479,7 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
                   >
                     <span className="glyph">{window.NODE_TYPES[n.type].glyph}</span>
                     {n.type === 'boss' && (
-                      <div className="label">{isAct2Boss ? 'Final Boss' : 'Act Boss'}</div>
+                      <div className="label">{isFinalBoss ? 'Final Boss' : 'Act Boss'}</div>
                     )}
                   </div>
                 );
@@ -473,43 +487,37 @@ function RogueMap({ run, tweaks, onBack, onPickNode, onMainMenu }) {
 
               {map.layers.map((L, f) => {
                 const y = totalHeight - 90 - f * FLOOR_GAP;
-                const isActStart = L.floorInAct === 0;
                 return (
                   <React.Fragment key={f}>
-                    {isActStart && (
-                      <div style={{
-                        position: 'absolute', left: -120, top: y - 16,
-                        fontFamily: 'Cinzel, serif', fontSize: 11, letterSpacing: '0.22em',
-                        color: 'var(--gold)', textTransform: 'uppercase', textAlign: 'right', width: 80,
-                      }}>
-                        Act {L.act + 1}
-                      </div>
+                    {L.floorInAct === 0 && (
+                      <div className="floor-act-label" style={{ top: y - 16 }}>Act {L.act + 1}</div>
                     )}
-                    <div style={{
-                      position: 'absolute',
-                      left: -36, top: y - 8,
-                      fontFamily: 'Cinzel, serif',
-                      color: f === currentFloor ? 'var(--gold)' : 'var(--tan-dim)',
-                      fontSize: 11, letterSpacing: '0.16em',
-                    }}>
+                    <div className={`floor-num ${f === currentFloor ? 'current' : ''}`} style={{ top: y - 8 }}>
                       {String(L.floorInAct + 1).padStart(2, '0')}
                     </div>
                   </React.Fragment>
                 );
               })}
 
-              {hovered && <NodeTooltip
+              {hovered && hovered.node.id !== selectedId && <NodeTooltip
                 node={hovered.node}
-                assignment={battleAssignments[hovered.node.id]}
-                position={{ x: hovered.x, y: hovered.y - (scrollRef.current?.scrollTop || 0) }}
-                hasMapEtcher={(run.equipped || []).some(i => i.id === 'map_etcher')}
+                position={{ x: hovered.x, y: hovered.y }}
               />}
             </div>
           </div>
+
+          <RouteDetail
+            node={selected}
+            assignment={selected ? assignments[selected.id] : null}
+            run={run}
+            marchCost={marchCost}
+            onMarch={march}
+            onCancel={() => setSelectedId(null)}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-Object.assign(window, { RogueMap });
+Object.assign(window, { RogueMap, generateMap, computeAssignments, battleGold });

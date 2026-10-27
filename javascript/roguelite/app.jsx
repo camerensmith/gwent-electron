@@ -9,13 +9,111 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "orientation": "vertical"
 }/*EDITMODE-END*/;
 
+// ── Persistence: the run survives closing the app (localStorage) and the trip to the
+//    battle page (sessionStorage). Browser storage can be unavailable, so every access is guarded.
+const SAVE_KEY = 'rogueliteSavedRun';
+const HOWTO_KEY = 'rogueliteSeenHowTo';
+
+function storageGet(store, key) { try { return window[store].getItem(key); } catch (e) { return null; } }
+function storageSet(store, key, value) { try { window[store].setItem(key, value); } catch (e) {} }
+function storageRemove(store, key) { try { window[store].removeItem(key); } catch (e) {} }
+
+function parseRun(raw) {
+  if (!raw) return null;
+  try {
+    const run = JSON.parse(raw);
+    // Runs saved before decks were real cards have entries without a `key`; they can't be resumed.
+    if (!run || !run.factionId || !Array.isArray(run.deck) || run.deck.some(e => !e.key || !window.RL.cardInfo(e.key))) return null;
+    return run;
+  } catch (e) { return null; }
+}
+const loadSavedRun = () => parseRun(storageGet('localStorage', SAVE_KEY));
+const saveRun = (run) => storageSet('localStorage', SAVE_KEY, JSON.stringify(run));
+const clearSavedRun = () => storageRemove('localStorage', SAVE_KEY);
+
+const removeRandomCard = (deck) => {
+  if (!deck.length) return { deck, removed: null };
+  const idx = Math.floor(Math.random() * deck.length);
+  return { deck: deck.filter((_, i) => i !== idx), removed: deck[idx] };
+};
+
+const cardName = (entry) => (window.RL.cardInfo(entry.key) || {}).name || 'a card';
+
+// Apply a finished battle to the run. Returns the new run plus either an event to show or the end of the run.
+function applyBattleResult(savedRun, result) {
+  const RL = window.RL;
+  const { won, rationDrain, goldReward, rationReward, goldLoss, nodeType, isFinalBoss } = result;
+  let run = { ...savedRun, pendingBattle: null, nextEncounterBuff: null };
+  const deltas = [];
+
+  if (rationDrain > 0) {
+    const paid = Math.min(run.rations, rationDrain);
+    run.rations -= paid;
+    deltas.push({ text: `−${paid} rations (boss rules)`, tone: 'bad' });
+  }
+  (result.permanentlyRemoved || []).forEach(key => {
+    const idx = run.deck.findIndex(e => e.key === key);
+    if (idx === -1) return;
+    deltas.push({ text: `${cardName(run.deck[idx])} was banished from your deck`, tone: 'bad' });
+    run.deck = run.deck.filter((_, i) => i !== idx);
+  });
+
+  const label = nodeType === 'boss' ? 'Boss' : nodeType === 'elite' ? 'Elite' : 'Skirmish';
+  if (won) {
+    const gained = Math.min(run.maxRations, run.rations + (rationReward || 0)) - run.rations;
+    run = {
+      ...run,
+      gold: run.gold + goldReward,
+      rations: run.rations + gained,
+      wins: (run.wins || 0) + 1,
+      elites: (run.elites || 0) + (nodeType === 'elite' ? 1 : 0),
+      bosses: (run.bosses || 0) + (nodeType === 'boss' ? 1 : 0),
+    };
+    deltas.unshift(...[{ text: `+${goldReward} gold`, tone: 'good' }].concat(gained > 0 ? [{ text: `+${gained} rations`, tone: 'good' }] : []));
+    if (isFinalBoss) return { run, end: { outcome: 'win', reason: 'You defeated the final boss.' } };
+    return {
+      run,
+      event: {
+        tone: 'good',
+        eyebrow: `${label} won`,
+        title: nodeType === 'boss' ? 'Act 1 Complete' : 'Victory',
+        line: nodeType === 'boss' ? 'The pretender falls. The road climbs on, into the last mile.' : 'The field is yours. You gather what the fallen left behind.',
+        deltas,
+      },
+    };
+  }
+
+  run = { ...run, losses: (run.losses || 0) + 1 };
+  if (nodeType === 'boss') {
+    return { run, end: { outcome: 'loss', reason: 'You were defeated by the boss. Losing a boss battle ends the run.' } };
+  }
+  if (run.gold < goldLoss) {
+    return { run: { ...run, gold: 0 }, end: { outcome: 'bankrupt', reason: `You lost a battle with a stake of ${goldLoss} gold but only had ${run.gold}.` } };
+  }
+  run.gold -= goldLoss;
+  deltas.unshift({ text: `−${goldLoss} gold (the stake)`, tone: 'bad' });
+  return {
+    run,
+    event: {
+      tone: 'bad',
+      eyebrow: `${label} lost`,
+      title: 'Defeat',
+      line: 'You pay what you owe and limp back onto the road.',
+      deltas,
+      note: `${run.gold} gold left. If you lose a battle whose stake is more than that, the run ends.`,
+    },
+  };
+}
+
 function App() {
+  const RL = window.RL;
   const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
   const [screen, setScreen] = useState('menu');
   const [run, setRun] = useState(null);
-  const [runOutcome, setRunOutcome] = useState(null);
-  const [unlockedItemIds] = useState(() => new Set(window.ITEMS.map(i => i.id)));
-  const [lastUnlocked, setLastUnlocked] = useState(null);
+  const [ending, setEnding] = useState(null); // { outcome, reason }
+  const [events, setEvents] = useState([]);
+  const [overlay, setOverlay] = useState(null); // 'deck' | 'help' | null
+  const [savedRun, setSavedRun] = useState(() => loadSavedRun());
 
   useEffect(() => {
     const stage = document.querySelector('.stage');
@@ -24,72 +122,110 @@ function App() {
     stage.classList.add('accent-' + (tweaks.accent || 'gold'));
   }, [tweaks.accent]);
 
-  // On mount: apply any roguelite battle result returned from index.html
+  // Keep the saved run in step with every change while a run is active.
   useEffect(() => {
-    const rawResult = sessionStorage.getItem('rogueliteBattleResult');
+    if (run && run.factionId && ['map', 'shop', 'rest'].includes(screen)) saveRun(run);
+  }, [run, screen]);
+
+  const pushEvents = (list) => { if (list.length) setEvents(prev => prev.concat(list)); };
+  const closeEvent = () => {
+    const [current, ...rest] = events;
+    setEvents(rest);
+    if (current && current.onClose) current.onClose();
+  };
+
+  const endRun = (r, end) => {
+    clearSavedRun();
+    setSavedRun(null);
+    setRun(r);
+    setEnding(end);
+    setScreen('summary');
+  };
+
+  // On mount: apply a battle result returned from index.html
+  useEffect(() => {
+    const rawResult = storageGet('sessionStorage', 'rogueliteBattleResult');
     if (!rawResult) return;
-    sessionStorage.removeItem('rogueliteBattleResult');
-
+    storageRemove('sessionStorage', 'rogueliteBattleResult');
     let result;
-    try { result = JSON.parse(rawResult); } catch(e) { return; }
+    try { result = JSON.parse(rawResult); } catch (e) { return; }
+    const before = parseRun(storageGet('sessionStorage', 'rogueliteRunState')) || loadSavedRun();
+    storageRemove('sessionStorage', 'rogueliteRunState');
+    if (!before) return;
 
-    const rawRun = sessionStorage.getItem('rogueliteRunState');
-    if (!rawRun) return;
-    sessionStorage.removeItem('rogueliteRunState');
-
-    let savedRun;
-    try { savedRun = JSON.parse(rawRun); } catch(e) { return; }
-
-    const { won, rationDrain, goldReward, rationReward, goldLoss, nodeType, isFinalBoss } = result;
-    const clampedDrain = Math.min(rationDrain, Math.max(0, savedRun.rations));
-
-    if (won) {
-      const newRun = {
-        ...savedRun,
-        gold: savedRun.gold + goldReward,
-        rations: Math.min(savedRun.maxRations || 40, savedRun.rations - clampedDrain + (rationReward || 0)),
-        wins: (savedRun.wins || 0) + 1,
-        elites: (savedRun.elites || 0) + (nodeType === 'elite' ? 1 : 0),
-        bosses: (savedRun.bosses || 0) + (nodeType === 'boss' ? 1 : 0),
-        nextEncounterBuff: null,
-      };
-      setRun(newRun);
-      if (isFinalBoss) {
-        const candidate = window.ITEMS[Math.floor(Math.random() * window.ITEMS.length)];
-        setLastUnlocked(candidate);
-        setRunOutcome('win');
-        setScreen('summary');
-      } else {
-        setScreen('map');
-      }
-    } else {
-      const bankrupt = savedRun.gold < goldLoss;
-      const newRun = {
-        ...savedRun,
-        gold: Math.max(0, savedRun.gold - goldLoss),
-        rations: savedRun.rations - clampedDrain,
-        losses: (savedRun.losses || 0) + 1,
-        nextEncounterBuff: null,
-      };
-      setRun(newRun);
-      if (bankrupt) {
-        setRunOutcome('bankrupt');
-        setScreen('summary');
-      } else {
-        setScreen('map');
-      }
-    }
+    const out = applyBattleResult(before, result);
+    if (out.end) { endRun(out.run, out.end); return; }
+    setRun(out.run);
+    saveRun(out.run);
+    setScreen('map');
+    if (out.event) setEvents([out.event]);
   }, []);
+
+  const launchBattle = (r, node, assignment) => {
+    const items = r.equipped || [];
+    const gold = window.battleGold(assignment, items);
+    const actIndex = node.act || 0;
+    const whetstoneUsedActs = r.whetstoneUsedActs || [];
+    const whetstoneApplies = RL.hasItem(items, 'whetstone') && !whetstoneUsedActs.includes(actIndex);
+
+    const ctx = {
+      playerFaction:  r.factionId,
+      playerLeaderId: r.leader?.id || null,
+      playerDeck:     r.deck.map(e => ({ key: e.key, bonus: e.bonus || 0 })),
+      oppFaction:     assignment?.oppFaction?.id   || null,
+      oppLeaderId:    assignment?.oppLeader?.id    || null,
+      oppLeaderName:  assignment?.oppLeader?.name  || 'Opponent',
+      nodeType:       node.type,
+      act:            actIndex,
+      goldReward:     gold,
+      rationReward:   assignment?.reward?.rations || 0,
+      goldLoss:       gold,
+      currentRations: r.rations,
+      whetstone:      whetstoneApplies,
+      isFinalBoss:    node.type === 'boss' && node.act === 1,
+      nextEncounterBuff: r.nextEncounterBuff || null,
+      bossEffects:    assignment?.effects?.filter(e => e.id !== 'veteran') || [],
+    };
+    const saved = {
+      ...r,
+      whetstoneUsedActs: whetstoneApplies ? [...whetstoneUsedActs, actIndex] : whetstoneUsedActs,
+      pendingBattle: ctx,
+    };
+    saveRun(saved);
+    storageSet('sessionStorage', 'rogueliteRunState', JSON.stringify(saved));
+    storageSet('sessionStorage', 'rogueliteBattle', JSON.stringify(ctx));
+    window.location.href = 'index.html';
+  };
+
+  const resumeBattle = (r) => {
+    storageSet('sessionStorage', 'rogueliteRunState', JSON.stringify(r));
+    storageSet('sessionStorage', 'rogueliteBattle', JSON.stringify(r.pendingBattle));
+    window.location.href = 'index.html';
+  };
 
   const navigate = (target) => {
     if (target === 'quick') {
       // Hand off to the existing Gwent Electron deck builder and game.
       // Flag tells index.html to skip the splash screen.
-      sessionStorage.setItem('fromMainMenu', '1');
+      storageSet('sessionStorage', 'fromMainMenu', '1');
       window.location.href = 'index.html';
     } else if (target === 'roguelite') {
-      setRun({ mode: 'roguelite' });
+      if (savedRun) {
+        setEvents([{
+          tone: 'bad', eyebrow: 'New run', title: 'Abandon your current run?',
+          line: 'Starting a new run throws away the one in progress.',
+          actions: [
+            { label: 'Keep it', ghost: true },
+            { label: 'Start New Run', onClick: () => { clearSavedRun(); setSavedRun(null); setScreen('setup'); } },
+          ],
+        }]);
+        return;
+      }
       setScreen('setup');
+    } else if (target === 'continue' && savedRun) {
+      if (savedRun.pendingBattle) { resumeBattle(savedRun); return; }
+      setRun(savedRun);
+      setScreen(savedRun.pendingScreen || 'map');
     } else if (target === 'stats') {
       window.location.href = 'statistics-viewer.html';
     } else if (target === 'rules') {
@@ -99,206 +235,151 @@ function App() {
     }
   };
 
-  const beginRun = ({ factionId, leader, deck, equipped }) => {
+  const beginRun = ({ factionId, leader, deck, equipped, variant }) => {
     const items = equipped || [];
-    const hasQM = items.some(i => i.id === 'quartermaster');
-    const rollStart = window.STARTING_RATIONS_MIN +
-      Math.floor(Math.random() * (window.STARTING_RATIONS_MAX - window.STARTING_RATIONS_MIN + 1));
-    const start = rollStart + (hasQM ? 15 : 0);
-    setRun({
+    const start = RL.START_RATIONS + (RL.hasItem(items, 'quartermaster') ? 20 : 0);
+    const newRun = {
       mode: 'roguelite',
       factionId,
       leader,
-      deck: deck.map((c, i) => ({ ...c, id: c.id || ('d' + i) })),
+      variant,
+      deck,
       equipped: items,
-      gold: 0,
+      gold: RL.START_GOLD,
       rations: start,
       startRations: start,
-      maxRations: 150,
-      wins: 0,
-      losses: 0,
-      elites: 0,
-      bosses: 0,
-      bought: 0,
-      sold: 0,
-      rests: 0,
+      maxRations: RL.MAX_RATIONS,
+      wins: 0, losses: 0, elites: 0, bosses: 0,
+      bought: 0, sold: 0, rests: 0, drills: 0,
       floorsReached: 0,
       whetstoneUsedActs: [],
       seed: Math.random(),
       shopSeed: Math.random(),
-      difficulty: 'medium',
-    });
+    };
+    setRun(newRun);
     setScreen('map');
+    if (!storageGet('localStorage', HOWTO_KEY)) {
+      storageSet('localStorage', HOWTO_KEY, '1');
+      setOverlay('help');
+    }
   };
 
   const handlePickNode = (node, assignment, mapState) => {
-    setRun(r => {
-      const travelCost = window.calcTravelCost(r.deck, r.equipped);
-      let newRations = r.rations - travelCost;
-      let newDeck = r.deck;
-      let starveDiscarded = null;
-      if (newRations < 0 && newDeck.length > 0) {
-        const idx = Math.floor(Math.random() * newDeck.length);
-        starveDiscarded = newDeck[idx];
-        newDeck = newDeck.filter((_, i) => i !== idx);
-      }
-      if (starveDiscarded) {
-        setTimeout(() => {
-          window.alert(`Starvation:\n\nYour stores are bare. A card slips from your saddlebag.\n\n\u2014 ${starveDiscarded.name} was discarded.`);
-        }, 30);
-      }
-      return {
-        ...r,
-        floorsReached: Math.max(r.floorsReached || 0, node.floor + 1),
-        rations: newRations,
-        deck: newDeck,
-        nodeStates: mapState?.nodeStates || r.nodeStates,
-        currentFloor: mapState?.currentFloor ?? r.currentFloor,
-      };
-    });
-    const items = run?.equipped || [];
-    const has = (id) => items.some(i => i.id === id);
+    const items = run.equipped || [];
+    let r = {
+      ...run,
+      nodeStates: mapState.nodeStates,
+      currentFloor: mapState.currentFloor,
+      floorsReached: Math.max(run.floorsReached || 0, node.floor + 1),
+    };
+    const roadDeltas = [];
+    const evts = [];
 
-    if (has('lucky_coin') && Math.random() < 0.1) {
-      setRun(r => ({ ...r, gold: r.gold + 1 }));
+    // March: pay rations, or starve and lose a card
+    const cost = RL.marchCost(r.deck, items);
+    if (r.rations >= cost) {
+      r.rations -= cost;
+    } else {
+      r.rations = 0;
+      const { deck, removed } = removeRandomCard(r.deck);
+      r.deck = deck;
+      evts.push({
+        tone: 'bad', eyebrow: 'Starvation', title: 'The stores are bare',
+        line: 'With nothing left to eat, one of your company slips away in the night.',
+        card: removed,
+        deltas: removed ? [{ text: `${cardName(removed)} deserted`, tone: 'bad' }] : [],
+        note: 'Rest at a camp, or win battles that pay rations, to stop the bleeding.',
+      });
+    }
+    if (RL.hasItem(items, 'lucky_coin') && Math.random() < 0.1) {
+      r.gold += 1;
+      roadDeltas.push({ text: '+1 gold (Lucky Coin)', tone: 'good' });
     }
 
     if (node.type === 'shop') {
+      r = { ...r, pendingScreen: 'shop' };
       setScreen('shop');
     } else if (node.type === 'rest') {
-      const gain = has('foragers_eye') ? 28 : 20;
-      setRun(r => ({
-        ...r,
-        rests: (r.rests || 0) + 1,
-        rations: Math.min(r.maxRations, r.rations + gain),
-      }));
+      r = { ...r, pendingScreen: 'rest' };
       setScreen('rest');
     } else if (node.type === 'cache') {
-      const reward = 2;
-      setRun(r => ({ ...r, gold: r.gold + reward }));
-      window.alert(`Cache opened \u2014 +${reward} gold.`);
+      r.gold += 2;
+      evts.push({ tone: 'good', eyebrow: 'Cache', title: 'A Buried Strongbox', line: window.NODE_TYPES.cache.flavour, deltas: [{ text: '+2 gold', tone: 'good' }, ...roadDeltas] });
+      roadDeltas.length = 0;
     } else if (node.type === 'mystery') {
       const out = assignment?.mystery || window.MYSTERY_OUTCOMES[Math.floor(Math.random() * window.MYSTERY_OUTCOMES.length)];
-      let delta = '';
-      if (out.kind === 'gold')    { setRun(r => ({ ...r, gold: Math.max(0, r.gold + out.amount) })); delta = `${out.amount >= 0 ? '+' : ''}${out.amount} gold`; }
-      if (out.kind === 'rations') { setRun(r => ({ ...r, rations: Math.max(0, Math.min(r.maxRations, r.rations + out.amount)) })); delta = `${out.amount >= 0 ? '+' : ''}${out.amount} rations`; }
-      if (out.kind === 'deck')    { setRun(r => ({ ...r, deck: r.deck.slice(Math.abs(out.amount)) })); delta = `${out.amount} card${Math.abs(out.amount) > 1 ? 's' : ''} lost`; }
-      if (out.kind === 'recruit') {
-        const merc = window.MERCENARY_POOL[Math.floor(Math.random() * window.MERCENARY_POOL.length)];
-        setRun(r => ({ ...r, deck: [...r.deck, { ...merc, id: 'merc' + Math.random().toString(36).slice(2) }] }));
-        delta = `recruited: ${merc.name}`;
-      }
-      if (out.kind === 'buff') {
-        setRun(r => ({ ...r, nextEncounterBuff: out.buff }));
-        delta = `boon applied to next encounter`;
-      }
-      window.alert(`Mystery:\n\n"${out.line}"\n\n\u2014 ${delta}`);
-    } else if (node.type === 'battle' || node.type === 'elite' || node.type === 'boss') {
-      resolveBattle(node, assignment, mapState);
-    }
-  };
-
-  const rollBattleReward = (nodeType, actIndex, hasKingsBounty) => {
-    const rand = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
-    const key = 'act' + (actIndex + 1);
-    const cfg = (window.BATTLE_REWARDS[key] || window.BATTLE_REWARDS.act1)[nodeType];
-    if (!cfg) return { gold: 1, rations: 0 };
-    const kb = hasKingsBounty ? 1 : 0;
-
-    if (nodeType === 'battle') {
-      const gold = rand(cfg.goldMin, cfg.goldMax) + kb;
-      const rations = Math.random() < cfg.rationChance ? rand(cfg.rationMin, cfg.rationMax) : 0;
-      return { gold, rations };
-    }
-
-    if (nodeType === 'elite') {
-      if (actIndex === 0) {
-        // Act 1: gold OR rations (not both)
-        if (Math.random() < cfg.goldChance) {
-          return { gold: rand(cfg.goldMin, cfg.goldMax) + kb, rations: 0 };
+      const deltas = [];
+      let card = null;
+      let tone = 'neutral';
+      if (out.kind === 'gold') {
+        const before = r.gold;
+        r.gold = Math.max(0, r.gold + out.amount);
+        deltas.push({ text: `${r.gold - before >= 0 ? '+' : ''}${r.gold - before} gold`, tone: out.amount >= 0 ? 'good' : 'bad' });
+        tone = out.amount >= 0 ? 'good' : 'bad';
+      } else if (out.kind === 'rations') {
+        const before = r.rations;
+        r.rations = Math.max(0, Math.min(r.maxRations, r.rations + out.amount));
+        deltas.push({ text: `${r.rations - before >= 0 ? '+' : ''}${r.rations - before} rations`, tone: out.amount >= 0 ? 'good' : 'bad' });
+        tone = out.amount >= 0 ? 'good' : 'bad';
+      } else if (out.kind === 'deck') {
+        const { deck, removed } = removeRandomCard(r.deck);
+        r.deck = deck;
+        card = removed;
+        if (removed) deltas.push({ text: `${cardName(removed)} was lost`, tone: 'bad' });
+        tone = 'bad';
+      } else if (out.kind === 'recruit') {
+        const key = RL.randomRecruit(r.factionId);
+        if (key) {
+          card = RL.newEntry(key);
+          r.deck = [...r.deck, card];
+          deltas.push({ text: `${cardName(card)} joined your deck`, tone: 'good' });
         }
-        return { gold: 0, rations: rand(cfg.rationMin, cfg.rationMax) };
+        tone = 'good';
+      } else if (out.kind === 'buff') {
+        r.nextEncounterBuff = out.buff;
+        deltas.push({ text: out.effect, tone: 'good' });
+        tone = 'good';
       }
-      // Act 2: gold only, rations only, or combination where gold+rations ≤ comboMax
-      const roll = Math.random();
-      if (roll < 0.33) {
-        return { gold: rand(cfg.goldMin, cfg.goldMax) + kb, rations: 0 };
-      }
-      if (roll < 0.66) {
-        return { gold: 0, rations: rand(cfg.rationMin, cfg.rationMax) };
-      }
-      // Combination: pick a total budget then split it
-      const total = rand(3, cfg.comboMax);
-      const gold = rand(1, total - 1);
-      return { gold: gold + kb, rations: total - gold };
+      evts.push({ tone, eyebrow: 'Mystery', title: 'Something on the Road', line: out.line, card, deltas: deltas.concat(roadDeltas) });
+      roadDeltas.length = 0;
     }
 
-    if (nodeType === 'boss') {
-      return {
-        gold: rand(cfg.goldMin, cfg.goldMax) + kb,
-        rations: rand(cfg.rationMin, cfg.rationMax),
-      };
-    }
+    if (roadDeltas.length) evts.push({ tone: 'good', eyebrow: 'On the road', title: 'A Glint in the Dust', deltas: roadDeltas });
 
-    return { gold: 1, rations: 0 };
+    if (node.type === 'battle' || node.type === 'elite' || node.type === 'boss') {
+      if (evts.length) {
+        // Show what happened on the march first, then go to battle.
+        evts[evts.length - 1].button = 'To Battle';
+        evts[evts.length - 1].onClose = () => launchBattle(r, node, assignment);
+        setRun(r);
+        pushEvents(evts);
+      } else {
+        launchBattle(r, node, assignment);
+      }
+      return;
+    }
+    setRun(r);
+    pushEvents(evts);
   };
 
-  const resolveBattle = (node, assignment, mapState) => {
-    const items = run?.equipped || [];
-    const has = (id) => items.some(i => i.id === id);
-
-    const actIndex = node.act || 0;
-    const { gold: goldReward, rations: rationReward } = rollBattleReward(node.type, actIndex, has('kings_bounty'));
-    // Losing forfeits the exact gold the player stood to win
-    const goldLoss = goldReward;
-    const isFinalBoss = node.type === 'boss' && node.act === 1;
-
-    // Whetstone: applies only to the first battle of each act
-    const whetstoneUsedActs = run.whetstoneUsedActs || [];
-    const whetstoneApplies = has('whetstone') && !whetstoneUsedActs.includes(actIndex);
-    const updatedWhetstoneUsedActs = whetstoneApplies ? [...whetstoneUsedActs, actIndex] : whetstoneUsedActs;
-
-    // Persist run state across the page navigation so we can restore it on return
-    const runToSave = mapState
-      ? { ...run, whetstoneUsedActs: updatedWhetstoneUsedActs, nodeStates: mapState.nodeStates, currentFloor: mapState.currentFloor }
-      : { ...run, whetstoneUsedActs: updatedWhetstoneUsedActs };
-    sessionStorage.setItem('rogueliteRunState', JSON.stringify(runToSave));
-
-    // Build the battle context that gwent.js will read on index.html load
-    const ctx = {
-      playerFaction:  run.factionId,
-      playerLeaderId: run.leader?.id || null,
-      oppFaction:     assignment?.oppFaction?.id   || null,
-      oppLeaderId:    assignment?.oppLeader?.id    || null,
-      oppLeaderName:  assignment?.oppLeader?.name  || 'Opponent',
-      nodeType:       node.type,
-      goldReward,
-      rationReward,
-      goldLoss,
-      currentRations: run.rations,
-      leanProvision:  has('lean_provision'),
-      hardtack:       has('hardtack'),
-      whetstone:      whetstoneApplies,
-      isFinalBoss,
-      nextEncounterBuff: run?.nextEncounterBuff || null,
-      bossEffects: assignment?.effects || [],
-    };
-
-    sessionStorage.setItem('rogueliteBattle', JSON.stringify(ctx));
-    window.location.href = 'index.html';
+  const abandon = () => {
+    setEvents([{
+      tone: 'bad', eyebrow: 'Abandon run', title: 'Give up this run?',
+      line: 'The road will forget you. Progress is lost.',
+      actions: [
+        { label: 'Keep Going', ghost: true },
+        { label: 'Abandon', onClick: () => endRun(run, { outcome: 'loss', reason: 'You abandoned the run.' }) },
+      ],
+    }]);
   };
 
   return (
     <>
       {screen === 'menu' && (
-        <window.MainMenu onNavigate={navigate} />
-      )}
-      {screen === 'quick' && (
-        <window.QuickMatchHandoff onBack={() => setScreen('menu')} />
+        <window.MainMenu onNavigate={navigate} savedRun={savedRun} />
       )}
       {screen === 'setup' && (
         <window.RunSetup
-          mode="roguelite"
           onBack={() => setScreen('menu')}
           onBegin={beginRun}
         />
@@ -307,16 +388,18 @@ function App() {
         <window.RogueMap
           run={run}
           tweaks={tweaks}
-          onBack={() => { if (window.confirm('Abandon this run? Progress will be lost.')) { setRunOutcome('loss'); setScreen('summary'); } }}
-          onMainMenu={() => { if (window.confirm('Abandon this run? Progress will be lost.')) { setRunOutcome('loss'); setScreen('summary'); } }}
+          onAbandon={abandon}
+          onExit={() => { saveRun(run); setSavedRun(run); setRun(null); setScreen('menu'); }}
           onPickNode={handlePickNode}
+          onShowDeck={() => setOverlay('deck')}
+          onShowHelp={() => setOverlay('help')}
         />
       )}
       {screen === 'shop' && run && (
         <window.Shop
           run={run}
           onLeave={({ gold, deck }) => {
-            setRun(r => ({ ...r, gold, deck, shopSeed: Math.random() }));
+            setRun(r => ({ ...r, gold, deck, shopSeed: Math.random(), pendingScreen: null }));
             setScreen('map');
           }}
           onTransact={(t) => {
@@ -329,16 +412,36 @@ function App() {
         />
       )}
       {screen === 'rest' && run && (
-        <window.RestArea run={run} onLeave={() => setScreen('map')} />
+        <window.RestArea run={run} onLeave={(choice) => {
+          setRun(r => {
+            if (choice.kind === 'rest') {
+              return { ...r, rations: Math.min(r.maxRations, r.rations + choice.gain), rests: (r.rests || 0) + 1, pendingScreen: null };
+            }
+            return {
+              ...r,
+              deck: r.deck.map(e => e.uid === choice.uid ? { ...e, bonus: (e.bonus || 0) + 1 } : e),
+              drills: (r.drills || 0) + 1,
+              pendingScreen: null,
+            };
+          });
+          setScreen('map');
+        }} />
       )}
       {screen === 'summary' && run && (
         <window.RunSummary
           run={run}
-          outcome={runOutcome || 'loss'}
-          unlockedItem={runOutcome === 'win' ? lastUnlocked : null}
-          onReturnMenu={() => { setRun(null); setRunOutcome(null); setLastUnlocked(null); setScreen('menu'); }}
+          outcome={ending?.outcome || 'loss'}
+          reason={ending?.reason}
+          onReturnMenu={() => { setRun(null); setEnding(null); setScreen('menu'); }}
+          onNewRun={() => { setRun(null); setEnding(null); setScreen('setup'); }}
         />
       )}
+
+      {overlay === 'deck' && run && (
+        <window.DeckViewer deck={run.deck} items={run.equipped} onClose={() => setOverlay(null)} />
+      )}
+      {overlay === 'help' && <window.HowToPlay onClose={() => setOverlay(null)} />}
+      {events.length > 0 && <window.EventModal event={events[0]} onClose={closeEvent} />}
 
       <window.TweaksPanel title="Tweaks">
         <window.TweakSection label="Map">
@@ -350,15 +453,6 @@ function App() {
               { value: 'parchment', label: 'Parchment' },
             ]}
             onChange={v => setTweak('mapStyle', v)}
-          />
-          <window.TweakRadio
-            label="Modifier preview"
-            value={tweaks.modifierAlwaysVisible ? 'always' : 'hover'}
-            options={[
-              { value: 'always', label: 'Always' },
-              { value: 'hover', label: 'On hover' },
-            ]}
-            onChange={v => setTweak('modifierAlwaysVisible', v === 'always')}
           />
         </window.TweakSection>
 
@@ -374,87 +468,6 @@ function App() {
         <window.TweakSection label="Jump To">
           <window.TweakButton label="Main Menu" onClick={() => setScreen('menu')} />
           <window.TweakButton label="Run Setup" onClick={() => setScreen('setup')} />
-          <window.TweakButton label="Demo Run (Map)" onClick={() => {
-            const f = window.FACTIONS[0];
-            setRun({
-              mode: 'roguelite',
-              factionId: f.id, leader: f.leaders[0],
-              deck: window.generateStartingDeck(f.id),
-              gold: 8, wins: 2, losses: 1, elites: 0, bosses: 0,
-              bought: 1, sold: 0, rests: 1, floorsReached: 3,
-              rations: 18, startRations: 125, maxRations: 150,
-              equipped: [], seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
-            });
-            setScreen('map');
-          }} />
-          <window.TweakButton label="Demo Run (Starving)" onClick={() => {
-            const f = window.FACTIONS[0];
-            setRun({
-              mode: 'roguelite',
-              factionId: f.id, leader: f.leaders[0],
-              deck: window.generateStartingDeck(f.id),
-              gold: 4, wins: 5, losses: 3, elites: 1, bosses: 0,
-              bought: 2, sold: 2, rests: 1, floorsReached: 9,
-              rations: -2, startRations: 120, maxRations: 150,
-              equipped: [], seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
-            });
-            setScreen('map');
-          }} />
-          <window.TweakButton label="Demo Shop" onClick={() => {
-            const f = window.FACTIONS[0];
-            setRun({
-              mode: 'roguelite',
-              factionId: f.id, leader: f.leaders[0],
-              deck: window.generateStartingDeck(f.id),
-              gold: 6, wins: 3, bought: 0, sold: 0,
-              rations: 14, startRations: 125, maxRations: 150,
-              equipped: [], seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
-            });
-            setScreen('shop');
-          }} />
-          <window.TweakButton label="Demo Rest" onClick={() => {
-            const f = window.FACTIONS[0];
-            setRun({
-              mode: 'roguelite',
-              factionId: f.id, leader: f.leaders[0],
-              deck: window.generateStartingDeck(f.id),
-              gold: 4, wins: 2,
-              rations: 6, startRations: 125, maxRations: 150,
-              equipped: [], seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
-            });
-            setScreen('rest');
-          }} />
-          <window.TweakButton label="Demo Summary (Win)" onClick={() => {
-            const f = window.FACTIONS[2];
-            setRun({
-              mode: 'roguelite',
-              factionId: f.id, leader: f.leaders[0],
-              deck: window.generateStartingDeck(f.id),
-              gold: 14, wins: 12, losses: 3, elites: 2, bosses: 2,
-              bought: 6, sold: 3, rests: 2, floorsReached: 16,
-              rations: 11, startRations: 130, maxRations: 150,
-              equipped: [window.ITEMS[0], window.ITEMS[1]],
-              seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
-            });
-            setLastUnlocked(window.ITEMS[4]);
-            setRunOutcome('win');
-            setScreen('summary');
-          }} />
-          <window.TweakButton label="Demo Summary (Loss)" onClick={() => {
-            const f = window.FACTIONS[5];
-            setRun({
-              mode: 'roguelite',
-              factionId: f.id, leader: f.leaders[0],
-              deck: window.generateStartingDeck(f.id),
-              gold: 0, wins: 4, losses: 4, elites: 1, bosses: 0,
-              bought: 2, sold: 1, rests: 1, floorsReached: 9,
-              rations: 0, startRations: 120, maxRations: 150,
-              equipped: [window.ITEMS[0]],
-              seed: Math.random(), shopSeed: Math.random(), difficulty: 'medium',
-            });
-            setRunOutcome('bankrupt');
-            setScreen('summary');
-          }} />
         </window.TweakSection>
       </window.TweaksPanel>
     </>

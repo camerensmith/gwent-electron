@@ -1,13 +1,13 @@
 // ─── Run Summary screen + Quick Match handoff ───
 
-function RunSummary({ run, outcome, onReturnMenu, unlockedItem }) {
+function RunSummary({ run, outcome, reason, onReturnMenu, onNewRun }) {
   const faction = window.FACTIONS.find(f => f.id === run.factionId);
   const isWin = outcome === 'win';
   const isBankrupt = outcome === 'bankrupt';
   const headerTitle = isWin
     ? 'A Victorious Run'
     : isBankrupt ? 'Out of Coin, Out of Time' : 'The Road Ends Here';
-  const outcomeLabel = isWin ? '\u2726 VICTORY \u2726' : isBankrupt ? '\u20ac BANKRUPT \u20ac' : '\u2715 DEFEAT \u2715';
+  const outcomeLabel = isWin ? '\u2726 VICTORY \u2726' : isBankrupt ? '\u2715 BANKRUPT \u2715' : '\u2715 DEFEAT \u2715';
   const flavour = isWin
     ? '"Two bosses laid low. The standards still fly. The fire still burns."'
     : isBankrupt
@@ -23,6 +23,7 @@ function RunSummary({ run, outcome, onReturnMenu, unlockedItem }) {
         </div>
         <div className={`rs-outcome ${isWin ? 'win' : isBankrupt ? 'bankrupt' : 'loss'}`}>{outcomeLabel}</div>
         <div className="rs-flavour">{flavour}</div>
+        {reason && <div className="rs-reason">{reason}</div>}
 
         <div className="rs-summary">
           <div className="rs-summary-side">
@@ -56,26 +57,13 @@ function RunSummary({ run, outcome, onReturnMenu, unlockedItem }) {
             <div className="rs-stat"><div className="rsv">{run.rests || 0}</div><div className="rsl">Rests Taken</div></div>
             <div className="rs-stat"><div className="rsv">{run.deck.length}</div><div className="rsl">Final Deck</div></div>
             <div className="rs-stat"><div className="rsv">{run.floorsReached || 1}</div><div className="rsl">Floors Climbed</div></div>
-            <div className="rs-stat"><div className="rsv">{run.startRations ?? '\u2014'}</div><div className="rsl">Start Rations</div></div>
+            <div className="rs-stat"><div className="rsv">{run.drills || 0}</div><div className="rsl">Units Drilled</div></div>
           </div>
         </div>
 
-        {isWin && unlockedItem && (
-          <div className="rs-unlock">
-            <div className="rs-unlock-eyebrow">&mdash; Item Unlocked &mdash;</div>
-            <div className="rs-unlock-card">
-              <span className="rs-unlock-glyph">{unlockedItem.glyph}</span>
-              <div>
-                <div className="rs-unlock-name">{unlockedItem.name}</div>
-                <div className="rs-unlock-desc">{unlockedItem.desc}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="rs-actions">
           <button className="gw-btn ghost" onClick={onReturnMenu}>&#8617; To Main Menu</button>
-          <button className="gw-btn" onClick={onReturnMenu}>&#9876; Another Run</button>
+          <button className="gw-btn" onClick={onNewRun}>&#9876; Another Run</button>
         </div>
       </div>
     </div>
